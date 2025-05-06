@@ -69,7 +69,7 @@ const ChatMessageList = () => {
         <div 
           key={message.id} 
           className={cn(
-            "chat-message",
+            "chat-message mb-4",
             message.role === "user" ? "user-message" : "assistant-message"
           )}
         >
@@ -86,7 +86,7 @@ const ChatMessageList = () => {
               <p className="text-xs font-medium text-gray-500">
                 {message.role === "user" ? "You" : "Assistant"}
               </p>
-              <div className="message-content">
+              <div className="message-content whitespace-pre-wrap">
                 {message.content}
               </div>
             </div>

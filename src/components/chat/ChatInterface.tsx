@@ -8,6 +8,7 @@ import ChatMessageList from "./ChatMessageList";
 import ModelSelector from "./ModelSelector";
 import { History, Send } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const ChatInterface = () => {
   const [inputValue, setInputValue] = useState("");
@@ -43,7 +44,7 @@ const ChatInterface = () => {
 
   return (
     <div className="flex flex-col h-full border-l border-gray-200 w-full">
-      <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
+      <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 bg-white z-10">
         <h2 className="font-medium text-fpt-orange">Chat</h2>
         <div className="flex items-center space-x-4">
           <ModelSelector />
@@ -54,12 +55,12 @@ const ChatInterface = () => {
         </div>
       </div>
       
-      <div className="flex-1 flex flex-col">
-        <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <ScrollArea className="flex-1">
           <ChatMessageList />
-        </div>
+        </ScrollArea>
         
-        <div className="border-t border-gray-200 p-4">
+        <div className="border-t border-gray-200 p-4 bg-white">
           <form onSubmit={handleSubmit} className="flex space-x-2">
             <Input
               ref={inputRef}
