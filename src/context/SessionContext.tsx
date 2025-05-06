@@ -6,10 +6,10 @@ import { useToast } from "@/hooks/use-toast";
 // Map of model IDs to their corresponding n8n URLs
 const MODEL_N8N_URLS: Record<string, string> = {
   "gpt-4o-mini": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba",
-  "gpt-4.1-mini": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba",
-  "gpt-o3-mini": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba",
-  "gemini-2.0-flash": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba",
-  "gemini-2.5-flash": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba",
+  "gpt-4.1-mini": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba1",
+  "gpt-o3-mini": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba2",
+  "gemini-2.0-flash": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba3",
+  "gemini-2.5-flash": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba4",
 };
 
 // Fallback URL if a model doesn't have a specific URL defined
