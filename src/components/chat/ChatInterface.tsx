@@ -9,9 +9,11 @@ import ModelSelector from "./ModelSelector";
 import { History, Send } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import ContextPrompt from './ContextPrompt';
 
 const ChatInterface = () => {
   const [inputValue, setInputValue] = useState("");
+  const [showContextPrompt, setShowContextPrompt] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { 
@@ -42,11 +44,52 @@ const ChatInterface = () => {
     setInputValue("");
   };
 
+  const handleContextSave = async (contextPrompt: string) => {
+    // Get the appropriate n8n URL
+    const modelId = currentSession?.modelId || 'gpt-4o-mini';
+    const n8nUrl = `https://n8n.srv798777.hstgr.cloud/webhook-test/91d2a13d-40e7-4264-b06c-480e08e5b2ba`; // Default URL
+    
+    try {
+      // Send the context to n8n
+      await fetch(n8nUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contextPrompt,
+          modelId,
+          sessionId: currentSession?.id
+        }),
+      });
+      
+      toast({
+        title: "Context Updated",
+        description: "Your conversation context has been updated",
+      });
+    } catch (error) {
+      console.error("Error sending context to n8n:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update context. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="flex flex-col h-full border-l border-gray-200 w-full">
       <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 bg-white z-10">
         <h2 className="font-medium text-fpt-orange">Chat</h2>
         <div className="flex items-center space-x-4">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setShowContextPrompt(!showContextPrompt)}
+            className="text-xs"
+          >
+            {showContextPrompt ? "Hide Context" : "Set Context"}
+          </Button>
           <ModelSelector />
           <SidebarTrigger className="flex items-center ml-2">
             <History className="h-4 w-4 mr-1" />
@@ -56,6 +99,12 @@ const ChatInterface = () => {
       </div>
       
       <div className="flex-1 flex flex-col overflow-hidden">
+        {showContextPrompt && (
+          <div className="p-4 border-b border-gray-200 bg-gray-50">
+            <ContextPrompt onSave={handleContextSave} />
+          </div>
+        )}
+        
         <ScrollArea className="flex-1">
           <ChatMessageList />
         </ScrollArea>
