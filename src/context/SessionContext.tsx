@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { ChatSession, Message, Model } from "@/types";
 import { v4 as uuidv4 } from "uuid";
@@ -128,7 +127,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       try {
         console.log(`Sending request to n8n URL: ${n8nUrl} for model: ${modelId}`);
         
-        // Sửa đổi: Gửi trực tiếp đến n8nUrl mà không thêm đường dẫn phụ
+        // Make sure we're using the correct URL format - don't add any additional path
         const response = await fetch(n8nUrl, {
           method: 'POST',
           headers: {
@@ -141,14 +140,26 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         });
         
         if (!response.ok) {
+          console.error(`n8n returned status: ${response.status}`);
           throw new Error(`n8n returned an error: ${response.status}`);
+        }
+        
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          console.error('Invalid content type received:', contentType);
+          throw new Error('Invalid response format from n8n endpoint');
         }
         
         const data = await response.json();
         console.log("Response from n8n:", data);
         
-        // Giả sử rằng phản hồi từ n8n có dạng { text: "response text" }
-        assistantResponse = data.text || data.response || data.content || "Sorry, I couldn't process your request";
+        // Allow for different response formats
+        assistantResponse = data.text || data.response || data.content || data.message;
+        
+        if (!assistantResponse) {
+          console.error('Missing response content:', data);
+          throw new Error('Response from n8n does not contain expected content');
+        }
       } catch (error) {
         console.error("Error calling n8n:", error);
         toast({
