@@ -14,6 +14,7 @@ import ContextPrompt from './ContextPrompt';
 const ChatInterface = () => {
   const [inputValue, setInputValue] = useState("");
   const [showContextPrompt, setShowContextPrompt] = useState(false);
+  const [contextPrompt, setContextPrompt] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { 
@@ -40,38 +41,32 @@ const ChatInterface = () => {
       return;
     }
     
-    await sendMessage(inputValue);
-    setInputValue("");
-  };
-
-  const handleContextSave = async (contextPrompt: string) => {
-    // Get the appropriate n8n URL
     const modelId = currentSession?.modelId || 'gpt-4o-mini';
     const n8nUrl = `https://n8n.srv798777.hstgr.cloud/webhook-test/91d2a13d-40e7-4264-b06c-480e08e5b2ba`; // Default URL
     
     try {
-      // Send the context to n8n
+      // Send both message and context to n8n
       await fetch(n8nUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          contextPrompt,
+          message: inputValue,
+          contextPrompt: contextPrompt.trim(),
           modelId,
           sessionId: currentSession?.id
         }),
       });
       
-      toast({
-        title: "Context Updated",
-        description: "Your conversation context has been updated",
-      });
+      // Send message to chat interface
+      await sendMessage(inputValue);
+      setInputValue("");
     } catch (error) {
-      console.error("Error sending context to n8n:", error);
+      console.error("Error sending message to n8n:", error);
       toast({
         title: "Error",
-        description: "Failed to update context. Please try again.",
+        description: "Failed to send message. Please try again.",
         variant: "destructive",
       });
     }
@@ -101,7 +96,10 @@ const ChatInterface = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         {showContextPrompt && (
           <div className="p-4 border-b border-gray-200 bg-gray-50">
-            <ContextPrompt onSave={handleContextSave} />
+            <ContextPrompt 
+              value={contextPrompt}
+              onChange={setContextPrompt}
+            />
           </div>
         )}
         
