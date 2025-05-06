@@ -1,9 +1,18 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { ChatSession, Message, Model } from "@/types";
 import { v4 as uuidv4 } from "uuid";
 
-// Add the n8n URL here
-const N8N_URL = "https://your-n8n-instance-url.com"; // Replace with your actual n8n URL
+// Map of model IDs to their corresponding n8n URLs
+const MODEL_N8N_URLS: Record<string, string> = {
+  "gpt-4o-mini": "https://n8n-gpt4o-mini-url.com", // Replace with actual URL for GPT-4o Mini
+  "gpt-4": "https://n8n-gpt4-url.com", // Replace with actual URL for GPT-4
+  "claude-3": "https://n8n-claude3-url.com", // Replace with actual URL for Claude 3
+  "llama-3": "https://n8n-llama3-url.com", // Replace with actual URL for Llama 3
+};
+
+// Fallback URL if a model doesn't have a specific URL defined
+const DEFAULT_N8N_URL = "https://default-n8n-url.com"; // Replace with your default n8n URL
 
 interface SessionContextProps {
   currentSession: ChatSession | null;
@@ -106,17 +115,23 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         )
       );
       
-      // Send request to n8n
+      // Get the current model ID for this session
+      const modelId = currentSession?.modelId || selectedModel.id;
+      
+      // Determine which n8n URL to use based on the model
+      const n8nUrl = MODEL_N8N_URLS[modelId] || DEFAULT_N8N_URL;
+      
+      // Send request to the appropriate n8n URL for this model
       let assistantResponse;
       try {
-        const response = await fetch(`${N8N_URL}/webhook/chat-request`, {
+        const response = await fetch(`${n8nUrl}/webhook/chat-request`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             message: content,
-            modelId: currentSession?.modelId || selectedModel.id
+            modelId: modelId
           }),
         });
         
@@ -128,7 +143,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         assistantResponse = data.response || "Sorry, I couldn't process your request";
       } catch (error) {
         console.error("Error calling n8n:", error);
-        assistantResponse = "There was an error connecting to n8n. Please check the console for details.";
+        assistantResponse = `There was an error connecting to the n8n endpoint for ${modelId}. Please check the console for details.`;
       }
       
       // Add assistant message
