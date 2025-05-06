@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +8,7 @@ import ChatMessageList from "./ChatMessageList";
 import ModelSelector from "./ModelSelector";
 import ComparisonModelSelectors from "./ComparisonModelSelectors";
 import ComparisonView from "./ComparisonView";
-import { History, Send, Compare } from "lucide-react";
+import { History, Send, CompareArrows } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ContextPrompt from './ContextPrompt';
@@ -117,7 +116,7 @@ const ChatInterface = () => {
             onClick={toggleCompareMode}
             className={`text-xs ${isCompareMode ? "bg-blue-100 text-blue-800" : ""}`}
           >
-            <Compare className="h-4 w-4 mr-1" />
+            <CompareArrows className="h-4 w-4 mr-1" />
             {isCompareMode ? "Exit Compare" : "Compare"}
           </Button>
           
