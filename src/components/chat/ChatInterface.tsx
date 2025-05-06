@@ -44,7 +44,9 @@ const ChatInterface = () => {
     <div className="flex flex-col h-full border-l border-gray-200 w-full">
       <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
         <h2 className="font-medium text-fpt-orange">Chat</h2>
-        <ModelSelector />
+        <div className="flex items-center space-x-4 pr-10"> {/* Added padding to avoid overlap with sidebar trigger */}
+          <ModelSelector />
+        </div>
       </div>
       
       <div className="flex-1 flex flex-col">

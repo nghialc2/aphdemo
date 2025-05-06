@@ -24,7 +24,7 @@ const Layout = () => {
     <div className="flex flex-col h-screen">
       <Header />
       
-      <SidebarProvider defaultOpen={true}>
+      <SidebarProvider defaultOpen={false}>
         <div className="flex-1 flex overflow-hidden w-full">
           {isInstructionsCollapsed ? (
             <div className="w-12 border-r border-gray-200 flex items-start justify-center pt-4">
