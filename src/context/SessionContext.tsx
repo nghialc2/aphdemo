@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { ChatSession, Message, Model } from "@/types";
 import { v4 as uuidv4 } from "uuid";
@@ -6,14 +5,15 @@ import { useToast } from "@/hooks/use-toast";
 
 // Map of model IDs to their corresponding n8n URLs
 const MODEL_N8N_URLS: Record<string, string> = {
-  "gpt-4o-mini": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba", // URL for GPT-4o Mini
-  "gpt-4": "https://n8n-gpt4-url.com", // Replace with actual URL for GPT-4
-  "claude-3": "https://n8n-claude3-url.com", // Replace with actual URL for Claude 3
-  "llama-3": "https://n8n-llama3-url.com", // Replace with actual URL for Llama 3
+  "gpt-4o-mini": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba",
+  "gpt-4.1-mini": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba",
+  "gpt-o3-mini": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba",
+  "gemini-2.0-flash": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba",
+  "gemini-2.5-flash": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba",
 };
 
 // Fallback URL if a model doesn't have a specific URL defined
-const DEFAULT_N8N_URL = "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba"; // Default n8n URL
+const DEFAULT_N8N_URL = "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba";
 
 interface SessionContextProps {
   currentSession: ChatSession | null;
@@ -30,10 +30,11 @@ interface SessionContextProps {
 }
 
 const defaultModels: Model[] = [
-  { id: "gpt-4o-mini", name: "GPT-4o Mini", tags: ["Default"] },
-  { id: "gpt-4", name: "GPT-4", tags: ["Advanced"] },
-  { id: "claude-3", name: "Claude 3", tags: ["Advanced"] },
-  { id: "llama-3", name: "Llama 3", tags: ["Open Source"] },
+  { id: "gpt-4o-mini", name: "GPT 4o mini", tags: ["Default"] },
+  { id: "gpt-4.1-mini", name: "GPT 4.1 mini", tags: ["New"] },
+  { id: "gpt-o3-mini", name: "GPT o3 mini", tags: ["New"] },
+  { id: "gemini-2.0-flash", name: "Gemini 2.0 flash", tags: ["Google"] },
+  { id: "gemini-2.5-flash", name: "Gemini 2.5 flash", tags: ["Google"] },
 ];
 
 const SessionContext = createContext<SessionContextProps | undefined>(undefined);
