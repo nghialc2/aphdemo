@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { ChatSession, Message, Model } from "@/types";
 import { v4 as uuidv4 } from "uuid";
@@ -23,10 +24,15 @@ interface SessionContextProps {
   createNewSession: () => void;
   selectSession: (sessionId: string) => void;
   sendMessage: (content: string, contextPrompt?: string) => Promise<void>;
+  sendComparisonMessage: (content: string, leftModelId: string, rightModelId: string, contextPrompt?: string) => Promise<void>;
   selectModel: (modelId: string) => void;
   isProcessing: boolean;
   updateContextPrompt: (sessionId: string, contextPrompt: string) => void;
   getContextPrompt: (sessionId: string) => string;
+  getComparisonMessages: (sessionId: string) => {
+    leftMessages: Message[];
+    rightMessages: Message[];
+  };
 }
 
 const defaultModels: Model[] = [
@@ -46,6 +52,12 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   const [selectedModel, setSelectedModel] = useState<Model>(defaultModels[0]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [contextPrompts, setContextPrompts] = useState<Record<string, string>>({});
+  // Store comparison session messages separately
+  const [comparisonMessages, setComparisonMessages] = useState<Record<string, {
+    leftMessages: Message[];
+    rightMessages: Message[];
+  }>>({});
+  
   const { toast } = useToast();
 
   const currentSession = currentSessionId 
@@ -76,10 +88,30 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       ...prev,
       [newSession.id]: ""
     }));
+    
+    // Initialize empty comparison messages
+    setComparisonMessages(prev => ({
+      ...prev,
+      [newSession.id]: {
+        leftMessages: [],
+        rightMessages: []
+      }
+    }));
   };
   
   const selectSession = (sessionId: string) => {
     setCurrentSessionId(sessionId);
+    
+    // Initialize comparison messages for this session if they don't exist
+    if (!comparisonMessages[sessionId]) {
+      setComparisonMessages(prev => ({
+        ...prev,
+        [sessionId]: {
+          leftMessages: [],
+          rightMessages: []
+        }
+      }));
+    }
   };
   
   const selectModel = (modelId: string) => {
@@ -111,6 +143,88 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     return contextPrompts[sessionId] || "";
   };
   
+  const getComparisonMessages = (sessionId: string) => {
+    return comparisonMessages[sessionId] || { leftMessages: [], rightMessages: [] };
+  };
+
+  // Function to call n8n with a model ID and get a response
+  const callModelAPI = async (
+    content: string, 
+    modelId: string, 
+    contextPrompt: string, 
+    sessionId: string
+  ): Promise<string> => {
+    try {
+      // Determine which n8n URL to use based on the model
+      const n8nUrl = MODEL_N8N_URLS[modelId] || DEFAULT_N8N_URL;
+      
+      console.log(`Sending request to n8n URL: ${n8nUrl} for model: ${modelId}`);
+      console.log(`Context prompt: ${contextPrompt}`);
+      
+      const response = await fetch(n8nUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: content,
+          contextPrompt: contextPrompt.trim(),
+          modelId: modelId,
+          sessionId: sessionId
+        }),
+      });
+      
+      if (!response.ok) {
+        console.error(`n8n returned status: ${response.status}`);
+        throw new Error(`n8n returned an error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("Response from n8n:", data);
+      
+      // Improved response handling - check all possible response formats and structures
+      let assistantResponse;
+      
+      if (typeof data === 'string') {
+        // If the response is directly a string
+        assistantResponse = data;
+      } else if (typeof data === 'object' && data !== null) {
+        // Try to extract content from various possible fields in the object
+        assistantResponse = 
+          data.text || 
+          data.response || 
+          data.content || 
+          data.message ||
+          data.reply ||
+          data.answer ||
+          data.result ||
+          data.output ||
+          // Extract from deeply nested structures if needed
+          (data.data && (
+            data.data.text || 
+            data.data.content || 
+            data.data.message ||
+            data.data.response
+          )) ||
+          // Convert the entire object to string as a last resort
+          JSON.stringify(data);
+      } else {
+        throw new Error('Unexpected response format from n8n endpoint');
+      }
+      
+      // Validate that we have a usable response
+      if (!assistantResponse || assistantResponse === '{}' || assistantResponse === 'null') {
+        throw new Error('Empty or invalid response from n8n');
+      }
+      
+      return assistantResponse;
+      
+    } catch (error) {
+      console.error("Error calling n8n:", error);
+      return `There was an error processing your request: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    }
+  };
+  
   const sendMessage = async (content: string, contextPrompt: string = "") => {
     if (!currentSessionId) return;
     
@@ -139,84 +253,15 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       );
 
       // Save the context prompt for this session
-      if (currentSessionId) {
-        updateContextPrompt(currentSessionId, contextPrompt);
+      if (currentSession) {
+        updateContextPrompt(currentSession.id, contextPrompt);
       }
       
       // Get the current model ID for this session
       const modelId = currentSession?.modelId || selectedModel.id;
       
-      // Determine which n8n URL to use based on the model
-      const n8nUrl = MODEL_N8N_URLS[modelId] || DEFAULT_N8N_URL;
-      
-      // Send request to the appropriate n8n URL for this model with context prompt
-      let assistantResponse;
-      try {
-        console.log(`Sending request to n8n URL: ${n8nUrl} for model: ${modelId}`);
-        console.log(`Context prompt: ${contextPrompt}`);
-        
-        const response = await fetch(n8nUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            message: content,
-            contextPrompt: contextPrompt.trim(),
-            modelId: modelId,
-            sessionId: currentSessionId
-          }),
-        });
-        
-        if (!response.ok) {
-          console.error(`n8n returned status: ${response.status}`);
-          throw new Error(`n8n returned an error: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log("Response from n8n:", data);
-        
-        // Improved response handling - check all possible response formats and structures
-        if (typeof data === 'string') {
-          // If the response is directly a string
-          assistantResponse = data;
-        } else if (typeof data === 'object' && data !== null) {
-          // Try to extract content from various possible fields in the object
-          assistantResponse = 
-            data.text || 
-            data.response || 
-            data.content || 
-            data.message ||
-            data.reply ||
-            data.answer ||
-            data.result ||
-            data.output ||
-            // Extract from deeply nested structures if needed
-            (data.data && (
-              data.data.text || 
-              data.data.content || 
-              data.data.message ||
-              data.data.response
-            )) ||
-            // Convert the entire object to string as a last resort
-            JSON.stringify(data);
-        } else {
-          throw new Error('Unexpected response format from n8n endpoint');
-        }
-        
-        // Validate that we have a usable response
-        if (!assistantResponse || assistantResponse === '{}' || assistantResponse === 'null') {
-          throw new Error('Empty or invalid response from n8n');
-        }
-      } catch (error) {
-        console.error("Error calling n8n:", error);
-        toast({
-          title: "Connection Error",
-          description: `There was an error connecting to the n8n endpoint for ${modelId}. Please try again later.`,
-          variant: "destructive",
-        });
-        assistantResponse = `There was an error processing your request: ${error instanceof Error ? error.message : 'Unknown error'}`;
-      }
+      // Call API for the selected model
+      const assistantResponse = await callModelAPI(content, modelId, contextPrompt, currentSessionId);
       
       // Add assistant message
       const assistantMessage: Message = {
@@ -239,6 +284,90 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   
+  const sendComparisonMessage = async (
+    content: string, 
+    leftModelId: string, 
+    rightModelId: string, 
+    contextPrompt: string = ""
+  ) => {
+    if (!currentSessionId) return;
+    
+    setIsProcessing(true);
+    
+    try {
+      // Create user message
+      const userMessage: Message = {
+        id: uuidv4(),
+        role: 'user',
+        content,
+        timestamp: Date.now()
+      };
+      
+      // Add user message to both sides of the comparison
+      setComparisonMessages(prev => {
+        const current = prev[currentSessionId] || { leftMessages: [], rightMessages: [] };
+        return {
+          ...prev,
+          [currentSessionId]: {
+            leftMessages: [...current.leftMessages, userMessage],
+            rightMessages: [...current.rightMessages, userMessage]
+          }
+        };
+      });
+      
+      // Save the context prompt for this session
+      updateContextPrompt(currentSessionId, contextPrompt);
+      
+      // Set the session title if it's the first message
+      const currentSessionObj = sessions.find(s => s.id === currentSessionId);
+      if (currentSessionObj && currentSessionObj.messages.length === 0) {
+        setSessions(prev => 
+          prev.map(session => 
+            session.id === currentSessionId
+              ? { ...session, title: content.slice(0, 20) + (content.length > 20 ? '...' : '') }
+              : session
+          )
+        );
+      }
+
+      // Call APIs for both models in parallel
+      const [leftResponse, rightResponse] = await Promise.all([
+        callModelAPI(content, leftModelId, contextPrompt, currentSessionId),
+        callModelAPI(content, rightModelId, contextPrompt, currentSessionId)
+      ]);
+      
+      // Create assistant messages
+      const leftAssistantMessage: Message = {
+        id: uuidv4(),
+        role: 'assistant',
+        content: leftResponse,
+        timestamp: Date.now()
+      };
+      
+      const rightAssistantMessage: Message = {
+        id: uuidv4(),
+        role: 'assistant',
+        content: rightResponse,
+        timestamp: Date.now()
+      };
+      
+      // Add assistant messages to comparison
+      setComparisonMessages(prev => {
+        const current = prev[currentSessionId] || { leftMessages: [], rightMessages: [] };
+        return {
+          ...prev,
+          [currentSessionId]: {
+            leftMessages: [...current.leftMessages, leftAssistantMessage],
+            rightMessages: [...current.rightMessages, rightAssistantMessage]
+          }
+        };
+      });
+      
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+  
   return (
     <SessionContext.Provider 
       value={{
@@ -249,10 +378,12 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         createNewSession,
         selectSession,
         sendMessage,
+        sendComparisonMessage,
         selectModel,
         isProcessing,
         updateContextPrompt,
-        getContextPrompt
+        getContextPrompt,
+        getComparisonMessages
       }}
     >
       {children}

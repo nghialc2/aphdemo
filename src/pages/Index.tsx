@@ -1,11 +1,14 @@
 
 import Layout from "@/components/Layout";
 import { SessionProvider } from "@/context/SessionContext";
+import { CompareProvider } from "@/context/CompareContext";
 
 const Index = () => {
   return (
     <SessionProvider>
-      <Layout />
+      <CompareProvider>
+        <Layout />
+      </CompareProvider>
     </SessionProvider>
   );
 };

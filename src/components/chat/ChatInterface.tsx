@@ -4,9 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useSession } from "@/context/SessionContext";
+import { useCompare } from "@/context/CompareContext";
 import ChatMessageList from "./ChatMessageList";
 import ModelSelector from "./ModelSelector";
-import { History, Send } from "lucide-react";
+import ComparisonModelSelectors from "./ComparisonModelSelectors";
+import ComparisonView from "./ComparisonView";
+import { History, Send, Compare } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ContextPrompt from './ContextPrompt';
@@ -19,10 +22,18 @@ const ChatInterface = () => {
   const { 
     currentSession, 
     sendMessage, 
+    sendComparisonMessage,
     isProcessing,
     updateContextPrompt,
-    getContextPrompt
+    getContextPrompt,
+    getComparisonMessages
   } = useSession();
+  const {
+    isCompareMode,
+    toggleCompareMode,
+    leftModelId,
+    rightModelId
+  } = useCompare();
   
   // Get the context prompt for the current session
   const [contextPrompt, setContextPrompt] = useState("");
@@ -63,8 +74,13 @@ const ChatInterface = () => {
     }
     
     try {
-      // Send message with context to SessionContext
-      await sendMessage(inputValue, contextPrompt);
+      if (isCompareMode) {
+        // Send comparison message
+        await sendComparisonMessage(inputValue, leftModelId, rightModelId, contextPrompt);
+      } else {
+        // Send regular message
+        await sendMessage(inputValue, contextPrompt);
+      }
       setInputValue("");
     } catch (error) {
       console.error("Error sending message:", error);
@@ -75,6 +91,11 @@ const ChatInterface = () => {
       });
     }
   };
+
+  // Get comparison messages if in compare mode
+  const comparisonMessages = currentSession 
+    ? getComparisonMessages(currentSession.id) 
+    : { leftMessages: [], rightMessages: [] };
 
   return (
     <div className="flex flex-col h-full border-l border-gray-200 w-full">
@@ -89,7 +110,19 @@ const ChatInterface = () => {
           >
             {showContextPrompt ? "Hide Context" : "Set Context"}
           </Button>
-          <ModelSelector />
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleCompareMode}
+            className={`text-xs ${isCompareMode ? "bg-blue-100 text-blue-800" : ""}`}
+          >
+            <Compare className="h-4 w-4 mr-1" />
+            {isCompareMode ? "Exit Compare" : "Compare"}
+          </Button>
+          
+          {isCompareMode ? <ComparisonModelSelectors /> : <ModelSelector />}
+          
           <SidebarTrigger className="flex items-center ml-2">
             <History className="h-4 w-4 mr-1" />
             <span className="text-sm">History</span>
@@ -108,7 +141,14 @@ const ChatInterface = () => {
         )}
         
         <ScrollArea className="flex-1">
-          <ChatMessageList />
+          {isCompareMode ? (
+            <ComparisonView 
+              leftMessages={comparisonMessages.leftMessages}
+              rightMessages={comparisonMessages.rightMessages}
+            />
+          ) : (
+            <ChatMessageList />
+          )}
         </ScrollArea>
         
         <div className="border-t border-gray-200 p-4 bg-white">
