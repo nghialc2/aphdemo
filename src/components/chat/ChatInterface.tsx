@@ -41,29 +41,12 @@ const ChatInterface = () => {
       return;
     }
     
-    const modelId = currentSession?.modelId || 'gpt-4o-mini';
-    const n8nUrl = `https://n8n.srv798777.hstgr.cloud/webhook-test/91d2a13d-40e7-4264-b06c-480e08e5b2ba`; // Default URL
-    
     try {
-      // Send both message and context to n8n
-      await fetch(n8nUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: inputValue,
-          contextPrompt: contextPrompt.trim(),
-          modelId,
-          sessionId: currentSession?.id
-        }),
-      });
-      
-      // Send message to chat interface
-      await sendMessage(inputValue);
+      // Send message with context to SessionContext
+      await sendMessage(inputValue, contextPrompt);
       setInputValue("");
     } catch (error) {
-      console.error("Error sending message to n8n:", error);
+      console.error("Error sending message:", error);
       toast({
         title: "Error",
         description: "Failed to send message. Please try again.",

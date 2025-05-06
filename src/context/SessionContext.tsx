@@ -22,7 +22,7 @@ interface SessionContextProps {
   selectedModel: Model;
   createNewSession: () => void;
   selectSession: (sessionId: string) => void;
-  sendMessage: (content: string) => Promise<void>;
+  sendMessage: (content: string, contextPrompt?: string) => Promise<void>;
   selectModel: (modelId: string) => void;
   isProcessing: boolean;
 }
@@ -90,7 +90,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   
-  const sendMessage = async (content: string) => {
+  const sendMessage = async (content: string, contextPrompt: string = "") => {
     if (!currentSessionId) return;
     
     setIsProcessing(true);
@@ -123,12 +123,12 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       // Determine which n8n URL to use based on the model
       const n8nUrl = MODEL_N8N_URLS[modelId] || DEFAULT_N8N_URL;
       
-      // Send request to the appropriate n8n URL for this model
+      // Send request to the appropriate n8n URL for this model with context prompt
       let assistantResponse;
       try {
         console.log(`Sending request to n8n URL: ${n8nUrl} for model: ${modelId}`);
+        console.log(`Context prompt: ${contextPrompt}`);
         
-        // Make sure we're using the correct URL format - don't add any additional path
         const response = await fetch(n8nUrl, {
           method: 'POST',
           headers: {
@@ -136,8 +136,9 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
           },
           body: JSON.stringify({
             message: content,
+            contextPrompt: contextPrompt.trim(),
             modelId: modelId,
-            sessionId: currentSessionId // Include sessionId in the request
+            sessionId: currentSessionId
           }),
         });
         
