@@ -19,17 +19,12 @@ import {
 
 const Layout = () => {
   const [isInstructionsCollapsed, setIsInstructionsCollapsed] = useState(false);
-  const [isHistorySidebarOpen, setIsHistorySidebarOpen] = useState(false);
-  
-  const toggleHistorySidebar = () => {
-    setIsHistorySidebarOpen(!isHistorySidebarOpen);
-  };
   
   return (
     <div className="flex flex-col h-screen">
       <Header />
       
-      <SidebarProvider defaultOpen={false}>
+      <SidebarProvider defaultOpen={true}>
         <div className="flex-1 flex overflow-hidden w-full">
           {isInstructionsCollapsed ? (
             <div className="w-12 border-r border-gray-200 flex items-start justify-center pt-4">
@@ -55,7 +50,7 @@ const Layout = () => {
           <div className={`${isInstructionsCollapsed ? 'flex-1' : 'w-1/2 md:w-3/5 xl:w-2/3'} h-full overflow-hidden relative flex`}>
             <ChatInterface />
             
-            <Sidebar side="right" variant="floating" collapsible="offcanvas">
+            <Sidebar side="right">
               <SidebarTrigger className="absolute right-4 top-4 z-20" />
               <SidebarHeader>
                 <div className="flex items-center gap-2 px-2">
