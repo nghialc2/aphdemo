@@ -4,7 +4,7 @@ import Header from './Header';
 import InstructionsPanel from './InstructionsPanel';
 import ChatInterface from './chat/ChatInterface';
 import { Button } from './ui/button';
-import { ChevronRight, History } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import ChatHistory from './chat/ChatHistory';
 import { 
   Sidebar,
@@ -51,10 +51,8 @@ const Layout = () => {
             <ChatInterface />
             
             <Sidebar side="right">
-              <SidebarTrigger className="absolute right-4 top-4 z-20" />
               <SidebarHeader>
                 <div className="flex items-center gap-2 px-2">
-                  <History className="h-5 w-5" />
                   <h3 className="font-medium">Chat History</h3>
                 </div>
               </SidebarHeader>
@@ -68,7 +66,7 @@ const Layout = () => {
               </SidebarContent>
               <SidebarFooter>
                 <div className="text-xs text-center text-gray-500 p-2">
-                  FPT Prompt Arena - Chat History
+                  APH Demo Lab - Chat History
                 </div>
               </SidebarFooter>
             </Sidebar>

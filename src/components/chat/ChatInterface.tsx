@@ -6,7 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useSession } from "@/context/SessionContext";
 import ChatMessageList from "./ChatMessageList";
 import ModelSelector from "./ModelSelector";
-import { Send } from "lucide-react";
+import { History, Send } from "lucide-react";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 const ChatInterface = () => {
   const [inputValue, setInputValue] = useState("");
@@ -44,8 +45,12 @@ const ChatInterface = () => {
     <div className="flex flex-col h-full border-l border-gray-200 w-full">
       <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
         <h2 className="font-medium text-fpt-orange">Chat</h2>
-        <div className="flex items-center space-x-4 pr-10"> {/* Added padding to avoid overlap with sidebar trigger */}
+        <div className="flex items-center space-x-4">
           <ModelSelector />
+          <SidebarTrigger className="flex items-center ml-2">
+            <History className="h-4 w-4 mr-1" />
+            <span className="text-sm">History</span>
+          </SidebarTrigger>
         </div>
       </div>
       
