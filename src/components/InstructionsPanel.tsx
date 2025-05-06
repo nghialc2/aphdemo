@@ -49,7 +49,7 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
         >
           <div className="space-y-4">
             <h3 className="text-xl font-bold text-fpt-orange">
-              Welcome to the Prompt Engineering Lab
+              Xin chào mừng các bạn đã đến với Lab thực hành của chương trình AI-Powered HRM
             </h3>
             
             <div className="space-y-3">
