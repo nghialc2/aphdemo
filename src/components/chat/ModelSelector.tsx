@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { InfoCircle } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 
 const ModelSelector = () => {
   const { availableModels, selectedModel, selectModel } = useSession();
@@ -39,7 +39,7 @@ const ModelSelector = () => {
       <Tooltip>
         <TooltipTrigger asChild>
           <button className="ml-2 text-gray-500 hover:text-gray-700">
-            <InfoCircle className="h-4 w-4" />
+            <HelpCircle className="h-4 w-4" />
           </button>
         </TooltipTrigger>
         <TooltipContent side="right" align="center" className="max-w-xs">
