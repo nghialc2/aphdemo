@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 
 // Map of model IDs to their corresponding n8n URLs
 const MODEL_N8N_URLS: Record<string, string> = {
-  "gpt-4o-mini": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba", // URL for GPT-4o Mini
+  "gpt-4o-mini": "https://n8n.srv798777.hstgr.cloud/webhook-test/91d2a13d-40e7-4264-b06c-480e08e5b2ba", // URL for GPT-4o Mini
   "gpt-4": "https://n8n-gpt4-url.com", // Replace with actual URL for GPT-4
   "claude-3": "https://n8n-claude3-url.com", // Replace with actual URL for Claude 3
   "llama-3": "https://n8n-llama3-url.com", // Replace with actual URL for Llama 3
