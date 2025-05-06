@@ -51,7 +51,8 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   const [selectedModel, setSelectedModel] = useState<Model>(defaultModels[0]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [contextPrompts, setContextPrompts] = useState<Record<string, string>>({});
-  // Store comparison session messages separately and persist them across sessions
+  
+  // Store comparison session messages separately by sessionId
   const [comparisonMessages, setComparisonMessages] = useState<Record<string, {
     leftMessages: Message[];
     rightMessages: Message[];
@@ -62,6 +63,34 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   const currentSession = currentSessionId 
     ? sessions.find(session => session.id === currentSessionId) || null
     : null;
+
+  // Storage key for persisting comparison messages
+  const COMPARISON_STORAGE_KEY = "aph_demo_comparison_messages";
+
+  // Load saved comparison messages from localStorage on initial load
+  useEffect(() => {
+    try {
+      const savedComparisonMessages = localStorage.getItem(COMPARISON_STORAGE_KEY);
+      if (savedComparisonMessages) {
+        setComparisonMessages(JSON.parse(savedComparisonMessages));
+        console.log("Loaded saved comparison messages:", JSON.parse(savedComparisonMessages));
+      }
+    } catch (error) {
+      console.error("Error loading comparison messages from localStorage:", error);
+    }
+  }, []);
+
+  // Save comparison messages to localStorage whenever they change
+  useEffect(() => {
+    if (Object.keys(comparisonMessages).length > 0) {
+      try {
+        localStorage.setItem(COMPARISON_STORAGE_KEY, JSON.stringify(comparisonMessages));
+        console.log("Saved comparison messages to localStorage:", comparisonMessages);
+      } catch (error) {
+        console.error("Error saving comparison messages to localStorage:", error);
+      }
+    }
+  }, [comparisonMessages]);
 
   useEffect(() => {
     // On component mount, create a new session if none exists
@@ -88,35 +117,12 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       [newSession.id]: ""
     }));
     
-    // Initialize empty comparison messages for this session
-    // but don't overwrite existing comparison messages
-    setComparisonMessages(prev => {
-      if (!prev[newSession.id]) {
-        return {
-          ...prev,
-          [newSession.id]: {
-            leftMessages: [],
-            rightMessages: []
-          }
-        };
-      }
-      return prev;
-    });
+    // Note: We're not initializing empty comparison messages here anymore
+    // since they're now persisted across sessions in localStorage
   };
   
   const selectSession = (sessionId: string) => {
     setCurrentSessionId(sessionId);
-    
-    // Initialize comparison messages for this session if they don't exist
-    if (!comparisonMessages[sessionId]) {
-      setComparisonMessages(prev => ({
-        ...prev,
-        [sessionId]: {
-          leftMessages: [],
-          rightMessages: []
-        }
-      }));
-    }
   };
   
   const selectModel = (modelId: string) => {
