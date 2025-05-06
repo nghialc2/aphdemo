@@ -2,17 +2,18 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { ChatSession, Message, Model } from "@/types";
 import { v4 as uuidv4 } from "uuid";
+import { useToast } from "@/hooks/use-toast";
 
 // Map of model IDs to their corresponding n8n URLs
 const MODEL_N8N_URLS: Record<string, string> = {
-  "gpt-4o-mini": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba", // Replace with actual URL for GPT-4o Mini
+  "gpt-4o-mini": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba", // URL for GPT-4o Mini
   "gpt-4": "https://n8n-gpt4-url.com", // Replace with actual URL for GPT-4
   "claude-3": "https://n8n-claude3-url.com", // Replace with actual URL for Claude 3
   "llama-3": "https://n8n-llama3-url.com", // Replace with actual URL for Llama 3
 };
 
 // Fallback URL if a model doesn't have a specific URL defined
-const DEFAULT_N8N_URL = "https://default-n8n-url.com"; // Replace with your default n8n URL
+const DEFAULT_N8N_URL = "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba"; // Default n8n URL
 
 interface SessionContextProps {
   currentSession: ChatSession | null;
@@ -41,6 +42,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   const [availableModels] = useState<Model[]>(defaultModels);
   const [selectedModel, setSelectedModel] = useState<Model>(defaultModels[0]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const { toast } = useToast();
 
   const currentSession = currentSessionId 
     ? sessions.find(session => session.id === currentSessionId) || null
@@ -124,7 +126,10 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       // Send request to the appropriate n8n URL for this model
       let assistantResponse;
       try {
-        const response = await fetch(`${n8nUrl}/webhook/chat-request`, {
+        console.log(`Sending request to n8n URL: ${n8nUrl} for model: ${modelId}`);
+        
+        // Sửa đổi: Gửi trực tiếp đến n8nUrl mà không thêm đường dẫn phụ
+        const response = await fetch(n8nUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -140,9 +145,17 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         }
         
         const data = await response.json();
-        assistantResponse = data.response || "Sorry, I couldn't process your request";
+        console.log("Response from n8n:", data);
+        
+        // Giả sử rằng phản hồi từ n8n có dạng { text: "response text" }
+        assistantResponse = data.text || data.response || data.content || "Sorry, I couldn't process your request";
       } catch (error) {
         console.error("Error calling n8n:", error);
+        toast({
+          title: "Connection Error",
+          description: `There was an error connecting to the n8n endpoint for ${modelId}. Please check the console for details.`,
+          variant: "destructive",
+        });
         assistantResponse = `There was an error connecting to the n8n endpoint for ${modelId}. Please check the console for details.`;
       }
       
