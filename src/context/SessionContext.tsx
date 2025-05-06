@@ -144,30 +144,49 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
           throw new Error(`n8n returned an error: ${response.status}`);
         }
         
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-          console.error('Invalid content type received:', contentType);
-          throw new Error('Invalid response format from n8n endpoint');
-        }
-        
         const data = await response.json();
         console.log("Response from n8n:", data);
         
-        // Allow for different response formats
-        assistantResponse = data.text || data.response || data.content || data.message;
+        // Improved response handling - check all possible response formats and structures
+        if (typeof data === 'string') {
+          // If the response is directly a string
+          assistantResponse = data;
+        } else if (typeof data === 'object' && data !== null) {
+          // Try to extract content from various possible fields in the object
+          assistantResponse = 
+            data.text || 
+            data.response || 
+            data.content || 
+            data.message ||
+            data.reply ||
+            data.answer ||
+            data.result ||
+            data.output ||
+            // Extract from deeply nested structures if needed
+            (data.data && (
+              data.data.text || 
+              data.data.content || 
+              data.data.message ||
+              data.data.response
+            )) ||
+            // Convert the entire object to string as a last resort
+            JSON.stringify(data);
+        } else {
+          throw new Error('Unexpected response format from n8n endpoint');
+        }
         
-        if (!assistantResponse) {
-          console.error('Missing response content:', data);
-          throw new Error('Response from n8n does not contain expected content');
+        // Validate that we have a usable response
+        if (!assistantResponse || assistantResponse === '{}' || assistantResponse === 'null') {
+          throw new Error('Empty or invalid response from n8n');
         }
       } catch (error) {
         console.error("Error calling n8n:", error);
         toast({
           title: "Connection Error",
-          description: `There was an error connecting to the n8n endpoint for ${modelId}. Please check the console for details.`,
+          description: `There was an error connecting to the n8n endpoint for ${modelId}. Please try again later.`,
           variant: "destructive",
         });
-        assistantResponse = `There was an error connecting to the n8n endpoint for ${modelId}. Please check the console for details.`;
+        assistantResponse = `There was an error processing your request: ${error instanceof Error ? error.message : 'Unknown error'}`;
       }
       
       // Add assistant message
