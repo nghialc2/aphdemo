@@ -51,7 +51,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
           </span>
         </div>
         <div className="overflow-y-auto">
-          {leftMessages.map((message) => (
+          {leftMessages && leftMessages.map((message) => (
             <div 
               key={message.id} 
               className={cn(
@@ -89,7 +89,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
           </span>
         </div>
         <div className="overflow-y-auto">
-          {rightMessages.map((message) => (
+          {rightMessages && rightMessages.map((message) => (
             <div 
               key={message.id} 
               className={cn(

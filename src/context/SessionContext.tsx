@@ -72,8 +72,9 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     try {
       const savedComparisonMessages = localStorage.getItem(COMPARISON_STORAGE_KEY);
       if (savedComparisonMessages) {
-        setComparisonMessages(JSON.parse(savedComparisonMessages));
-        console.log("Loaded saved comparison messages:", JSON.parse(savedComparisonMessages));
+        const parsedMessages = JSON.parse(savedComparisonMessages);
+        setComparisonMessages(parsedMessages);
+        console.log("Loaded saved comparison messages:", parsedMessages);
       }
     } catch (error) {
       console.error("Error loading comparison messages from localStorage:", error);
@@ -84,8 +85,10 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (Object.keys(comparisonMessages).length > 0) {
       try {
-        localStorage.setItem(COMPARISON_STORAGE_KEY, JSON.stringify(comparisonMessages));
-        console.log("Saved comparison messages to localStorage:", comparisonMessages);
+        // Clone the messages to avoid circular references
+        const messagesForStorage = JSON.parse(JSON.stringify(comparisonMessages));
+        localStorage.setItem(COMPARISON_STORAGE_KEY, JSON.stringify(messagesForStorage));
+        console.log("Saved comparison messages to localStorage:", messagesForStorage);
       } catch (error) {
         console.error("Error saving comparison messages to localStorage:", error);
       }
@@ -320,8 +323,8 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         return {
           ...prev,
           [currentSessionId]: {
-            leftMessages: [...current.leftMessages, userMessage],
-            rightMessages: [...current.rightMessages, userMessage]
+            leftMessages: [...current.leftMessages, {...userMessage}],
+            rightMessages: [...current.rightMessages, {...userMessage}]
           }
         };
       });
