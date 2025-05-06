@@ -26,7 +26,8 @@ const ChatInterface = () => {
     isProcessing,
     updateContextPrompt,
     getContextPrompt,
-    getComparisonMessages
+    getComparisonMessages,
+    createNewSession
   } = useSession();
   const {
     isCompareMode,
@@ -58,6 +59,20 @@ const ChatInterface = () => {
     setContextPrompt(value);
     if (currentSession) {
       updateContextPrompt(currentSession.id, value);
+    }
+  };
+
+  // Handle toggle of compare mode
+  const handleToggleCompareMode = () => {
+    const newCompareMode = !isCompareMode;
+    toggleCompareMode();
+    
+    // If exiting compare mode, create a new session
+    if (!newCompareMode) {
+      // Clear context prompt
+      setContextPrompt("");
+      // Create a new session (this will automatically be selected as current)
+      createNewSession();
     }
   };
   
@@ -114,7 +129,7 @@ const ChatInterface = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={toggleCompareMode}
+            onClick={handleToggleCompareMode}
             className={`text-xs ${isCompareMode ? "bg-blue-100 text-blue-800" : ""}`}
           >
             <GitCompareArrows className="h-4 w-4 mr-1" />

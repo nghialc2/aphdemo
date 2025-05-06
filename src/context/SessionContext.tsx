@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { ChatSession, Message, Model } from "@/types";
 import { v4 as uuidv4 } from "uuid";
@@ -52,7 +51,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   const [selectedModel, setSelectedModel] = useState<Model>(defaultModels[0]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [contextPrompts, setContextPrompts] = useState<Record<string, string>>({});
-  // Store comparison session messages separately
+  // Store comparison session messages separately and persist them across sessions
   const [comparisonMessages, setComparisonMessages] = useState<Record<string, {
     leftMessages: Message[];
     rightMessages: Message[];
@@ -89,14 +88,20 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       [newSession.id]: ""
     }));
     
-    // Initialize empty comparison messages
-    setComparisonMessages(prev => ({
-      ...prev,
-      [newSession.id]: {
-        leftMessages: [],
-        rightMessages: []
+    // Initialize empty comparison messages for this session
+    // but don't overwrite existing comparison messages
+    setComparisonMessages(prev => {
+      if (!prev[newSession.id]) {
+        return {
+          ...prev,
+          [newSession.id]: {
+            leftMessages: [],
+            rightMessages: []
+          }
+        };
       }
-    }));
+      return prev;
+    });
   };
   
   const selectSession = (sessionId: string) => {
