@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { ChatSession, Message, Model } from "@/types";
 import { v4 as uuidv4 } from "uuid";
@@ -135,7 +136,8 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
           },
           body: JSON.stringify({
             message: content,
-            modelId: modelId
+            modelId: modelId,
+            sessionId: currentSessionId // Include sessionId in the request
           }),
         });
         
