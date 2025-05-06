@@ -25,6 +25,8 @@ interface SessionContextProps {
   sendMessage: (content: string, contextPrompt?: string) => Promise<void>;
   selectModel: (modelId: string) => void;
   isProcessing: boolean;
+  updateContextPrompt: (sessionId: string, contextPrompt: string) => void;
+  getContextPrompt: (sessionId: string) => string;
 }
 
 const defaultModels: Model[] = [
@@ -42,6 +44,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   const [availableModels] = useState<Model[]>(defaultModels);
   const [selectedModel, setSelectedModel] = useState<Model>(defaultModels[0]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [contextPrompts, setContextPrompts] = useState<Record<string, string>>({});
   const { toast } = useToast();
 
   const currentSession = currentSessionId 
@@ -66,6 +69,12 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     
     setSessions(prev => [...prev, newSession]);
     setCurrentSessionId(newSession.id);
+    
+    // Initialize empty context for new session
+    setContextPrompts(prev => ({
+      ...prev,
+      [newSession.id]: ""
+    }));
   };
   
   const selectSession = (sessionId: string) => {
@@ -88,6 +97,17 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         );
       }
     }
+  };
+
+  const updateContextPrompt = (sessionId: string, contextPrompt: string) => {
+    setContextPrompts(prev => ({
+      ...prev,
+      [sessionId]: contextPrompt
+    }));
+  };
+
+  const getContextPrompt = (sessionId: string): string => {
+    return contextPrompts[sessionId] || "";
   };
   
   const sendMessage = async (content: string, contextPrompt: string = "") => {
@@ -116,6 +136,11 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
             : session
         )
       );
+
+      // Save the context prompt for this session
+      if (currentSessionId) {
+        updateContextPrompt(currentSessionId, contextPrompt);
+      }
       
       // Get the current model ID for this session
       const modelId = currentSession?.modelId || selectedModel.id;
@@ -224,7 +249,9 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         selectSession,
         sendMessage,
         selectModel,
-        isProcessing
+        isProcessing,
+        updateContextPrompt,
+        getContextPrompt
       }}
     >
       {children}

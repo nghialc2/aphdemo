@@ -14,20 +14,41 @@ import ContextPrompt from './ContextPrompt';
 const ChatInterface = () => {
   const [inputValue, setInputValue] = useState("");
   const [showContextPrompt, setShowContextPrompt] = useState(false);
-  const [contextPrompt, setContextPrompt] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { 
     currentSession, 
     sendMessage, 
-    isProcessing
+    isProcessing,
+    updateContextPrompt,
+    getContextPrompt
   } = useSession();
+  
+  // Get the context prompt for the current session
+  const [contextPrompt, setContextPrompt] = useState("");
   
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
     }
   }, []);
+  
+  // Update the context prompt when the current session changes
+  useEffect(() => {
+    if (currentSession) {
+      setContextPrompt(getContextPrompt(currentSession.id));
+    } else {
+      setContextPrompt("");
+    }
+  }, [currentSession, getContextPrompt]);
+  
+  // Update context in the context store when it changes locally
+  const handleContextChange = (value: string) => {
+    setContextPrompt(value);
+    if (currentSession) {
+      updateContextPrompt(currentSession.id, value);
+    }
+  };
   
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -81,7 +102,7 @@ const ChatInterface = () => {
           <div className="p-4 border-b border-gray-200 bg-gray-50">
             <ContextPrompt 
               value={contextPrompt}
-              onChange={setContextPrompt}
+              onChange={handleContextChange}
             />
           </div>
         )}
