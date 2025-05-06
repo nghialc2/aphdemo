@@ -73,8 +73,10 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       const savedComparisonMessages = localStorage.getItem(COMPARISON_STORAGE_KEY);
       if (savedComparisonMessages) {
         const parsedMessages = JSON.parse(savedComparisonMessages);
-        setComparisonMessages(parsedMessages);
-        console.log("Loaded saved comparison messages:", parsedMessages);
+        if (parsedMessages && typeof parsedMessages === 'object') {
+          setComparisonMessages(parsedMessages);
+          console.log("Loaded saved comparison messages:", parsedMessages);
+        }
       }
     } catch (error) {
       console.error("Error loading comparison messages from localStorage:", error);
@@ -85,7 +87,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (Object.keys(comparisonMessages).length > 0) {
       try {
-        // Clone the messages to avoid circular references
+        // Create a deep clone to avoid circular references 
         const messagesForStorage = JSON.parse(JSON.stringify(comparisonMessages));
         localStorage.setItem(COMPARISON_STORAGE_KEY, JSON.stringify(messagesForStorage));
         console.log("Saved comparison messages to localStorage:", messagesForStorage);
@@ -158,7 +160,9 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   };
   
   const getComparisonMessages = (sessionId: string) => {
-    return comparisonMessages[sessionId] || { leftMessages: [], rightMessages: [] };
+    // Always return a valid object even if the session doesn't exist in the comparison messages
+    const defaultEmpty = { leftMessages: [], rightMessages: [] };
+    return comparisonMessages[sessionId] || defaultEmpty;
   };
 
   // Function to call n8n with a model ID and get a response
@@ -317,7 +321,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         timestamp: Date.now()
       };
       
-      // Add user message to both sides of the comparison
+      // Add user message to both sides of the comparison - create deep copies to avoid reference issues
       setComparisonMessages(prev => {
         const current = prev[currentSessionId] || { leftMessages: [], rightMessages: [] };
         return {
@@ -332,9 +336,9 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       // Save the context prompt for this session
       updateContextPrompt(currentSessionId, contextPrompt);
       
-      // Set the session title if it's the first message
+      // Update session title if it's first message
       const currentSessionObj = sessions.find(s => s.id === currentSessionId);
-      if (currentSessionObj && currentSessionObj.messages.length === 0) {
+      if (currentSessionObj && (!currentSessionObj.title || currentSessionObj.title === `New Chat ${sessions.length}`)) {
         setSessions(prev => 
           prev.map(session => 
             session.id === currentSessionId

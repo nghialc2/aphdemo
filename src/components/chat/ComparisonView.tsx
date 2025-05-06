@@ -24,9 +24,12 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [leftMessages, rightMessages]);
   
+  // Make sure we have valid arrays to work with
+  const safeLeftMessages = Array.isArray(leftMessages) ? leftMessages : [];
+  const safeRightMessages = Array.isArray(rightMessages) ? rightMessages : [];
+  
   // Show placeholder if no messages
-  if ((!leftMessages || leftMessages.length === 0) && 
-      (!rightMessages || rightMessages.length === 0)) {
+  if (safeLeftMessages.length === 0 && safeRightMessages.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-4">
         <div className="mb-2 w-12 h-12 bg-fpt-blue/10 rounded-full flex items-center justify-center">
@@ -51,7 +54,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
           </span>
         </div>
         <div className="overflow-y-auto">
-          {leftMessages && leftMessages.map((message) => (
+          {safeLeftMessages.map((message) => (
             <div 
               key={message.id} 
               className={cn(
@@ -89,7 +92,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
           </span>
         </div>
         <div className="overflow-y-auto">
-          {rightMessages && rightMessages.map((message) => (
+          {safeRightMessages.map((message) => (
             <div 
               key={message.id} 
               className={cn(
