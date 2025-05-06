@@ -1,7 +1,9 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { ChatSession, Message, Model } from "@/types";
 import { v4 as uuidv4 } from "uuid";
+
+// Add the n8n URL here
+const N8N_URL = "https://your-n8n-instance-url.com"; // Replace with your actual n8n URL
 
 interface SessionContextProps {
   currentSession: ChatSession | null;
@@ -104,15 +106,36 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         )
       );
       
-      // Simulate API call to get assistant response
-      // In a real app, this would be a call to your n8n backend
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Send request to n8n
+      let assistantResponse;
+      try {
+        const response = await fetch(`${N8N_URL}/webhook/chat-request`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: content,
+            modelId: currentSession?.modelId || selectedModel.id
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`n8n returned an error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        assistantResponse = data.response || "Sorry, I couldn't process your request";
+      } catch (error) {
+        console.error("Error calling n8n:", error);
+        assistantResponse = "There was an error connecting to n8n. Please check the console for details.";
+      }
       
       // Add assistant message
       const assistantMessage: Message = {
         id: uuidv4(),
         role: 'assistant',
-        content: `This is a simulated response to "${content}". In a production environment, this would connect to n8n for AI model integration.`,
+        content: assistantResponse,
         timestamp: Date.now()
       };
       
