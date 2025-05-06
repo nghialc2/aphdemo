@@ -9,10 +9,11 @@ import ChatMessageList from "./ChatMessageList";
 import ModelSelector from "./ModelSelector";
 import ComparisonModelSelectors from "./ComparisonModelSelectors";
 import ComparisonView from "./ComparisonView";
-import { History, Send, GitCompareArrows } from "lucide-react";
+import { History, Send, GitCompareArrows, Settings } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ContextPrompt from './ContextPrompt';
+import ChatTopbar from './ChatTopbar';
 
 const ChatInterface = () => {
   const [inputValue, setInputValue] = useState("");
@@ -114,36 +115,12 @@ const ChatInterface = () => {
 
   return (
     <div className="flex flex-col h-full border-l border-gray-200 w-full">
-      <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 bg-white z-10">
-        <h2 className="font-medium text-fpt-orange">Chat</h2>
-        <div className="flex items-center space-x-4">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setShowContextPrompt(!showContextPrompt)}
-            className="text-xs"
-          >
-            {showContextPrompt ? "Hide Context" : "Set Context"}
-          </Button>
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleToggleCompareMode}
-            className={`text-xs ${isCompareMode ? "bg-blue-100 text-blue-800" : ""}`}
-          >
-            <GitCompareArrows className="h-4 w-4 mr-1" />
-            {isCompareMode ? "Exit Compare" : "Compare"}
-          </Button>
-          
-          {isCompareMode ? <ComparisonModelSelectors /> : <ModelSelector />}
-          
-          <SidebarTrigger className="flex items-center ml-2">
-            <History className="h-4 w-4 mr-1" />
-            <span className="text-sm">History</span>
-          </SidebarTrigger>
-        </div>
-      </div>
+      <ChatTopbar 
+        showContextPrompt={showContextPrompt}
+        setShowContextPrompt={setShowContextPrompt}
+        isCompareMode={isCompareMode}
+        handleToggleCompareMode={handleToggleCompareMode}
+      />
       
       <div className="flex-1 flex flex-col overflow-hidden">
         {showContextPrompt && (
