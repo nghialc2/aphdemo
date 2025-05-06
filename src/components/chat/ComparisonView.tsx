@@ -4,7 +4,7 @@ import { useSession } from "@/context/SessionContext";
 import { useCompare } from "@/context/CompareContext";
 import { cn } from "@/lib/utils";
 import { Message, Model } from "@/types";
-import { Split } from "lucide-react";
+import { GitCompareArrows } from "lucide-react";
 
 interface ComparisonViewProps {
   leftMessages: Message[];
@@ -30,7 +30,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-4">
         <div className="mb-2 w-12 h-12 bg-fpt-blue/10 rounded-full flex items-center justify-center">
-          <Split className="h-6 w-6 text-fpt-blue" />
+          <GitCompareArrows className="h-6 w-6 text-fpt-blue" />
         </div>
         <h3 className="text-lg font-medium text-gray-700">
           Comparison Mode Active
