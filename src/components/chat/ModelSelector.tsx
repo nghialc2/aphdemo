@@ -7,8 +7,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { HelpCircle } from "lucide-react";
 
 const ModelSelector = () => {
   const { availableModels, selectedModel, selectModel } = useSession();
@@ -35,17 +33,6 @@ const ModelSelector = () => {
           ))}
         </SelectContent>
       </Select>
-      
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button className="ml-2 text-gray-500 hover:text-gray-700">
-            <HelpCircle className="h-4 w-4" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent side="right" align="center" className="max-w-xs">
-          <p>Mỗi model sẽ kết nối đến một endpoint n8n riêng biệt</p>
-        </TooltipContent>
-      </Tooltip>
     </div>
   );
 };
