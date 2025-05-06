@@ -46,7 +46,7 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
         
         <TabsContent 
           value="instructions" 
-          className="flex-1 overflow-hidden"
+          className="flex-1 p-0 m-0 overflow-hidden"
         >
           <ScrollArea className="h-full">
             <div className="p-4 space-y-6">
@@ -115,7 +115,7 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
         
         <TabsContent 
           value="examples" 
-          className="flex-1 overflow-hidden"
+          className="flex-1 p-0 m-0 overflow-hidden"
         >
           <ScrollArea className="h-full">
             <div className="p-4 space-y-6">
