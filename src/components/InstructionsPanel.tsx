@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronLeft, Book, BookOpen, ScrollText } from "lucide-react";
+import { ChevronLeft, Book, BookOpen } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface InstructionsPanelProps {
@@ -33,7 +33,7 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
         onValueChange={setActiveTab}
         className="flex-1 flex flex-col"
       >
-        <TabsList className="px-4 pt-2 justify-start">
+        <TabsList className="px-4 pt-2 justify-start border-b w-full">
           <TabsTrigger value="instructions" className="flex items-center">
             <Book className="mr-2 h-4 w-4" />
             <span>Instructions</span>
@@ -44,15 +44,15 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
           </TabsTrigger>
         </TabsList>
         
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-auto">
           <TabsContent 
             value="instructions" 
-            className="h-full"
+            className="h-full mt-0 data-[state=active]:flex data-[state=active]:flex-col"
           >
-            <ScrollArea className="h-full">
+            <ScrollArea className="flex-1">
               <div className="p-4 space-y-6">
                 <div className="space-y-4">
-                  <h3 className="text-xl font-bold text-fpt-orange">
+                  <h3 className="text-xl font-bold text-fpt-orange break-words">
                     Xin chào mừng các bạn đã đến với Lab thực hành của chương trình AI-Powered HRM
                   </h3>
                   
@@ -116,9 +116,9 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
           
           <TabsContent 
             value="examples" 
-            className="h-full"
+            className="h-full mt-0 data-[state=active]:flex data-[state=active]:flex-col"
           >
-            <ScrollArea className="h-full">
+            <ScrollArea className="flex-1">
               <div className="p-4 space-y-6">
                 <div className="space-y-4">
                   <h3 className="text-lg font-bold text-fpt-blue">
@@ -147,7 +147,7 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
                   
                   <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
                     <p className="font-medium">Advanced Prompt:</p>
-                    <p className="text-sm font-mono bg-white p-2 rounded mt-1 border border-gray-200">
+                    <p className="text-sm font-mono bg-white p-2 rounded mt-1 border border-gray-200 break-words">
                       I want you to act as a senior UX researcher creating a report for product managers. 
                       
                       Step 1: Identify 3 key usability issues that commonly affect mobile banking apps.
