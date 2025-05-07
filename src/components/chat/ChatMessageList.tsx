@@ -52,10 +52,10 @@ const ChatMessageList = () => {
             />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white font-bold empty-chat-title">
+        <h3 className="text-lg font-medium text-gray-900 font-bold empty-chat-title">
           Welcome to FPT Prompt Arena
         </h3>
-        <p className="text-gray-700 dark:text-gray-200 text-sm mt-2 max-w-sm empty-chat-description">
+        <p className="text-gray-700 text-sm mt-2 max-w-sm empty-chat-description">
           Start a conversation by typing your prompt in the box below.
           Try to be specific and clear with your instructions.
         </p>
@@ -64,7 +64,7 @@ const ChatMessageList = () => {
   }
   
   return (
-    <div className="py-4 px-2 dark:bg-dark-background">
+    <div className="py-4 px-2">
       {currentSession.messages.map((message) => (
         <div 
           key={message.id} 
@@ -83,10 +83,10 @@ const ChatMessageList = () => {
               </span>
             </div>
             <div className="space-y-1 flex-1">
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-300">
+              <p className="text-xs font-medium text-gray-500">
                 {message.role === "user" ? "You" : "Assistant"}
               </p>
-              <div className="message-content whitespace-pre-wrap font-medium text-gray-900 dark:text-white">
+              <div className="message-content whitespace-pre-wrap font-medium text-gray-900">
                 {message.content}
               </div>
             </div>

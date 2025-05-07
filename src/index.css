@@ -81,18 +81,18 @@ body.dark-theme {
   }
   
   .user-message {
-    @apply bg-gray-100 dark:bg-dark-card/70;
+    @apply bg-gray-100;
   }
   
   .assistant-message {
-    @apply bg-white dark:bg-dark-card;
+    @apply bg-white;
   }
   
   .message-content {
-    @apply whitespace-pre-wrap text-gray-800 dark:text-white font-medium;
+    @apply whitespace-pre-wrap text-gray-800 font-medium;
   }
 
-  /* Dark theme specific styles */
+  /* Dark theme specific styles - kept for reference but not active */
   .dark-theme .chat-interface {
     @apply bg-dark-background border-dark-border;
   }
@@ -111,109 +111,44 @@ body.dark-theme {
 
   /* Comparison mode styles */
   .comparison-left-text {
-    @apply text-blue-800 dark:text-blue-200 font-medium;
+    @apply text-blue-800 font-medium;
   }
   
   .comparison-right-text {
-    @apply text-green-800 dark:text-green-200 font-medium;
+    @apply text-green-800 font-medium;
   }
 }
 
-/* Updated dark mode styling for better text contrast */
-.dark-theme .message-content {
-  @apply text-white font-medium;
-}
-
-.dark-theme .user-message {
-  @apply bg-gray-800/30;
-}
-
-.dark-theme .assistant-message {
-  @apply bg-gray-800/10;
-}
-
-/* Add styling for the empty state in dark mode with improved contrast */
-.dark-theme .empty-chat-message {
-  @apply text-white font-bold;
-}
-
-.dark-theme .empty-chat-description {
-  @apply text-gray-200;
-}
-
-/* Add better contrast for code blocks in dark mode */
-.dark-theme pre {
-  @apply bg-gray-800 border border-gray-700;
-}
-
-.dark-theme code {
-  @apply text-gray-100;
-}
-
-/* Make dark mode tab content more readable */
-.dark-theme .dark-bg-muted {
-  @apply bg-gray-800/50;
-}
-
-.dark-theme .dark-text-bright {
-  @apply text-white;
-}
-
-/* Improved instructions panel text contrast for light mode */
-.instructions-title {
-  @apply font-bold text-gray-900;
-}
-
-.instructions-text {
-  @apply text-gray-800 font-medium;
-}
-
-.instructions-list-item {
-  @apply text-gray-800 font-medium;
-}
-
-/* Improved instructions panel text contrast for dark mode */
-.dark-theme .instructions-title {
-  @apply text-white font-bold;
-}
-
-.dark-theme .instructions-text {
-  @apply text-white;
-}
-
-.dark-theme .instructions-list-item {
-  @apply text-white;
-}
-
-/* Improved empty chat state contrast */
+/* Empty state styling for better visibility */
 .empty-chat-title {
-  @apply text-gray-900 font-bold dark:text-white;
+  @apply text-gray-900 font-bold;
 }
 
 .empty-chat-description {
-  @apply text-gray-700 dark:text-gray-200;
+  @apply text-gray-700;
 }
 
 /* Make instructions tab content more readable with higher contrast */
-.dark-theme .tab-content {
-  @apply bg-dark-background text-white;
+.tab-content {
+  @apply bg-white text-gray-900;
 }
 
-/* Ensure instructions text in tabs has enough contrast in both themes */
+/* Ensure instructions text in tabs has enough contrast */
 .tab-instructions-text {
-  @apply text-black dark:text-white;
+  @apply text-gray-900;
 }
 
 /* Improve contrast for instructions examples */
-.dark-theme .example-code {
-  @apply bg-gray-800 text-white border border-gray-700;
+.example-code {
+  @apply bg-white text-gray-900 border border-gray-200;
 }
 
 /* Make instruction headings clearly visible */
-.dark-theme .instruction-heading {
-  @apply text-white font-bold;
+.instruction-heading {
+  @apply text-gray-900 font-bold;
 }
 
-.instruction-heading {
-  @apply text-black font-bold;
+/* Updated styling for chat message content */
+.message-content {
+  @apply text-gray-900 font-semibold;
 }
