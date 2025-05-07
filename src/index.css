@@ -89,7 +89,7 @@ body.dark-theme {
   }
   
   .message-content {
-    @apply whitespace-pre-wrap text-gray-800 dark:text-gray-200;
+    @apply whitespace-pre-wrap text-gray-800 dark:text-white font-medium;
   }
 
   /* Dark theme specific styles */
@@ -111,10 +111,50 @@ body.dark-theme {
 
   /* Comparison mode styles */
   .comparison-left-text {
-    @apply text-blue-800 dark:text-blue-300;
+    @apply text-blue-800 dark:text-blue-200 font-medium;
   }
   
   .comparison-right-text {
-    @apply text-green-800 dark:text-green-300;
+    @apply text-green-800 dark:text-green-200 font-medium;
   }
+}
+
+/* Updated dark mode styling for better text contrast */
+.dark-theme .message-content {
+  @apply text-white font-medium;
+}
+
+.dark-theme .user-message {
+  @apply bg-gray-800/30;
+}
+
+.dark-theme .assistant-message {
+  @apply bg-gray-800/10;
+}
+
+/* Add styling for the empty state in dark mode */
+.dark-theme .empty-chat-message {
+  @apply text-gray-100;
+}
+
+.dark-theme .empty-chat-description {
+  @apply text-gray-300;
+}
+
+/* Add better contrast for code blocks in dark mode */
+.dark-theme pre {
+  @apply bg-gray-800 border border-gray-700;
+}
+
+.dark-theme code {
+  @apply text-gray-100;
+}
+
+/* Make dark mode tab content more readable */
+.dark-theme .dark-bg-muted {
+  @apply bg-gray-800/50;
+}
+
+.dark-theme .dark-text-bright {
+  @apply text-white;
 }

@@ -65,14 +65,14 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
   // Show placeholder if no messages
   if (safeLeftMessages.length === 0 && safeRightMessages.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center p-4 dark:text-gray-300">
-        <div className="mb-2 w-12 h-12 bg-fpt-blue/10 dark:bg-fpt-blue/20 rounded-full flex items-center justify-center">
+      <div className="flex flex-col items-center justify-center h-full text-center p-4 dark:text-gray-100">
+        <div className="mb-2 w-12 h-12 bg-fpt-blue/10 dark:bg-fpt-blue/30 rounded-full flex items-center justify-center">
           <GitCompareArrows className="h-6 w-6 text-fpt-blue" />
         </div>
-        <h3 className="text-lg font-medium text-gray-700 dark:text-gray-200">
+        <h3 className="text-lg font-medium text-gray-700 dark:text-white">
           Comparison Mode Active
         </h3>
-        <p className="text-gray-500 dark:text-gray-400 text-sm mt-2 max-w-sm">
+        <p className="text-gray-500 dark:text-gray-300 text-sm mt-2 max-w-sm">
           Send a message to see responses from both models side by side.
         </p>
         
@@ -83,7 +83,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Type your prompt here..."
             disabled={isProcessing}
-            className="flex-1 dark:bg-dark-input dark:text-dark-foreground dark:border-dark-border"
+            className="flex-1 dark:bg-dark-input dark:text-white dark:border-dark-border"
           />
           <Button 
             type="submit" 
@@ -102,7 +102,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
       <div className="grid grid-cols-2 gap-2 py-4 px-2 dark:bg-dark-background flex-1 overflow-y-auto">
         <div className="border-r dark:border-dark-border pr-2">
           <div className="sticky top-0 bg-white dark:bg-dark-card p-2 mb-2 z-10 flex items-center justify-center">
-            <span className="px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 rounded-full text-sm font-medium">
+            <span className="px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200 rounded-full text-sm font-medium">
               {leftModel.name}
             </span>
           </div>
@@ -125,10 +125,10 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
                     </span>
                   </div>
                   <div className="space-y-1 flex-1">
-                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                    <p className="text-xs font-medium text-gray-500 dark:text-gray-300">
                       {message.role === "user" ? "You" : leftModel.name}
                     </p>
-                    <div className="message-content whitespace-pre-wrap dark:text-gray-200 text-gray-800">
+                    <div className="message-content whitespace-pre-wrap dark:text-white text-gray-800 font-medium">
                       {message.content}
                     </div>
                   </div>
@@ -140,7 +140,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
         
         <div className="pl-2">
           <div className="sticky top-0 bg-white dark:bg-dark-card p-2 mb-2 z-10 flex items-center justify-center">
-            <span className="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 rounded-full text-sm font-medium">
+            <span className="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 rounded-full text-sm font-medium">
               {rightModel.name}
             </span>
           </div>
@@ -163,10 +163,10 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
                     </span>
                   </div>
                   <div className="space-y-1 flex-1">
-                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                    <p className="text-xs font-medium text-gray-500 dark:text-gray-300">
                       {message.role === "user" ? "You" : rightModel.name}
                     </p>
-                    <div className="message-content whitespace-pre-wrap dark:text-gray-200 text-gray-800">
+                    <div className="message-content whitespace-pre-wrap dark:text-white text-gray-800 font-medium">
                       {message.content}
                     </div>
                   </div>
@@ -186,7 +186,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Type your prompt here..."
             disabled={isProcessing}
-            className="flex-1 dark:bg-dark-input dark:text-dark-foreground dark:border-dark-border"
+            className="flex-1 dark:bg-dark-input dark:text-white dark:border-dark-border"
           />
           <Button 
             type="submit" 
@@ -198,7 +198,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
           </Button>
         </form>
         {isProcessing && (
-          <div className="text-xs text-center mt-2 text-gray-500 dark:text-gray-400 animate-pulse">
+          <div className="text-xs text-center mt-2 text-gray-500 dark:text-gray-300 animate-pulse">
             Comparing models...
           </div>
         )}
