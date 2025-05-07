@@ -52,7 +52,7 @@ const ChatMessageList = () => {
             />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white empty-chat-title">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white font-bold empty-chat-title">
           Welcome to FPT Prompt Arena
         </h3>
         <p className="text-gray-700 dark:text-gray-200 text-sm mt-2 max-w-sm empty-chat-description">

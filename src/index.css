@@ -134,11 +134,11 @@ body.dark-theme {
 
 /* Add styling for the empty state in dark mode with improved contrast */
 .dark-theme .empty-chat-message {
-  @apply text-white font-bold; /* Increased contrast from gray-100 to white */
+  @apply text-white font-bold;
 }
 
 .dark-theme .empty-chat-description {
-  @apply text-gray-200; /* Increased contrast from gray-300 to gray-200 */
+  @apply text-gray-200;
 }
 
 /* Add better contrast for code blocks in dark mode */
@@ -192,4 +192,28 @@ body.dark-theme {
 
 .empty-chat-description {
   @apply text-gray-700 dark:text-gray-200;
+}
+
+/* Make instructions tab content more readable with higher contrast */
+.dark-theme .tab-content {
+  @apply bg-dark-background text-white;
+}
+
+/* Ensure instructions text in tabs has enough contrast in both themes */
+.tab-instructions-text {
+  @apply text-black dark:text-white;
+}
+
+/* Improve contrast for instructions examples */
+.dark-theme .example-code {
+  @apply bg-gray-800 text-white border border-gray-700;
+}
+
+/* Make instruction headings clearly visible */
+.dark-theme .instruction-heading {
+  @apply text-white font-bold;
+}
+
+.instruction-heading {
+  @apply text-black font-bold;
 }

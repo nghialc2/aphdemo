@@ -47,65 +47,65 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
         <div className="flex-1 relative overflow-hidden">
           <TabsContent 
             value="instructions" 
-            className="absolute inset-0 m-0"
+            className="absolute inset-0 m-0 tab-content"
           >
             <ScrollArea className="h-full dark:bg-dark-card">
               <div className="p-4 space-y-6">
                 <div className="space-y-4">
-                  <h3 className="text-xl font-bold text-fpt-orange break-words dark:text-fpt-orange instructions-title">
+                  <h3 className="text-xl font-bold text-fpt-orange break-words dark:text-fpt-orange instruction-heading">
                     Xin chào mừng các bạn đã đến với Lab thực hành của chương trình AI-Powered HRM
                   </h3>
                   
                   <div className="space-y-3">
-                    <p className="text-gray-800 dark:text-white font-medium instructions-text">
+                    <p className="text-black dark:text-white font-medium tab-instructions-text">
                       This lab allows you to practice crafting effective prompts for
                       large language models. You'll learn how to:
                     </p>
                     
                     <ul className="list-disc list-inside space-y-1 ml-4">
-                      <li className="text-gray-800 dark:text-white font-medium instructions-list-item">Write clear, specific instructions</li>
-                      <li className="text-gray-800 dark:text-white font-medium instructions-list-item">Structure prompts for optimal responses</li>
-                      <li className="text-gray-800 dark:text-white font-medium instructions-list-item">Compare results across different models</li>
-                      <li className="text-gray-800 dark:text-white font-medium instructions-list-item">Iterate and refine your prompt engineering skills</li>
+                      <li className="text-black dark:text-white font-medium tab-instructions-text">Write clear, specific instructions</li>
+                      <li className="text-black dark:text-white font-medium tab-instructions-text">Structure prompts for optimal responses</li>
+                      <li className="text-black dark:text-white font-medium tab-instructions-text">Compare results across different models</li>
+                      <li className="text-black dark:text-white font-medium tab-instructions-text">Iterate and refine your prompt engineering skills</li>
                     </ul>
                     
                     <div className="bg-fpt-lightGreen p-4 rounded-md dark:bg-fpt-green/20">
                       <p className="font-medium text-fpt-green dark:text-fpt-green">Getting Started:</p>
                       <ol className="list-decimal list-inside ml-2 space-y-1">
-                        <li className="text-gray-800 dark:text-white font-medium instructions-list-item">Choose a model from the dropdown in the chat panel</li>
-                        <li className="text-gray-800 dark:text-white font-medium instructions-list-item">Type your prompt in the message input</li>
-                        <li className="text-gray-800 dark:text-white font-medium instructions-list-item">Review the response and refine your approach</li>
+                        <li className="text-black dark:text-white font-medium tab-instructions-text">Choose a model from the dropdown in the chat panel</li>
+                        <li className="text-black dark:text-white font-medium tab-instructions-text">Type your prompt in the message input</li>
+                        <li className="text-black dark:text-white font-medium tab-instructions-text">Review the response and refine your approach</li>
                       </ol>
                     </div>
                     
-                    <p className="text-sm text-gray-700 dark:text-gray-200 italic instructions-text">
+                    <p className="text-sm text-black dark:text-gray-100 italic tab-instructions-text">
                       Remember: The quality of your prompts directly affects the quality of the responses!
                     </p>
                   </div>
                 </div>
                 
                 <div className="space-y-3">
-                  <h3 className="text-lg font-bold text-fpt-blue dark:text-fpt-blue instructions-title">
+                  <h3 className="text-lg font-bold text-fpt-blue dark:text-fpt-blue instruction-heading">
                     Today's Exercises
                   </h3>
                   
                   <div className="border-l-4 border-fpt-blue pl-3">
-                    <p className="font-medium text-gray-900 dark:text-white instructions-title">Exercise 1: Role Definition</p>
-                    <p className="text-sm text-gray-800 dark:text-gray-200 instructions-text">
+                    <p className="font-medium text-black dark:text-white instruction-heading">Exercise 1: Role Definition</p>
+                    <p className="text-sm text-black dark:text-white tab-instructions-text">
                       Write a prompt that clearly defines the role the AI should take (e.g., expert copywriter, financial advisor).
                     </p>
                   </div>
                   
                   <div className="border-l-4 border-fpt-orange pl-3">
-                    <p className="font-medium text-gray-900 dark:text-white instructions-title">Exercise 2: Constraint Setting</p>
-                    <p className="text-sm text-gray-800 dark:text-gray-200 instructions-text">
+                    <p className="font-medium text-black dark:text-white instruction-heading">Exercise 2: Constraint Setting</p>
+                    <p className="text-sm text-black dark:text-white tab-instructions-text">
                       Create a prompt with specific constraints (word count, format, audience).
                     </p>
                   </div>
                   
                   <div className="border-l-4 border-fpt-green pl-3">
-                    <p className="font-medium text-gray-900 dark:text-white instructions-title">Exercise 3: Sequential Instructions</p>
-                    <p className="text-sm text-gray-800 dark:text-gray-200 instructions-text">
+                    <p className="font-medium text-black dark:text-white instruction-heading">Exercise 3: Sequential Instructions</p>
+                    <p className="text-sm text-black dark:text-white tab-instructions-text">
                       Develop a multi-step prompt that guides the AI through a complex task.
                     </p>
                   </div>
@@ -116,38 +116,38 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
           
           <TabsContent 
             value="examples" 
-            className="absolute inset-0 m-0"
+            className="absolute inset-0 m-0 tab-content"
           >
             <ScrollArea className="h-full dark:bg-dark-card">
               <div className="p-4 space-y-6">
                 <div className="space-y-4">
-                  <h3 className="text-lg font-bold text-fpt-blue dark:text-fpt-blue instructions-title">
+                  <h3 className="text-lg font-bold text-fpt-blue dark:text-fpt-blue instruction-heading">
                     Example Prompts
                   </h3>
                   
                   <div className="bg-gray-50 dark:bg-dark-muted p-3 rounded-md border border-gray-200 dark:border-dark-border">
-                    <p className="font-medium text-gray-900 dark:text-white instructions-title">Basic Prompt:</p>
-                    <p className="text-sm font-mono bg-white dark:bg-dark-background p-2 rounded mt-1 border border-gray-200 dark:border-dark-border text-gray-900 dark:text-white">
+                    <p className="font-medium text-black dark:text-white instruction-heading">Basic Prompt:</p>
+                    <p className="text-sm font-mono bg-white dark:bg-dark-background p-2 rounded mt-1 border border-gray-200 dark:border-dark-border text-black dark:text-white example-code">
                       Write a short paragraph about artificial intelligence.
                     </p>
-                    <p className="text-xs mt-2 text-gray-700 dark:text-gray-200 instructions-text">
+                    <p className="text-xs mt-2 text-black dark:text-gray-200 tab-instructions-text">
                       Too vague, likely to get generic results
                     </p>
                   </div>
                   
                   <div className="bg-gray-50 dark:bg-dark-muted p-3 rounded-md border border-gray-200 dark:border-dark-border">
-                    <p className="font-medium text-gray-900 dark:text-white instructions-title">Improved Prompt:</p>
-                    <p className="text-sm font-mono bg-white dark:bg-dark-background p-2 rounded mt-1 border border-gray-200 dark:border-dark-border text-gray-900 dark:text-white">
+                    <p className="font-medium text-black dark:text-white instruction-heading">Improved Prompt:</p>
+                    <p className="text-sm font-mono bg-white dark:bg-dark-background p-2 rounded mt-1 border border-gray-200 dark:border-dark-border text-black dark:text-white example-code">
                       Act as a technology journalist writing for a business audience. Write a compelling 100-word paragraph about how generative AI is transforming customer service in 2025. Include one specific example and one statistic.
                     </p>
-                    <p className="text-xs mt-2 text-gray-700 dark:text-gray-200 instructions-text">
+                    <p className="text-xs mt-2 text-black dark:text-gray-200 tab-instructions-text">
                       Clear role, audience, length, and specific requirements
                     </p>
                   </div>
                   
                   <div className="bg-gray-50 dark:bg-dark-muted p-3 rounded-md border border-gray-200 dark:border-dark-border">
-                    <p className="font-medium text-gray-900 dark:text-white instructions-title">Advanced Prompt:</p>
-                    <p className="text-sm font-mono bg-white dark:bg-dark-background p-2 rounded mt-1 border border-gray-200 dark:border-dark-border text-gray-900 dark:text-white break-words">
+                    <p className="font-medium text-black dark:text-white instruction-heading">Advanced Prompt:</p>
+                    <p className="text-sm font-mono bg-white dark:bg-dark-background p-2 rounded mt-1 border border-gray-200 dark:border-dark-border text-black dark:text-white break-words example-code">
                       I want you to act as a senior UX researcher creating a report for product managers. 
                       
                       Step 1: Identify 3 key usability issues that commonly affect mobile banking apps.
@@ -158,7 +158,7 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
                       
                       Format the response as a structured report with bullet points and clear section headings.
                     </p>
-                    <p className="text-xs mt-2 text-gray-700 dark:text-gray-200 instructions-text">
+                    <p className="text-xs mt-2 text-black dark:text-gray-200 tab-instructions-text">
                       Multi-step instructions with clear formatting guidelines
                     </p>
                   </div>
