@@ -86,7 +86,7 @@ const ChatMessageList = () => {
               <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
                 {message.role === "user" ? "You" : "Assistant"}
               </p>
-              <div className="message-content whitespace-pre-wrap dark:text-gray-200">
+              <div className="message-content whitespace-pre-wrap dark:text-gray-200 text-gray-800">
                 {message.content}
               </div>
             </div>

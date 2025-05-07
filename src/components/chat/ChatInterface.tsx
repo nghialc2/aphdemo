@@ -41,10 +41,10 @@ const ChatInterface = () => {
   const [contextPrompt, setContextPrompt] = useState("");
   
   useEffect(() => {
-    if (inputRef.current) {
+    if (inputRef.current && !isCompareMode) {
       inputRef.current.focus();
     }
-  }, []);
+  }, [isCompareMode]);
   
   // Update the context prompt when the current session changes
   useEffect(() => {
@@ -90,14 +90,12 @@ const ChatInterface = () => {
     }
     
     try {
-      if (isCompareMode) {
-        // Send comparison message
-        await sendComparisonMessage(inputValue, leftModelId, rightModelId, contextPrompt);
-      } else {
+      // Only handle regular messages here - compare mode has its own input
+      if (!isCompareMode) {
         // Send regular message
         await sendMessage(inputValue, contextPrompt);
+        setInputValue("");
       }
-      setInputValue("");
     } catch (error) {
       console.error("Error sending message:", error);
       toast({
@@ -143,31 +141,34 @@ const ChatInterface = () => {
           )}
         </ScrollArea>
         
-        <div className="border-t border-gray-200 dark:border-dark-border p-4 bg-white dark:bg-dark-card">
-          <form onSubmit={handleSubmit} className="flex space-x-2">
-            <Input
-              ref={inputRef}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Type your prompt here..."
-              disabled={isProcessing}
-              className="flex-1 dark:bg-dark-input dark:text-dark-foreground dark:border-dark-border chat-input"
-            />
-            <Button 
-              type="submit" 
-              disabled={isProcessing || inputValue.trim() === ""}
-              className="chat-button"
-            >
-              <Send className="h-4 w-4 mr-2" />
-              Send
-            </Button>
-          </form>
-          {isProcessing && (
-            <div className="text-xs text-center mt-2 text-gray-500 dark:text-gray-400 animate-pulse">
-              Processing your request...
-            </div>
-          )}
-        </div>
+        {/* Only show the input form when NOT in compare mode */}
+        {!isCompareMode && (
+          <div className="border-t border-gray-200 dark:border-dark-border p-4 bg-white dark:bg-dark-card">
+            <form onSubmit={handleSubmit} className="flex space-x-2">
+              <Input
+                ref={inputRef}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="Type your prompt here..."
+                disabled={isProcessing}
+                className="flex-1 dark:bg-dark-input dark:text-dark-foreground dark:border-dark-border chat-input"
+              />
+              <Button 
+                type="submit" 
+                disabled={isProcessing || inputValue.trim() === ""}
+                className="chat-button"
+              >
+                <Send className="h-4 w-4 mr-2" />
+                Send
+              </Button>
+            </form>
+            {isProcessing && (
+              <div className="text-xs text-center mt-2 text-gray-500 dark:text-gray-400 animate-pulse">
+                Processing your request...
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

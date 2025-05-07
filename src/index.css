@@ -89,7 +89,7 @@ body.dark-theme {
   }
   
   .message-content {
-    @apply whitespace-pre-wrap;
+    @apply whitespace-pre-wrap text-gray-800 dark:text-gray-200;
   }
 
   /* Dark theme specific styles */
@@ -107,5 +107,14 @@ body.dark-theme {
   
   .dark-theme .chat-button {
     @apply bg-fpt-blue text-dark-foreground hover:bg-fpt-darkBlue;
+  }
+
+  /* Comparison mode styles */
+  .comparison-left-text {
+    @apply text-blue-800 dark:text-blue-300;
+  }
+  
+  .comparison-right-text {
+    @apply text-green-800 dark:text-green-300;
   }
 }
