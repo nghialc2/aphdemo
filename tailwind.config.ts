@@ -70,6 +70,16 @@ export default {
 					green: '#4CAF50',
 					lightGreen: '#F2FCE2',
 					darkBlue: '#0f5679',
+				},
+				// Dark Theme Colors
+				dark: {
+					background: '#1A1F2C',
+					foreground: '#efefef',
+					card: '#221F26',
+					border: '#333333',
+					muted: '#403E43',
+					input: '#2d2c30',
+					accent: '#2d2c30'
 				}
 			},
 			borderRadius: {

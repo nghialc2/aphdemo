@@ -36,11 +36,11 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelect }) => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="font-medium text-gray-700">Your conversations</h3>
+        <h3 className="font-medium text-gray-700 dark:text-gray-300">Your conversations</h3>
         <Button 
           variant="outline" 
           size="sm" 
-          className="flex items-center"
+          className="flex items-center dark:border-dark-border dark:bg-dark-card dark:text-gray-300 dark:hover:bg-dark-accent"
           onClick={handleNewChat}
         >
           <Plus className="h-4 w-4 mr-1" />
@@ -49,7 +49,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelect }) => {
       </div>
       
       {sortedSessions.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
           No conversation history yet
         </div>
       ) : (
@@ -74,9 +74,9 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelect }) => {
                 key={session.id}
                 className={`w-full text-left p-3 rounded-lg transition-colors ${
                   currentSession?.id === session.id
-                    ? "bg-fpt-blue/10 border-l-4 border-fpt-blue"
-                    : "hover:bg-gray-100"
-                }`}
+                    ? "bg-fpt-blue/10 border-l-4 border-fpt-blue dark:bg-fpt-blue/20"
+                    : "hover:bg-gray-100 dark:hover:bg-dark-accent"
+                } dark:text-gray-300`}
                 onClick={() => handleSelectSession(session.id)}
               >
                 <div className="flex items-start justify-between">
@@ -84,20 +84,20 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelect }) => {
                     {isComparisonSession ? (
                       <GitCompareArrows className="h-4 w-4 mr-2 text-fpt-blue" />
                     ) : (
-                      <MessageSquare className="h-4 w-4 mr-2 text-gray-500" />
+                      <MessageSquare className="h-4 w-4 mr-2 text-gray-500 dark:text-gray-400" />
                     )}
                     <span className="font-medium truncate max-w-[200px]">
                       {session.title}
                     </span>
                   </div>
-                  <div className="flex items-center text-xs text-gray-500">
+                  <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                     <Clock className="h-3 w-3 mr-1" />
                     <span>
                       {formatDistanceToNow(session.createdAt, { addSuffix: true })}
                     </span>
                   </div>
                 </div>
-                <div className="mt-1 text-xs text-gray-500 truncate">
+                <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 truncate">
                   {messageCount} message{messageCount !== 1 ? 's' : ''} • {isComparisonSession ? 'comparison' : session.modelId}
                 </div>
               </button>

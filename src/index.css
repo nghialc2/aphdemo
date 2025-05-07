@@ -46,6 +46,16 @@
   }
 }
 
+/* Dark theme styles */
+.dark-theme {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+}
+
+body.dark-theme {
+  @apply bg-dark-background text-dark-foreground;
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -71,14 +81,31 @@
   }
   
   .user-message {
-    @apply bg-gray-100;
+    @apply bg-gray-100 dark:bg-dark-card/70;
   }
   
   .assistant-message {
-    @apply bg-white;
+    @apply bg-white dark:bg-dark-card;
   }
   
   .message-content {
     @apply whitespace-pre-wrap;
+  }
+
+  /* Dark theme specific styles */
+  .dark-theme .chat-interface {
+    @apply bg-dark-background border-dark-border;
+  }
+  
+  .dark-theme .chat-topbar {
+    @apply bg-dark-card border-dark-border;
+  }
+  
+  .dark-theme .chat-input {
+    @apply bg-dark-input border-dark-border text-dark-foreground;
+  }
+  
+  .dark-theme .chat-button {
+    @apply bg-fpt-blue text-dark-foreground hover:bg-fpt-darkBlue;
   }
 }

@@ -13,8 +13,8 @@ const ChatMessageList = () => {
   
   if (!currentSession || currentSession.messages.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center p-4">
-        <div className="mb-2 w-12 h-12 bg-fpt-blue/10 rounded-full flex items-center justify-center">
+      <div className="flex flex-col items-center justify-center h-full text-center p-4 dark:text-gray-300">
+        <div className="mb-2 w-12 h-12 bg-fpt-blue/10 dark:bg-fpt-blue/20 rounded-full flex items-center justify-center">
           <svg
             width="24"
             height="24"
@@ -52,10 +52,10 @@ const ChatMessageList = () => {
             />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-gray-700">
+        <h3 className="text-lg font-medium text-gray-700 dark:text-gray-200">
           Welcome to FPT Prompt Arena
         </h3>
-        <p className="text-gray-500 text-sm mt-2 max-w-sm">
+        <p className="text-gray-500 dark:text-gray-400 text-sm mt-2 max-w-sm">
           Start a conversation by typing your prompt in the box below.
           Try to be specific and clear with your instructions.
         </p>
@@ -64,7 +64,7 @@ const ChatMessageList = () => {
   }
   
   return (
-    <div className="py-4 px-2">
+    <div className="py-4 px-2 dark:bg-dark-background">
       {currentSession.messages.map((message) => (
         <div 
           key={message.id} 
@@ -83,10 +83,10 @@ const ChatMessageList = () => {
               </span>
             </div>
             <div className="space-y-1 flex-1">
-              <p className="text-xs font-medium text-gray-500">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
                 {message.role === "user" ? "You" : "Assistant"}
               </p>
-              <div className="message-content whitespace-pre-wrap">
+              <div className="message-content whitespace-pre-wrap dark:text-gray-200">
                 {message.content}
               </div>
             </div>

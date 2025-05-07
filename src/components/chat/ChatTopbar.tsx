@@ -25,7 +25,7 @@ const ChatTopbar = ({
   handleToggleCompareMode,
 }: ChatTopbarProps) => {
   return (
-    <div className="sticky top-0 z-10 bg-white border-b border-gray-200">
+    <div className="sticky top-0 z-10 bg-white dark:bg-dark-card border-b border-gray-200 dark:border-dark-border chat-topbar">
       {/* Main topbar with title and right-side controls */}
       <div className="flex items-center justify-between px-4 py-2">
         <h2 className="font-medium text-fpt-orange">Chat</h2>
@@ -39,13 +39,13 @@ const ChatTopbar = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowContextPrompt(!showContextPrompt)}
-                  className="h-8 px-2 sm:px-3"
+                  className="h-8 px-2 sm:px-3 dark:text-gray-300 dark:hover:bg-dark-accent"
                 >
                   <Settings className="h-4 w-4 sm:mr-1" />
                   <span className="hidden sm:inline">Context</span>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="dark:bg-dark-card dark:text-gray-300">
                 <p>{showContextPrompt ? "Hide Context" : "Set Context"}</p>
               </TooltipContent>
             </Tooltip>
@@ -57,13 +57,13 @@ const ChatTopbar = ({
                   variant="ghost"
                   size="sm"
                   onClick={handleToggleCompareMode}
-                  className={`h-8 px-2 sm:px-3 ${isCompareMode ? "bg-blue-100 text-blue-800" : ""}`}
+                  className={`h-8 px-2 sm:px-3 dark:hover:bg-dark-accent dark:text-gray-300 ${isCompareMode ? "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300" : ""}`}
                 >
                   <GitCompareArrows className="h-4 w-4 sm:mr-1" />
                   <span className="hidden sm:inline">{isCompareMode ? "Exit" : "Compare"}</span>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="dark:bg-dark-card dark:text-gray-300">
                 <p>{isCompareMode ? "Exit Compare Mode" : "Enter Compare Mode"}</p>
               </TooltipContent>
             </Tooltip>
@@ -71,12 +71,12 @@ const ChatTopbar = ({
             {/* History Button */}
             <Tooltip>
               <TooltipTrigger asChild>
-                <SidebarTrigger className="h-8 px-2 sm:px-3">
+                <SidebarTrigger className="h-8 px-2 sm:px-3 dark:text-gray-300 dark:hover:bg-dark-accent">
                   <History className="h-4 w-4 sm:mr-1" />
                   <span className="hidden sm:inline">History</span>
                 </SidebarTrigger>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="dark:bg-dark-card dark:text-gray-300">
                 <p>View Chat History</p>
               </TooltipContent>
             </Tooltip>
@@ -85,7 +85,7 @@ const ChatTopbar = ({
       </div>
       
       {/* Model selector section - appears below the main topbar */}
-      <div className="px-4 py-1 border-t border-gray-100 flex justify-end">
+      <div className="px-4 py-1 border-t border-gray-100 dark:border-dark-border flex justify-end">
         {isCompareMode ? <ComparisonModelSelectors /> : <ModelSelector />}
       </div>
     </div>
