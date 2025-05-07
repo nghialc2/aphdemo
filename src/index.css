@@ -132,13 +132,13 @@ body.dark-theme {
   @apply bg-gray-800/10;
 }
 
-/* Add styling for the empty state in dark mode */
+/* Add styling for the empty state in dark mode with improved contrast */
 .dark-theme .empty-chat-message {
-  @apply text-gray-100;
+  @apply text-white font-bold; /* Increased contrast from gray-100 to white */
 }
 
 .dark-theme .empty-chat-description {
-  @apply text-gray-300;
+  @apply text-gray-200; /* Increased contrast from gray-300 to gray-200 */
 }
 
 /* Add better contrast for code blocks in dark mode */
@@ -157,4 +157,39 @@ body.dark-theme {
 
 .dark-theme .dark-text-bright {
   @apply text-white;
+}
+
+/* Improved instructions panel text contrast for light mode */
+.instructions-title {
+  @apply font-bold text-gray-900;
+}
+
+.instructions-text {
+  @apply text-gray-800 font-medium;
+}
+
+.instructions-list-item {
+  @apply text-gray-800 font-medium;
+}
+
+/* Improved instructions panel text contrast for dark mode */
+.dark-theme .instructions-title {
+  @apply text-white font-bold;
+}
+
+.dark-theme .instructions-text {
+  @apply text-white;
+}
+
+.dark-theme .instructions-list-item {
+  @apply text-white;
+}
+
+/* Improved empty chat state contrast */
+.empty-chat-title {
+  @apply text-gray-900 font-bold dark:text-white;
+}
+
+.empty-chat-description {
+  @apply text-gray-700 dark:text-gray-200;
 }
