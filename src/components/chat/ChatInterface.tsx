@@ -112,7 +112,7 @@ const ChatInterface = () => {
     : { leftMessages: [], rightMessages: [] };
 
   return (
-    <div className="flex flex-col h-full border-l border-gray-200 dark:border-dark-border w-full chat-interface">
+    <div className="flex flex-col h-full border-l border-gray-200 w-full chat-interface">
       <ChatTopbar 
         showContextPrompt={showContextPrompt}
         setShowContextPrompt={setShowContextPrompt}
@@ -120,9 +120,9 @@ const ChatInterface = () => {
         handleToggleCompareMode={handleToggleCompareMode}
       />
       
-      <div className="flex-1 flex flex-col overflow-hidden dark:bg-dark-background">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {showContextPrompt && (
-          <div className="p-4 border-b border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-card">
+          <div className="p-4 border-b border-gray-200 bg-gray-50">
             <ContextPrompt 
               value={contextPrompt}
               onChange={handleContextChange}
@@ -143,7 +143,7 @@ const ChatInterface = () => {
         
         {/* Only show the input form when NOT in compare mode */}
         {!isCompareMode && (
-          <div className="border-t border-gray-200 dark:border-dark-border p-4 bg-white dark:bg-dark-card">
+          <div className="border-t border-gray-200 p-4 bg-white">
             <form onSubmit={handleSubmit} className="flex space-x-2">
               <Input
                 ref={inputRef}
@@ -151,7 +151,7 @@ const ChatInterface = () => {
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Type your prompt here..."
                 disabled={isProcessing}
-                className="flex-1 dark:bg-dark-input dark:text-dark-foreground dark:border-dark-border chat-input"
+                className="flex-1 chat-input"
               />
               <Button 
                 type="submit" 
@@ -163,7 +163,7 @@ const ChatInterface = () => {
               </Button>
             </form>
             {isProcessing && (
-              <div className="text-xs text-center mt-2 text-gray-500 dark:text-gray-400 animate-pulse">
+              <div className="text-xs text-center mt-2 text-gray-500 animate-pulse">
                 Processing your request...
               </div>
             )}

@@ -46,16 +46,6 @@
   }
 }
 
-/* Dark theme styles */
-.dark-theme {
-  --background: 240 10% 3.9%;
-  --foreground: 0 0% 98%;
-}
-
-body.dark-theme {
-  @apply bg-dark-background text-dark-foreground;
-}
-
 @layer base {
   * {
     @apply border-border;
@@ -89,24 +79,7 @@ body.dark-theme {
   }
   
   .message-content {
-    @apply whitespace-pre-wrap text-gray-800 font-medium;
-  }
-
-  /* Dark theme specific styles - kept for reference but not active */
-  .dark-theme .chat-interface {
-    @apply bg-dark-background border-dark-border;
-  }
-  
-  .dark-theme .chat-topbar {
-    @apply bg-dark-card border-dark-border;
-  }
-  
-  .dark-theme .chat-input {
-    @apply bg-dark-input border-dark-border text-dark-foreground;
-  }
-  
-  .dark-theme .chat-button {
-    @apply bg-fpt-blue text-dark-foreground hover:bg-fpt-darkBlue;
+    @apply whitespace-pre-wrap text-gray-800;
   }
 
   /* Comparison mode styles */
@@ -150,5 +123,5 @@ body.dark-theme {
 
 /* Updated styling for chat message content */
 .message-content {
-  @apply text-gray-900 font-semibold;
+  @apply text-gray-900;
 }

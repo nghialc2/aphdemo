@@ -14,7 +14,7 @@ const ChatMessageList = () => {
   if (!currentSession || currentSession.messages.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-4">
-        <div className="mb-2 w-12 h-12 bg-fpt-blue/10 dark:bg-fpt-blue/30 rounded-full flex items-center justify-center">
+        <div className="mb-2 w-12 h-12 bg-fpt-blue/10 rounded-full flex items-center justify-center">
           <svg
             width="24"
             height="24"
@@ -86,7 +86,7 @@ const ChatMessageList = () => {
               <p className="text-xs font-medium text-gray-500">
                 {message.role === "user" ? "You" : "Assistant"}
               </p>
-              <div className="message-content whitespace-pre-wrap font-medium text-gray-900">
+              <div className="message-content whitespace-pre-wrap text-gray-900">
                 {message.content}
               </div>
             </div>

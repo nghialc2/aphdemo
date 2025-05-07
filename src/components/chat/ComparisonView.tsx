@@ -128,7 +128,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
                     <p className="text-xs font-medium text-gray-600">
                       {message.role === "user" ? "You" : leftModel.name}
                     </p>
-                    <div className="message-content whitespace-pre-wrap text-gray-900 font-medium">
+                    <div className="message-content whitespace-pre-wrap text-gray-900">
                       {message.content}
                     </div>
                   </div>
@@ -166,7 +166,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
                     <p className="text-xs font-medium text-gray-600">
                       {message.role === "user" ? "You" : rightModel.name}
                     </p>
-                    <div className="message-content whitespace-pre-wrap text-gray-900 font-medium">
+                    <div className="message-content whitespace-pre-wrap text-gray-900">
                       {message.content}
                     </div>
                   </div>

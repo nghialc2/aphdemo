@@ -20,16 +20,7 @@ const removeLovableBadge = () => {
 };
 removeLovableBadge();
 
-// Add dark theme to body
-const enableDarkTheme = () => {
-  document.body.classList.add('dark-theme');
-};
-
 const App = () => {
-  useEffect(() => {
-    enableDarkTheme();
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
