@@ -18,7 +18,8 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
   const { availableModels, sendComparisonMessage, isProcessing, getContextPrompt, currentSession } = useSession();
   const { leftModelId, rightModelId } = useCompare();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [inputValue, setInputValue] = useState("");
+  const [leftInputValue, setLeftInputValue] = useState("");
+  const [rightInputValue, setRightInputValue] = useState("");
   const { toast } = useToast();
   
   // Find model names for display
@@ -33,13 +34,11 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
   const safeLeftMessages = Array.isArray(leftMessages) ? leftMessages : [];
   const safeRightMessages = Array.isArray(rightMessages) ? rightMessages : [];
   
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    
+  const handleSubmit = async (inputValue: string, modelId: string) => {
     if (inputValue.trim() === "") {
       toast({
-        title: "Error",
-        description: "Please enter a message",
+        title: "Lỗi",
+        description: "Vui lòng nhập tin nhắn",
         variant: "destructive",
       });
       return;
@@ -51,12 +50,15 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
       
       // Send comparison message
       await sendComparisonMessage(inputValue, leftModelId, rightModelId, contextPrompt);
-      setInputValue("");
+      
+      // Clear both inputs after sending
+      setLeftInputValue("");
+      setRightInputValue("");
     } catch (error) {
       console.error("Error sending comparison message:", error);
       toast({
-        title: "Error",
-        description: "Failed to send message. Please try again.",
+        title: "Lỗi",
+        description: "Không thể gửi tin nhắn. Vui lòng thử lại.",
         variant: "destructive",
       });
     }
@@ -72,40 +74,71 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
               <GitCompareArrows className="h-6 w-6 text-fpt-blue" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 font-bold">
-              Comparison Mode Active
+              Chế độ so sánh đã kích hoạt
             </h3>
             <p className="text-gray-700 text-sm mt-2 max-w-sm">
-              Send a message to see responses from both models side by side.
+              Gửi tin nhắn để xem phản hồi từ cả hai mô hình cạnh nhau.
             </p>
           </div>
         </div>
         
         {/* Fixed input form at bottom */}
-        <div className="border-t border-gray-200 p-4 bg-white">
-          <form onSubmit={handleSubmit} className="flex space-x-2">
-            <Input
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Type your prompt here..."
-              disabled={isProcessing}
-              className="flex-1"
-            />
-            <Button 
-              type="submit" 
-              disabled={isProcessing || inputValue.trim() === ""}
-            >
-              <Send className="h-4 w-4 mr-2" />
-              Compare
-            </Button>
-          </form>
+        <div className="border-t border-gray-200 p-4 bg-white sticky bottom-0">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="border-r pr-2">
+              <p className="text-xs font-medium text-gray-600 mb-2 text-center">{leftModel.name}</p>
+              <div className="flex space-x-2">
+                <Input
+                  value={leftInputValue}
+                  onChange={(e) => setLeftInputValue(e.target.value)}
+                  placeholder="Nhập câu hỏi của bạn..."
+                  disabled={isProcessing}
+                  className="flex-1"
+                />
+                <Button 
+                  onClick={() => handleSubmit(leftInputValue, leftModelId)}
+                  disabled={isProcessing || leftInputValue.trim() === ""}
+                  className="bg-blue-500 hover:bg-blue-600"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            
+            <div>
+              <p className="text-xs font-medium text-gray-600 mb-2 text-center">{rightModel.name}</p>
+              <div className="flex space-x-2">
+                <Input
+                  value={rightInputValue}
+                  onChange={(e) => setRightInputValue(e.target.value)}
+                  placeholder="Nhập câu hỏi của bạn..."
+                  disabled={isProcessing}
+                  className="flex-1"
+                />
+                <Button 
+                  onClick={() => handleSubmit(rightInputValue, rightModelId)}
+                  disabled={isProcessing || rightInputValue.trim() === ""}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+          {isProcessing && (
+            <div className="text-xs text-center mt-2 text-gray-500 animate-pulse">
+              Đang so sánh mô hình...
+            </div>
+          )}
         </div>
       </div>
     );
   }
   
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto">
+    <div className="flex flex-col h-full relative">
+      {/* Scrollable messages container with specific height to allow for fixed input */}
+      <div className="flex-1 overflow-y-auto pb-24">
         <div className="grid grid-cols-2 gap-2 py-4 px-2">
           <div className="border-r pr-2">
             <div className="sticky top-0 bg-white p-2 mb-2 z-10 flex items-center justify-center">
@@ -133,7 +166,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
                     </div>
                     <div className="space-y-1 flex-1">
                       <p className="text-xs font-medium text-gray-600">
-                        {message.role === "user" ? "You" : leftModel.name}
+                        {message.role === "user" ? "Bạn" : leftModel.name}
                       </p>
                       <div className="message-content whitespace-pre-wrap text-gray-900">
                         {message.content}
@@ -171,7 +204,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
                     </div>
                     <div className="space-y-1 flex-1">
                       <p className="text-xs font-medium text-gray-600">
-                        {message.role === "user" ? "You" : rightModel.name}
+                        {message.role === "user" ? "Bạn" : rightModel.name}
                       </p>
                       <div className="message-content whitespace-pre-wrap text-gray-900">
                         {message.content}
@@ -186,28 +219,52 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
         </div>
       </div>
       
-      {/* Fixed message input form at the bottom */}
-      <div className="border-t border-gray-200 p-4 bg-white mt-auto">
-        <form onSubmit={handleSubmit} className="flex space-x-2">
-          <Input
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Type your prompt here..."
-            disabled={isProcessing}
-            className="flex-1"
-          />
-          <Button 
-            type="submit" 
-            disabled={isProcessing || inputValue.trim() === ""}
-            className="bg-gradient-to-r from-fpt-blue to-blue-700 hover:from-fpt-darkBlue hover:to-blue-800"
-          >
-            <Send className="h-4 w-4 mr-2" />
-            Compare
-          </Button>
-        </form>
+      {/* Fixed input form at the bottom */}
+      <div className="border-t border-gray-200 p-4 bg-white absolute bottom-0 left-0 right-0">
+        <div className="grid grid-cols-2 gap-2">
+          <div className="border-r pr-2">
+            <p className="text-xs font-medium text-gray-600 mb-2 text-center">{leftModel.name}</p>
+            <div className="flex space-x-2">
+              <Input
+                value={leftInputValue}
+                onChange={(e) => setLeftInputValue(e.target.value)}
+                placeholder="Nhập câu hỏi của bạn..."
+                disabled={isProcessing}
+                className="flex-1"
+              />
+              <Button 
+                onClick={() => handleSubmit(leftInputValue, leftModelId)}
+                disabled={isProcessing || leftInputValue.trim() === ""}
+                className="bg-blue-500 hover:bg-blue-600"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          
+          <div>
+            <p className="text-xs font-medium text-gray-600 mb-2 text-center">{rightModel.name}</p>
+            <div className="flex space-x-2">
+              <Input
+                value={rightInputValue}
+                onChange={(e) => setRightInputValue(e.target.value)}
+                placeholder="Nhập câu hỏi của bạn..."
+                disabled={isProcessing}
+                className="flex-1"
+              />
+              <Button 
+                onClick={() => handleSubmit(rightInputValue, rightModelId)}
+                disabled={isProcessing || rightInputValue.trim() === ""}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
         {isProcessing && (
           <div className="text-xs text-center mt-2 text-gray-500 animate-pulse">
-            Comparing models...
+            Đang so sánh mô hình...
           </div>
         )}
       </div>
