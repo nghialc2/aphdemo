@@ -19,11 +19,11 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
   return (
     <div className="h-full flex flex-col bg-white">
       <div className="flex items-center justify-between border-b border-gray-200 p-4">
-        <h2 className="font-bold text-lg text-fpt-blue">Instructions</h2>
+        <h2 className="font-bold text-lg text-fpt-blue">Hướng Dẫn</h2>
         {collapsible && (
           <Button variant="ghost" size="icon" onClick={onCollapse}>
             <ChevronLeft className="h-5 w-5" />
-            <span className="sr-only">Collapse</span>
+            <span className="sr-only">Thu gọn</span>
           </Button>
         )}
       </div>
@@ -36,11 +36,11 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
         <TabsList className="px-4 py-2 justify-start border-b w-full rounded-none bg-gray-50 flex-shrink-0">
           <TabsTrigger value="instructions" className="flex items-center">
             <Book className="mr-2 h-4 w-4" />
-            <span>Instructions</span>
+            <span>Hướng Dẫn</span>
           </TabsTrigger>
           <TabsTrigger value="examples" className="flex items-center">
             <BookOpen className="mr-2 h-4 w-4" />
-            <span>Examples</span>
+            <span>Ví Dụ</span>
           </TabsTrigger>
         </TabsList>
         
@@ -58,55 +58,55 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
                   
                   <div className="space-y-3">
                     <p>
-                      This lab allows you to practice crafting effective prompts for
-                      large language models. You'll learn how to:
+                      Phòng Lab này cho phép bạn thực hành xây dựng các câu lệnh hiệu quả cho
+                      các mô hình ngôn ngữ lớn. Bạn sẽ học cách:
                     </p>
                     
                     <ul className="list-disc list-inside space-y-1 ml-4">
-                      <li>Write clear, specific instructions</li>
-                      <li>Structure prompts for optimal responses</li>
-                      <li>Compare results across different models</li>
-                      <li>Iterate and refine your prompt engineering skills</li>
+                      <li>Viết hướng dẫn rõ ràng, cụ thể</li>
+                      <li>Cấu trúc câu lệnh để có phản hồi tối ưu</li>
+                      <li>So sánh kết quả giữa các mô hình khác nhau</li>
+                      <li>Lặp lại và hoàn thiện kỹ năng xây dựng câu lệnh</li>
                     </ul>
                     
                     <div className="bg-fpt-lightGreen p-4 rounded-md">
-                      <p className="font-medium text-fpt-green">Getting Started:</p>
+                      <p className="font-medium text-fpt-green">Bắt đầu:</p>
                       <ol className="list-decimal list-inside ml-2 space-y-1">
-                        <li>Choose a model from the dropdown in the chat panel</li>
-                        <li>Type your prompt in the message input</li>
-                        <li>Review the response and refine your approach</li>
+                        <li>Chọn một mô hình từ menu thả xuống trong bảng điều khiển trò chuyện</li>
+                        <li>Nhập câu lệnh của bạn trong ô nhập tin nhắn</li>
+                        <li>Xem xét phản hồi và điều chỉnh phương pháp của bạn</li>
                       </ol>
                     </div>
                     
                     <p className="text-sm text-gray-600 italic">
-                      Remember: The quality of your prompts directly affects the quality of the responses!
+                      Hãy nhớ: Chất lượng câu lệnh của bạn ảnh hưởng trực tiếp đến chất lượng của các phản hồi!
                     </p>
                   </div>
                 </div>
                 
                 <div className="space-y-3">
                   <h3 className="text-lg font-bold text-fpt-blue">
-                    Today's Exercises
+                    Bài Tập Hôm Nay
                   </h3>
                   
                   <div className="border-l-4 border-fpt-blue pl-3">
-                    <p className="font-medium">Exercise 1: Role Definition</p>
+                    <p className="font-medium">Bài tập 1: Xác định vai trò</p>
                     <p className="text-sm">
-                      Write a prompt that clearly defines the role the AI should take (e.g., expert copywriter, financial advisor).
+                      Viết một câu lệnh xác định rõ vai trò mà AI nên đảm nhiệm (ví dụ: chuyên gia viết quảng cáo, cố vấn tài chính).
                     </p>
                   </div>
                   
                   <div className="border-l-4 border-fpt-orange pl-3">
-                    <p className="font-medium">Exercise 2: Constraint Setting</p>
+                    <p className="font-medium">Bài tập 2: Thiết lập ràng buộc</p>
                     <p className="text-sm">
-                      Create a prompt with specific constraints (word count, format, audience).
+                      Tạo một câu lệnh với các ràng buộc cụ thể (số từ, định dạng, đối tượng).
                     </p>
                   </div>
                   
                   <div className="border-l-4 border-fpt-green pl-3">
-                    <p className="font-medium">Exercise 3: Sequential Instructions</p>
+                    <p className="font-medium">Bài tập 3: Hướng dẫn theo trình tự</p>
                     <p className="text-sm">
-                      Develop a multi-step prompt that guides the AI through a complex task.
+                      Phát triển một câu lệnh nhiều bước hướng dẫn AI thực hiện một nhiệm vụ phức tạp.
                     </p>
                   </div>
                 </div>
@@ -122,44 +122,44 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
               <div className="p-4 space-y-6">
                 <div className="space-y-4">
                   <h3 className="text-lg font-bold text-fpt-blue">
-                    Example Prompts
+                    Ví Dụ Về Câu Lệnh
                   </h3>
                   
                   <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
-                    <p className="font-medium">Basic Prompt:</p>
+                    <p className="font-medium">Câu lệnh cơ bản:</p>
                     <p className="text-sm font-mono bg-white p-2 rounded mt-1 border border-gray-200">
-                      Write a short paragraph about artificial intelligence.
+                      Viết một đoạn ngắn về trí tuệ nhân tạo.
                     </p>
                     <p className="text-xs mt-2 text-gray-500">
-                      Too vague, likely to get generic results
+                      Quá mơ hồ, có thể nhận kết quả chung chung
                     </p>
                   </div>
                   
                   <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
-                    <p className="font-medium">Improved Prompt:</p>
+                    <p className="font-medium">Câu lệnh cải thiện:</p>
                     <p className="text-sm font-mono bg-white p-2 rounded mt-1 border border-gray-200">
-                      Act as a technology journalist writing for a business audience. Write a compelling 100-word paragraph about how generative AI is transforming customer service in 2025. Include one specific example and one statistic.
+                      Hãy đóng vai một nhà báo công nghệ viết cho đối tượng doanh nghiệp. Viết một đoạn văn hấp dẫn dài 100 từ về cách AI tạo sinh đang chuyển đổi dịch vụ khách hàng vào năm 2025. Hãy đưa vào một ví dụ cụ thể và một số liệu thống kê.
                     </p>
                     <p className="text-xs mt-2 text-gray-500">
-                      Clear role, audience, length, and specific requirements
+                      Vai trò rõ ràng, đối tượng, độ dài, và yêu cầu cụ thể
                     </p>
                   </div>
                   
                   <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
-                    <p className="font-medium">Advanced Prompt:</p>
+                    <p className="font-medium">Câu lệnh nâng cao:</p>
                     <p className="text-sm font-mono bg-white p-2 rounded mt-1 border border-gray-200 break-words">
-                      I want you to act as a senior UX researcher creating a report for product managers. 
+                      Tôi muốn bạn đóng vai một nhà nghiên cứu UX cấp cao đang tạo báo cáo cho quản lý sản phẩm.
                       
-                      Step 1: Identify 3 key usability issues that commonly affect mobile banking apps.
+                      Bước 1: Xác định 3 vấn đề về khả năng sử dụng thường gặp ảnh hưởng đến ứng dụng ngân hàng di động.
                       
-                      Step 2: For each issue, explain the impact on both user experience and business metrics.
+                      Bước 2: Với mỗi vấn đề, giải thích tác động đến cả trải nghiệm người dùng và các chỉ số kinh doanh.
                       
-                      Step 3: Suggest evidence-based solutions for each issue, citing relevant UX research or principles.
+                      Bước 3: Đề xuất các giải pháp dựa trên bằng chứng cho từng vấn đề, trích dẫn nghiên cứu hoặc nguyên tắc UX liên quan.
                       
-                      Format the response as a structured report with bullet points and clear section headings.
+                      Định dạng phản hồi như một báo cáo có cấu trúc với các điểm đánh dấu và tiêu đề phần rõ ràng.
                     </p>
                     <p className="text-xs mt-2 text-gray-500">
-                      Multi-step instructions with clear formatting guidelines
+                      Hướng dẫn nhiều bước với hướng dẫn định dạng rõ ràng
                     </p>
                   </div>
                 </div>
