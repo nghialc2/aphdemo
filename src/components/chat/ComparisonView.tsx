@@ -65,121 +65,129 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
   // Show placeholder if no messages
   if (safeLeftMessages.length === 0 && safeRightMessages.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center p-4">
-        <div className="mb-2 w-12 h-12 bg-fpt-blue/10 rounded-full flex items-center justify-center">
-          <GitCompareArrows className="h-6 w-6 text-fpt-blue" />
+      <div className="flex flex-col h-full">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center p-4">
+            <div className="mb-2 w-12 h-12 bg-fpt-blue/10 rounded-full flex items-center justify-center mx-auto">
+              <GitCompareArrows className="h-6 w-6 text-fpt-blue" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 font-bold">
+              Comparison Mode Active
+            </h3>
+            <p className="text-gray-700 text-sm mt-2 max-w-sm">
+              Send a message to see responses from both models side by side.
+            </p>
+          </div>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 font-bold">
-          Comparison Mode Active
-        </h3>
-        <p className="text-gray-700 text-sm mt-2 max-w-sm">
-          Send a message to see responses from both models side by side.
-        </p>
         
-        {/* Add input form directly in the placeholder */}
-        <form onSubmit={handleSubmit} className="flex space-x-2 mt-6 w-full max-w-md">
-          <Input
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Type your prompt here..."
-            disabled={isProcessing}
-            className="flex-1"
-          />
-          <Button 
-            type="submit" 
-            disabled={isProcessing || inputValue.trim() === ""}
-          >
-            <Send className="h-4 w-4 mr-2" />
-            Compare
-          </Button>
-        </form>
+        {/* Fixed input form at bottom */}
+        <div className="border-t border-gray-200 p-4 bg-white">
+          <form onSubmit={handleSubmit} className="flex space-x-2">
+            <Input
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="Type your prompt here..."
+              disabled={isProcessing}
+              className="flex-1"
+            />
+            <Button 
+              type="submit" 
+              disabled={isProcessing || inputValue.trim() === ""}
+            >
+              <Send className="h-4 w-4 mr-2" />
+              Compare
+            </Button>
+          </form>
+        </div>
       </div>
     );
   }
   
   return (
     <div className="flex flex-col h-full">
-      <div className="grid grid-cols-2 gap-2 py-4 px-2 flex-1 overflow-y-auto">
-        <div className="border-r pr-2">
-          <div className="sticky top-0 bg-white p-2 mb-2 z-10 flex items-center justify-center">
-            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-              {leftModel.name}
-            </span>
-          </div>
-          <div className="overflow-y-auto">
-            {safeLeftMessages.map((message) => (
-              <div 
-                key={message.id} 
-                className={cn(
-                  "chat-message mb-4",
-                  message.role === "user" ? "user-message" : "assistant-message"
-                )}
-              >
-                <div className="flex items-start">
-                  <div className={cn(
-                    "w-6 h-6 rounded-full mr-3 flex-shrink-0 flex items-center justify-center",
-                    message.role === "user" ? "bg-fpt-orange" : "bg-fpt-blue"
-                  )}>
-                    <span className="text-xs text-white font-bold">
-                      {message.role === "user" ? "U" : "L"}
-                    </span>
-                  </div>
-                  <div className="space-y-1 flex-1">
-                    <p className="text-xs font-medium text-gray-600">
-                      {message.role === "user" ? "You" : leftModel.name}
-                    </p>
-                    <div className="message-content whitespace-pre-wrap text-gray-900">
-                      {message.content}
+      <div className="flex-1 overflow-y-auto">
+        <div className="grid grid-cols-2 gap-2 py-4 px-2">
+          <div className="border-r pr-2">
+            <div className="sticky top-0 bg-white p-2 mb-2 z-10 flex items-center justify-center">
+              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                {leftModel.name}
+              </span>
+            </div>
+            <div className="overflow-y-auto">
+              {safeLeftMessages.map((message) => (
+                <div 
+                  key={message.id} 
+                  className={cn(
+                    "chat-message mb-4",
+                    message.role === "user" ? "user-message" : "assistant-message"
+                  )}
+                >
+                  <div className="flex items-start">
+                    <div className={cn(
+                      "w-6 h-6 rounded-full mr-3 flex-shrink-0 flex items-center justify-center",
+                      message.role === "user" ? "bg-fpt-orange" : "bg-fpt-blue"
+                    )}>
+                      <span className="text-xs text-white font-bold">
+                        {message.role === "user" ? "U" : "L"}
+                      </span>
+                    </div>
+                    <div className="space-y-1 flex-1">
+                      <p className="text-xs font-medium text-gray-600">
+                        {message.role === "user" ? "You" : leftModel.name}
+                      </p>
+                      <div className="message-content whitespace-pre-wrap text-gray-900">
+                        {message.content}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-        
-        <div className="pl-2">
-          <div className="sticky top-0 bg-white p-2 mb-2 z-10 flex items-center justify-center">
-            <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-              {rightModel.name}
-            </span>
-          </div>
-          <div className="overflow-y-auto">
-            {safeRightMessages.map((message) => (
-              <div 
-                key={message.id} 
-                className={cn(
-                  "chat-message mb-4",
-                  message.role === "user" ? "user-message" : "assistant-message"
-                )}
-              >
-                <div className="flex items-start">
-                  <div className={cn(
-                    "w-6 h-6 rounded-full mr-3 flex-shrink-0 flex items-center justify-center",
-                    message.role === "user" ? "bg-fpt-orange" : "bg-green-600"
-                  )}>
-                    <span className="text-xs text-white font-bold">
-                      {message.role === "user" ? "U" : "R"}
-                    </span>
-                  </div>
-                  <div className="space-y-1 flex-1">
-                    <p className="text-xs font-medium text-gray-600">
-                      {message.role === "user" ? "You" : rightModel.name}
-                    </p>
-                    <div className="message-content whitespace-pre-wrap text-gray-900">
-                      {message.content}
+          
+          <div className="pl-2">
+            <div className="sticky top-0 bg-white p-2 mb-2 z-10 flex items-center justify-center">
+              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                {rightModel.name}
+              </span>
+            </div>
+            <div className="overflow-y-auto">
+              {safeRightMessages.map((message) => (
+                <div 
+                  key={message.id} 
+                  className={cn(
+                    "chat-message mb-4",
+                    message.role === "user" ? "user-message" : "assistant-message"
+                  )}
+                >
+                  <div className="flex items-start">
+                    <div className={cn(
+                      "w-6 h-6 rounded-full mr-3 flex-shrink-0 flex items-center justify-center",
+                      message.role === "user" ? "bg-fpt-orange" : "bg-green-600"
+                    )}>
+                      <span className="text-xs text-white font-bold">
+                        {message.role === "user" ? "U" : "R"}
+                      </span>
+                    </div>
+                    <div className="space-y-1 flex-1">
+                      <p className="text-xs font-medium text-gray-600">
+                        {message.role === "user" ? "You" : rightModel.name}
+                      </p>
+                      <div className="message-content whitespace-pre-wrap text-gray-900">
+                        {message.content}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
+          <div ref={messagesEndRef} />
         </div>
-        <div ref={messagesEndRef} />
       </div>
       
-      {/* Add separate message input form for compare mode */}
-      <div className="border-t border-gray-200 p-4 bg-white">
+      {/* Fixed message input form at the bottom */}
+      <div className="border-t border-gray-200 p-4 bg-white mt-auto">
         <form onSubmit={handleSubmit} className="flex space-x-2">
           <Input
             value={inputValue}
