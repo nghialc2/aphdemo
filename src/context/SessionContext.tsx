@@ -23,7 +23,7 @@ interface SessionContextProps {
   createNewSession: () => void;
   selectSession: (sessionId: string) => void;
   sendMessage: (content: string, contextPrompt?: string) => Promise<void>;
-  sendComparisonMessage: (content: string, leftModelId: string, rightModelId: string, contextPrompt?: string) => Promise<void>;
+  sendComparisonMessage: (content: string, leftModelId?: string | null, rightModelId?: string | null, contextPrompt?: string) => Promise<void>;
   selectModel: (modelId: string) => void;
   isProcessing: boolean;
   updateContextPrompt: (sessionId: string, contextPrompt: string) => void;
@@ -304,8 +304,8 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   
   const sendComparisonMessage = async (
     content: string, 
-    leftModelId: string, 
-    rightModelId: string, 
+    leftModelId: string | null = null, 
+    rightModelId: string | null = null, 
     contextPrompt: string = ""
   ) => {
     if (!currentSessionId) return;
@@ -320,18 +320,6 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         content,
         timestamp: Date.now()
       };
-      
-      // Add user message to both sides of the comparison - create deep copies to avoid reference issues
-      setComparisonMessages(prev => {
-        const current = prev[currentSessionId] || { leftMessages: [], rightMessages: [] };
-        return {
-          ...prev,
-          [currentSessionId]: {
-            leftMessages: [...current.leftMessages, {...userMessage}],
-            rightMessages: [...current.rightMessages, {...userMessage}]
-          }
-        };
-      });
       
       // Save the context prompt for this session
       updateContextPrompt(currentSessionId, contextPrompt);
@@ -348,38 +336,117 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         );
       }
 
-      // Call APIs for both models in parallel
-      const [leftResponse, rightResponse] = await Promise.all([
-        callModelAPI(content, leftModelId, contextPrompt, currentSessionId),
-        callModelAPI(content, rightModelId, contextPrompt, currentSessionId)
-      ]);
-      
-      // Create assistant messages
-      const leftAssistantMessage: Message = {
-        id: uuidv4(),
-        role: 'assistant',
-        content: leftResponse,
-        timestamp: Date.now()
-      };
-      
-      const rightAssistantMessage: Message = {
-        id: uuidv4(),
-        role: 'assistant',
-        content: rightResponse,
-        timestamp: Date.now()
-      };
-      
-      // Add assistant messages to comparison
-      setComparisonMessages(prev => {
-        const current = prev[currentSessionId] || { leftMessages: [], rightMessages: [] };
-        return {
-          ...prev,
-          [currentSessionId]: {
-            leftMessages: [...current.leftMessages, leftAssistantMessage],
-            rightMessages: [...current.rightMessages, rightAssistantMessage]
-          }
+      // Handle single model or both models based on provided IDs
+      if (leftModelId && rightModelId) {
+        // Add user message to both sides
+        setComparisonMessages(prev => {
+          const current = prev[currentSessionId] || { leftMessages: [], rightMessages: [] };
+          return {
+            ...prev,
+            [currentSessionId]: {
+              leftMessages: [...current.leftMessages, {...userMessage}],
+              rightMessages: [...current.rightMessages, {...userMessage}]
+            }
+          };
+        });
+        
+        // Call APIs for both models in parallel
+        const [leftResponse, rightResponse] = await Promise.all([
+          callModelAPI(content, leftModelId, contextPrompt, currentSessionId),
+          callModelAPI(content, rightModelId, contextPrompt, currentSessionId)
+        ]);
+        
+        // Create assistant messages
+        const leftAssistantMessage: Message = {
+          id: uuidv4(),
+          role: 'assistant',
+          content: leftResponse,
+          timestamp: Date.now()
         };
-      });
+        
+        const rightAssistantMessage: Message = {
+          id: uuidv4(),
+          role: 'assistant',
+          content: rightResponse,
+          timestamp: Date.now()
+        };
+        
+        // Add assistant messages to comparison
+        setComparisonMessages(prev => {
+          const current = prev[currentSessionId] || { leftMessages: [], rightMessages: [] };
+          return {
+            ...prev,
+            [currentSessionId]: {
+              leftMessages: [...current.leftMessages, leftAssistantMessage],
+              rightMessages: [...current.rightMessages, rightAssistantMessage]
+            }
+          };
+        });
+      } else if (leftModelId) {
+        // Left model only
+        setComparisonMessages(prev => {
+          const current = prev[currentSessionId] || { leftMessages: [], rightMessages: [] };
+          return {
+            ...prev,
+            [currentSessionId]: {
+              leftMessages: [...current.leftMessages, {...userMessage}],
+              rightMessages: [...current.rightMessages]
+            }
+          };
+        });
+        
+        const leftResponse = await callModelAPI(content, leftModelId, contextPrompt, currentSessionId);
+        
+        const leftAssistantMessage: Message = {
+          id: uuidv4(),
+          role: 'assistant',
+          content: leftResponse,
+          timestamp: Date.now()
+        };
+        
+        setComparisonMessages(prev => {
+          const current = prev[currentSessionId] || { leftMessages: [], rightMessages: [] };
+          return {
+            ...prev,
+            [currentSessionId]: {
+              leftMessages: [...current.leftMessages, leftAssistantMessage],
+              rightMessages: [...current.rightMessages]
+            }
+          };
+        });
+      } else if (rightModelId) {
+        // Right model only
+        setComparisonMessages(prev => {
+          const current = prev[currentSessionId] || { leftMessages: [], rightMessages: [] };
+          return {
+            ...prev,
+            [currentSessionId]: {
+              leftMessages: [...current.leftMessages],
+              rightMessages: [...current.rightMessages, {...userMessage}]
+            }
+          };
+        });
+        
+        const rightResponse = await callModelAPI(content, rightModelId, contextPrompt, currentSessionId);
+        
+        const rightAssistantMessage: Message = {
+          id: uuidv4(),
+          role: 'assistant',
+          content: rightResponse,
+          timestamp: Date.now()
+        };
+        
+        setComparisonMessages(prev => {
+          const current = prev[currentSessionId] || { leftMessages: [], rightMessages: [] };
+          return {
+            ...prev,
+            [currentSessionId]: {
+              leftMessages: [...current.leftMessages],
+              rightMessages: [...current.rightMessages, rightAssistantMessage]
+            }
+          };
+        });
+      }
       
     } finally {
       setIsProcessing(false);

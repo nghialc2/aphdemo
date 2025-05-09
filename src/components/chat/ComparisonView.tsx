@@ -1,10 +1,12 @@
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSession } from "@/context/SessionContext";
 import { useCompare } from "@/context/CompareContext";
 import { cn } from "@/lib/utils";
 import { Message, Model } from "@/types";
-import { GitCompareArrows } from "lucide-react";
+import { GitCompareArrows, Send } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface ComparisonViewProps {
   leftMessages: Message[];
@@ -14,7 +16,12 @@ interface ComparisonViewProps {
 const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) => {
   const { availableModels } = useSession();
   const { leftModelId, rightModelId } = useCompare();
+  const { sendComparisonMessage, isProcessing } = useSession();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // State for separate input fields
+  const [leftInput, setLeftInput] = useState("");
+  const [rightInput, setRightInput] = useState("");
   
   // Find model names for display
   const leftModel = availableModels.find(m => m.id === leftModelId) || { name: "Model A" } as Model;
@@ -28,6 +35,23 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
   const safeLeftMessages = Array.isArray(leftMessages) ? leftMessages : [];
   const safeRightMessages = Array.isArray(rightMessages) ? rightMessages : [];
   
+  // Handle submitting messages for each side
+  const handleLeftSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (leftInput.trim() === "") return;
+    
+    await sendComparisonMessage(leftInput, leftModelId, null, "");
+    setLeftInput("");
+  };
+  
+  const handleRightSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (rightInput.trim() === "") return;
+    
+    await sendComparisonMessage(rightInput, null, rightModelId, "");
+    setRightInput("");
+  };
+  
   // Show placeholder if no messages
   if (safeLeftMessages.length === 0 && safeRightMessages.length === 0) {
     return (
@@ -36,24 +60,25 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
           <GitCompareArrows className="h-6 w-6 text-fpt-blue" />
         </div>
         <h3 className="text-lg font-medium text-gray-700">
-          Comparison Mode Active
+          Chế độ so sánh đang hoạt động
         </h3>
         <p className="text-gray-500 text-sm mt-2 max-w-sm">
-          Send a message to see responses from both models side by side.
+          Gửi tin nhắn để xem phản hồi từ cả hai mô hình.
         </p>
       </div>
     );
   }
   
   return (
-    <div className="grid grid-cols-2 gap-2 py-4 px-2">
-      <div className="border-r pr-2">
+    <div className="grid grid-cols-2 gap-2 h-full">
+      {/* Left Model Column */}
+      <div className="border-r pr-2 flex flex-col h-full">
         <div className="sticky top-0 bg-white p-2 mb-2 z-10 flex items-center justify-center">
           <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
             {leftModel.name}
           </span>
         </div>
-        <div className="overflow-y-auto">
+        <div className="overflow-y-auto flex-1 py-4 px-2">
           {safeLeftMessages.map((message) => (
             <div 
               key={message.id} 
@@ -73,7 +98,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
                 </div>
                 <div className="space-y-1 flex-1">
                   <p className="text-xs font-medium text-gray-500">
-                    {message.role === "user" ? "You" : leftModel.name}
+                    {message.role === "user" ? "Bạn" : leftModel.name}
                   </p>
                   <div className="message-content whitespace-pre-wrap">
                     {message.content}
@@ -83,15 +108,34 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
             </div>
           ))}
         </div>
+        <div className="border-t border-gray-200 p-4 bg-white mt-auto">
+          <form onSubmit={handleLeftSubmit} className="flex space-x-2">
+            <Input
+              value={leftInput}
+              onChange={(e) => setLeftInput(e.target.value)}
+              placeholder={`Nhắn tin với ${leftModel.name}...`}
+              disabled={isProcessing}
+              className="flex-1"
+            />
+            <Button 
+              type="submit" 
+              disabled={isProcessing || leftInput.trim() === ""}
+            >
+              <Send className="h-4 w-4 mr-2" />
+              Gửi
+            </Button>
+          </form>
+        </div>
       </div>
       
-      <div className="pl-2">
+      {/* Right Model Column */}
+      <div className="pl-2 flex flex-col h-full">
         <div className="sticky top-0 bg-white p-2 mb-2 z-10 flex items-center justify-center">
           <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
             {rightModel.name}
           </span>
         </div>
-        <div className="overflow-y-auto">
+        <div className="overflow-y-auto flex-1 py-4 px-2">
           {safeRightMessages.map((message) => (
             <div 
               key={message.id} 
@@ -111,7 +155,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
                 </div>
                 <div className="space-y-1 flex-1">
                   <p className="text-xs font-medium text-gray-500">
-                    {message.role === "user" ? "You" : rightModel.name}
+                    {message.role === "user" ? "Bạn" : rightModel.name}
                   </p>
                   <div className="message-content whitespace-pre-wrap">
                     {message.content}
@@ -120,6 +164,24 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
               </div>
             </div>
           ))}
+        </div>
+        <div className="border-t border-gray-200 p-4 bg-white mt-auto">
+          <form onSubmit={handleRightSubmit} className="flex space-x-2">
+            <Input
+              value={rightInput}
+              onChange={(e) => setRightInput(e.target.value)}
+              placeholder={`Nhắn tin với ${rightModel.name}...`}
+              disabled={isProcessing}
+              className="flex-1"
+            />
+            <Button 
+              type="submit" 
+              disabled={isProcessing || rightInput.trim() === ""}
+            >
+              <Send className="h-4 w-4 mr-2" />
+              Gửi
+            </Button>
+          </form>
         </div>
       </div>
       <div ref={messagesEndRef} />
