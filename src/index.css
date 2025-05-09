@@ -79,49 +79,6 @@
   }
   
   .message-content {
-    @apply whitespace-pre-wrap text-gray-800;
+    @apply whitespace-pre-wrap;
   }
-
-  /* Comparison mode styles */
-  .comparison-left-text {
-    @apply text-blue-800 font-medium;
-  }
-  
-  .comparison-right-text {
-    @apply text-green-800 font-medium;
-  }
-}
-
-/* Empty state styling for better visibility */
-.empty-chat-title {
-  @apply text-gray-900 font-bold;
-}
-
-.empty-chat-description {
-  @apply text-gray-700;
-}
-
-/* Make instructions tab content more readable with higher contrast */
-.tab-content {
-  @apply bg-white text-gray-900;
-}
-
-/* Ensure instructions text in tabs has enough contrast */
-.tab-instructions-text {
-  @apply text-gray-900;
-}
-
-/* Improve contrast for instructions examples */
-.example-code {
-  @apply bg-white text-gray-900 border border-gray-200;
-}
-
-/* Make instruction headings clearly visible */
-.instruction-heading {
-  @apply text-gray-900 font-bold;
-}
-
-/* Updated styling for chat message content */
-.message-content {
-  @apply text-gray-900;
 }

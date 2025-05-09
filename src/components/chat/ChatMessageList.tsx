@@ -52,10 +52,10 @@ const ChatMessageList = () => {
             />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 font-bold empty-chat-title">
+        <h3 className="text-lg font-medium text-gray-700">
           Welcome to FPT Prompt Arena
         </h3>
-        <p className="text-gray-700 text-sm mt-2 max-w-sm empty-chat-description">
+        <p className="text-gray-500 text-sm mt-2 max-w-sm">
           Start a conversation by typing your prompt in the box below.
           Try to be specific and clear with your instructions.
         </p>
@@ -86,7 +86,7 @@ const ChatMessageList = () => {
               <p className="text-xs font-medium text-gray-500">
                 {message.role === "user" ? "You" : "Assistant"}
               </p>
-              <div className="message-content whitespace-pre-wrap text-gray-900">
+              <div className="message-content whitespace-pre-wrap">
                 {message.content}
               </div>
             </div>
