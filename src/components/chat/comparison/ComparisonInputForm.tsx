@@ -26,7 +26,7 @@ const ComparisonInputForm = ({
   isProcessing,
 }: ComparisonInputFormProps) => {
   return (
-    <div className="fixed bottom-0 right-0 border-t border-gray-200 p-4 bg-white z-10 w-[calc(100%-var(--sidebar-width,0px))]">
+    <div className="fixed bottom-0 right-0 border-t border-gray-200 p-4 bg-white z-10 w-[calc(100%-var(--sidebar-width))]">
       <div className="max-w-full mx-auto">
         <div className="grid grid-cols-2 gap-2">
           <div className="border-r pr-2">

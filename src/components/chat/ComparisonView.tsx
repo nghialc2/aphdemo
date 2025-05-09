@@ -41,10 +41,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
       // Get context prompt for current session
       const contextPrompt = currentSession ? getContextPrompt(currentSession.id) : "";
       
-      // Determine which input value to use and which model to send to
-      const isLeftModel = modelId === leftModelId;
-      
-      // Send comparison message - use the appropriate input value
+      // Send comparison message
       await sendComparisonMessage(
         inputValue, 
         leftModelId, 
@@ -52,8 +49,8 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
         contextPrompt
       );
       
-      // Only clear the input that was used
-      if (isLeftModel) {
+      // Clear only the input that was used
+      if (modelId === leftModelId) {
         setLeftInputValue("");
       } else {
         setRightInputValue("");

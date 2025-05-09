@@ -22,7 +22,7 @@ const Layout = () => {
   
   // Set CSS variable for sidebar width based on collapsed state
   useEffect(() => {
-    const width = isInstructionsCollapsed ? "48px" : "50%"; // 12px -> 48px for w-12
+    const width = isInstructionsCollapsed ? "48px" : "50%"; // Using percentage for responsive design
     document.documentElement.style.setProperty('--sidebar-width', width);
     
     // Cleanup when component unmounts
