@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from './Header';
 import InstructionsPanel from './InstructionsPanel';
 import ChatInterface from './chat/ChatInterface';
@@ -19,6 +19,17 @@ import {
 
 const Layout = () => {
   const [isInstructionsCollapsed, setIsInstructionsCollapsed] = useState(false);
+  
+  // Set CSS variable for sidebar width based on collapsed state
+  useEffect(() => {
+    const width = isInstructionsCollapsed ? "48px" : "50%"; // 12px -> 48px for w-12
+    document.documentElement.style.setProperty('--sidebar-width', width);
+    
+    // Cleanup when component unmounts
+    return () => {
+      document.documentElement.style.removeProperty('--sidebar-width');
+    };
+  }, [isInstructionsCollapsed]);
   
   return (
     <div className="flex flex-col h-screen">

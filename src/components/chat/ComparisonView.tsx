@@ -44,8 +44,13 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
       // Determine which input value to use and which model to send to
       const isLeftModel = modelId === leftModelId;
       
-      // Send comparison message
-      await sendComparisonMessage(inputValue, leftModelId, rightModelId, contextPrompt);
+      // Send comparison message - use the appropriate input value
+      await sendComparisonMessage(
+        inputValue, 
+        leftModelId, 
+        rightModelId, 
+        contextPrompt
+      );
       
       // Only clear the input that was used
       if (isLeftModel) {
