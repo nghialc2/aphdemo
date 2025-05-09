@@ -37,7 +37,7 @@ const ComparisonContent = ({
   
   return (
     <div className="flex flex-col h-full relative">
-      <div className="flex-1 overflow-y-auto pb-24">
+      <div className="overflow-y-auto pb-32">
         <div className="grid grid-cols-2 gap-2 py-4 px-2">
           <ComparisonMessageList 
             messages={leftMessages} 

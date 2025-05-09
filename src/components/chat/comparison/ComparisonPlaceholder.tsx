@@ -26,7 +26,7 @@ const ComparisonPlaceholder = ({
 }: ComparisonPlaceholderProps) => {
   return (
     <div className="flex flex-col h-full relative">
-      <div className="flex-1 overflow-y-auto pb-24">
+      <div className="overflow-y-auto pb-32">
         <div className="flex items-center justify-center h-full">
           <div className="text-center p-4">
             <div className="mb-2 w-12 h-12 bg-fpt-blue/10 rounded-full flex items-center justify-center mx-auto">

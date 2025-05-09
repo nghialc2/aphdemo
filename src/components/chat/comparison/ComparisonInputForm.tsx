@@ -26,7 +26,7 @@ const ComparisonInputForm = ({
   isProcessing,
 }: ComparisonInputFormProps) => {
   return (
-    <div className="absolute bottom-0 left-0 right-0 border-t border-gray-200 p-4 bg-white">
+    <div className="fixed bottom-0 left-0 right-0 border-t border-gray-200 p-4 bg-white z-10">
       <div className="grid grid-cols-2 gap-2">
         <div className="border-r pr-2">
           <p className="text-xs font-medium text-gray-600 mb-2 text-center">{leftModel.name}</p>

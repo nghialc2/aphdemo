@@ -20,8 +20,8 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
   const { toast } = useToast();
   
   // Find model names for display
-  const leftModel = availableModels.find(m => m.id === leftModelId) || { name: "Model A" } as Model;
-  const rightModel = availableModels.find(m => m.id === rightModelId) || { name: "Model B" } as Model;
+  const leftModel = availableModels.find(m => m.id === leftModelId) || { name: "Model A", id: leftModelId } as Model;
+  const rightModel = availableModels.find(m => m.id === rightModelId) || { name: "Model B", id: rightModelId } as Model;
   
   // Make sure we have valid arrays to work with
   const safeLeftMessages = Array.isArray(leftMessages) ? leftMessages : [];
@@ -41,12 +41,18 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
       // Get context prompt for current session
       const contextPrompt = currentSession ? getContextPrompt(currentSession.id) : "";
       
+      // Determine which input value to use and which model to send to
+      const isLeftModel = modelId === leftModelId;
+      
       // Send comparison message
       await sendComparisonMessage(inputValue, leftModelId, rightModelId, contextPrompt);
       
-      // Clear both inputs after sending
-      setLeftInputValue("");
-      setRightInputValue("");
+      // Only clear the input that was used
+      if (isLeftModel) {
+        setLeftInputValue("");
+      } else {
+        setRightInputValue("");
+      }
     } catch (error) {
       console.error("Error sending comparison message:", error);
       toast({
