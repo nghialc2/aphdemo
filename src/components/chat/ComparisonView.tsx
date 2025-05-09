@@ -6,6 +6,7 @@ import { Message, Model } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import ComparisonPlaceholder from "./comparison/ComparisonPlaceholder";
 import ComparisonContent from "./comparison/ComparisonContent";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ComparisonViewProps {
   leftMessages: Message[];
@@ -15,8 +16,8 @@ interface ComparisonViewProps {
 const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) => {
   const { availableModels, sendComparisonMessage, isProcessing, getContextPrompt, currentSession } = useSession();
   const { leftModelId, rightModelId } = useCompare();
-  const [leftInputValue, setLeftInputValue] = useState("");
-  const [rightInputValue, setRightInputValue] = useState("");
+  const [inputValue, setInputValue] = useState("");
+  const [activeTab, setActiveTab] = useState<"left" | "right">("left");
   const { toast } = useToast();
   
   // Find model names for display
@@ -27,7 +28,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
   const safeLeftMessages = Array.isArray(leftMessages) ? leftMessages : [];
   const safeRightMessages = Array.isArray(rightMessages) ? rightMessages : [];
   
-  const handleSubmit = async (inputValue: string, modelId: string) => {
+  const handleSubmit = async (inputValue: string) => {
     if (inputValue.trim() === "") {
       toast({
         title: "Lỗi",
@@ -41,6 +42,9 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
       // Get context prompt for current session
       const contextPrompt = currentSession ? getContextPrompt(currentSession.id) : "";
       
+      // Get the current active model ID
+      const modelId = activeTab === "left" ? leftModelId : rightModelId;
+      
       // Send comparison message
       await sendComparisonMessage(
         inputValue, 
@@ -49,12 +53,8 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
         contextPrompt
       );
       
-      // Clear only the input that was used
-      if (modelId === leftModelId) {
-        setLeftInputValue("");
-      } else {
-        setRightInputValue("");
-      }
+      // Clear input after sending
+      setInputValue("");
     } catch (error) {
       console.error("Error sending comparison message:", error);
       toast({
@@ -71,10 +71,10 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
       <ComparisonPlaceholder
         leftModel={leftModel}
         rightModel={rightModel}
-        leftInputValue={leftInputValue}
-        rightInputValue={rightInputValue}
-        setLeftInputValue={setLeftInputValue}
-        setRightInputValue={setRightInputValue}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        inputValue={inputValue}
+        setInputValue={setInputValue}
         handleSubmit={handleSubmit}
         isProcessing={isProcessing}
       />
@@ -87,10 +87,10 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
       rightMessages={safeRightMessages}
       leftModel={leftModel}
       rightModel={rightModel}
-      leftInputValue={leftInputValue}
-      rightInputValue={rightInputValue}
-      setLeftInputValue={setLeftInputValue}
-      setRightInputValue={setRightInputValue}
+      activeTab={activeTab}
+      setActiveTab={setActiveTab}
+      inputValue={inputValue}
+      setInputValue={setInputValue}
       handleSubmit={handleSubmit}
       isProcessing={isProcessing}
     />

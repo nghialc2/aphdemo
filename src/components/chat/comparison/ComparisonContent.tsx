@@ -3,17 +3,18 @@ import { useRef, useEffect } from "react";
 import { Message, Model } from "@/types";
 import ComparisonMessageList from "./ComparisonMessageList";
 import ComparisonInputForm from "./ComparisonInputForm";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ComparisonContentProps {
   leftMessages: Message[];
   rightMessages: Message[];
   leftModel: Model;
   rightModel: Model;
-  leftInputValue: string;
-  rightInputValue: string;
-  setLeftInputValue: (value: string) => void;
-  setRightInputValue: (value: string) => void;
-  handleSubmit: (inputValue: string, modelId: string) => Promise<void>;
+  activeTab: "left" | "right";
+  setActiveTab: (tab: "left" | "right") => void;
+  inputValue: string;
+  setInputValue: (value: string) => void;
+  handleSubmit: (inputValue: string) => Promise<void>;
   isProcessing: boolean;
 }
 
@@ -22,10 +23,10 @@ const ComparisonContent = ({
   rightMessages,
   leftModel,
   rightModel,
-  leftInputValue,
-  rightInputValue,
-  setLeftInputValue,
-  setRightInputValue,
+  activeTab,
+  setActiveTab,
+  inputValue,
+  setInputValue,
   handleSubmit,
   isProcessing,
 }: ComparisonContentProps) => {
@@ -38,28 +39,48 @@ const ComparisonContent = ({
   return (
     <div className="flex flex-col h-full relative">
       <div className="overflow-y-auto pb-32">
-        <div className="grid grid-cols-2 gap-2 py-4 px-2">
-          <ComparisonMessageList 
-            messages={leftMessages} 
-            model={leftModel}
-            isLeft={true}
-          />
+        <Tabs 
+          value={activeTab} 
+          onValueChange={(value) => setActiveTab(value as "left" | "right")} 
+          className="w-full"
+        >
+          <TabsList className="w-full mb-4 grid grid-cols-2">
+            <TabsTrigger 
+              value="left"
+              className={activeTab === "left" ? "bg-blue-100" : ""}
+            >
+              {leftModel.name}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="right"
+              className={activeTab === "right" ? "bg-green-100" : ""}
+            >
+              {rightModel.name}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="left" className="p-2">
+            <ComparisonMessageList 
+              messages={leftMessages} 
+              model={leftModel}
+              isLeft={true}
+            />
+          </TabsContent>
           
-          <ComparisonMessageList 
-            messages={rightMessages} 
-            model={rightModel}
-          />
-          <div ref={messagesEndRef} />
-        </div>
+          <TabsContent value="right" className="p-2">
+            <ComparisonMessageList 
+              messages={rightMessages} 
+              model={rightModel}
+            />
+          </TabsContent>
+        </Tabs>
+        <div ref={messagesEndRef} />
       </div>
       
       <ComparisonInputForm
-        leftModel={leftModel}
-        rightModel={rightModel}
-        leftInputValue={leftInputValue}
-        rightInputValue={rightInputValue}
-        setLeftInputValue={setLeftInputValue}
-        setRightInputValue={setRightInputValue}
+        activeModel={activeTab === "left" ? leftModel : rightModel}
+        inputValue={inputValue}
+        setInputValue={setInputValue}
         handleSubmit={handleSubmit}
         isProcessing={isProcessing}
       />
