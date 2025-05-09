@@ -8,6 +8,7 @@ import { GitCompareArrows, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ComparisonViewProps {
   leftMessages: Message[];
@@ -67,23 +68,25 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
   // Show placeholder if no messages
   if (safeLeftMessages.length === 0 && safeRightMessages.length === 0) {
     return (
-      <div className="flex flex-col h-full">
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center p-4">
-            <div className="mb-2 w-12 h-12 bg-fpt-blue/10 rounded-full flex items-center justify-center mx-auto">
-              <GitCompareArrows className="h-6 w-6 text-fpt-blue" />
+      <div className="flex flex-col h-full relative">
+        <div className="flex-1 overflow-y-auto pb-24">
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center p-4">
+              <div className="mb-2 w-12 h-12 bg-fpt-blue/10 rounded-full flex items-center justify-center mx-auto">
+                <GitCompareArrows className="h-6 w-6 text-fpt-blue" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 font-bold">
+                Chế độ so sánh đã kích hoạt
+              </h3>
+              <p className="text-gray-700 text-sm mt-2 max-w-sm">
+                Gửi tin nhắn để xem phản hồi từ cả hai mô hình cạnh nhau.
+              </p>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 font-bold">
-              Chế độ so sánh đã kích hoạt
-            </h3>
-            <p className="text-gray-700 text-sm mt-2 max-w-sm">
-              Gửi tin nhắn để xem phản hồi từ cả hai mô hình cạnh nhau.
-            </p>
           </div>
         </div>
         
         {/* Fixed input form at bottom */}
-        <div className="border-t border-gray-200 p-4 bg-white sticky bottom-0">
+        <div className="absolute bottom-0 left-0 right-0 border-t border-gray-200 p-4 bg-white">
           <div className="grid grid-cols-2 gap-2">
             <div className="border-r pr-2">
               <p className="text-xs font-medium text-gray-600 mb-2 text-center">{leftModel.name}</p>
@@ -137,7 +140,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
   
   return (
     <div className="flex flex-col h-full relative">
-      {/* Scrollable messages container with specific height to allow for fixed input */}
+      {/* Scrollable messages container with fixed height to allow for input at bottom */}
       <div className="flex-1 overflow-y-auto pb-24">
         <div className="grid grid-cols-2 gap-2 py-4 px-2">
           <div className="border-r pr-2">
@@ -146,7 +149,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
                 {leftModel.name}
               </span>
             </div>
-            <div className="overflow-y-auto">
+            <div className="space-y-2">
               {safeLeftMessages.map((message) => (
                 <div 
                   key={message.id} 
@@ -184,7 +187,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
                 {rightModel.name}
               </span>
             </div>
-            <div className="overflow-y-auto">
+            <div className="space-y-2">
               {safeRightMessages.map((message) => (
                 <div 
                   key={message.id} 
@@ -220,7 +223,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
       </div>
       
       {/* Fixed input form at the bottom */}
-      <div className="border-t border-gray-200 p-4 bg-white absolute bottom-0 left-0 right-0">
+      <div className="absolute bottom-0 left-0 right-0 border-t border-gray-200 p-4 bg-white">
         <div className="grid grid-cols-2 gap-2">
           <div className="border-r pr-2">
             <p className="text-xs font-medium text-gray-600 mb-2 text-center">{leftModel.name}</p>
