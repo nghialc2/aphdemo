@@ -19,22 +19,6 @@ const removeLovableBadge = () => {
 };
 removeLovableBadge();
 
-// Add CSS to ensure the body has no scrolling
-const addBodyStyles = () => {
-  const style = document.createElement('style');
-  style.textContent = `
-    html, body, #root {
-      height: 100%;
-      max-height: 100vh;
-      overflow: hidden;
-      margin: 0;
-      padding: 0;
-    }
-  `;
-  document.head.appendChild(style);
-};
-addBodyStyles();
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
