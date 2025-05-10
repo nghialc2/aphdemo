@@ -27,10 +27,10 @@ const ChatTopbar = ({
   return (
     <div className="sticky top-0 z-10 bg-white border-b border-gray-200">
       {/* Main topbar with title and right-side controls */}
-      <div className="flex items-center justify-between px-3 py-2">
+      <div className="flex items-center justify-between px-4 py-3">
         <h2 className="text-sm font-medium text-fpt-orange">Chat</h2>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           <TooltipProvider delayDuration={300}>
             {/* Context Button */}
             <Tooltip>
@@ -39,9 +39,9 @@ const ChatTopbar = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowContextPrompt(!showContextPrompt)}
-                  className="h-8 px-2"
+                  className="h-9 px-3"
                 >
-                  <Settings className="h-4 w-4 mr-1" />
+                  <Settings className="h-4 w-4 mr-2" />
                   <span className="inline text-xs">Context</span>
                 </Button>
               </TooltipTrigger>
@@ -57,9 +57,9 @@ const ChatTopbar = ({
                   variant="ghost"
                   size="sm"
                   onClick={handleToggleCompareMode}
-                  className={`h-8 px-2 ${isCompareMode ? "bg-blue-100 text-blue-800" : ""}`}
+                  className={`h-9 px-3 ${isCompareMode ? "bg-blue-100 text-blue-800" : ""}`}
                 >
-                  <GitCompareArrows className="h-4 w-4 mr-1" />
+                  <GitCompareArrows className="h-4 w-4 mr-2" />
                   <span className="inline text-xs">{isCompareMode ? "Exit" : "Compare"}</span>
                 </Button>
               </TooltipTrigger>
@@ -71,8 +71,8 @@ const ChatTopbar = ({
             {/* History Button */}
             <Tooltip>
               <TooltipTrigger asChild>
-                <SidebarTrigger className="h-8 px-2">
-                  <History className="h-4 w-4 mr-1" />
+                <SidebarTrigger className="h-9 px-3">
+                  <History className="h-4 w-4 mr-2" />
                   <span className="inline text-xs">History</span>
                 </SidebarTrigger>
               </TooltipTrigger>
