@@ -6,11 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useSession } from "@/context/SessionContext";
 import { useCompare } from "@/context/CompareContext";
 import ChatMessageList from "./ChatMessageList";
-import ModelSelector from "./ModelSelector";
-import ComparisonModelSelectors from "./ComparisonModelSelectors";
 import ComparisonView from "./ComparisonView";
-import { History, Send, GitCompareArrows, Settings } from "lucide-react";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Send } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ContextPrompt from './ContextPrompt';
 import ChatTopbar from './ChatTopbar';
@@ -132,7 +129,8 @@ const ChatInterface = () => {
           </div>
         )}
         
-        <ScrollArea className="flex-1">
+        {/* Reduced max-height to reserve space for input at bottom */}
+        <div className="flex-1 overflow-auto" style={{ maxHeight: "calc(100% - 80px)" }}>
           {isCompareMode ? (
             <ComparisonView 
               leftMessages={comparisonMessages.leftMessages}
@@ -141,9 +139,9 @@ const ChatInterface = () => {
           ) : (
             <ChatMessageList />
           )}
-        </ScrollArea>
+        </div>
         
-        <div className="border-t border-gray-200 p-4 bg-white">
+        <div className="border-t border-gray-200 p-4 bg-white mt-auto">
           <form onSubmit={handleSubmit} className="flex space-x-2">
             <Input
               ref={inputRef}
