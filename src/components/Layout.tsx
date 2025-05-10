@@ -25,7 +25,7 @@ const Layout = () => {
       <Header />
       
       <SidebarProvider defaultOpen={false}>
-        <div className="flex-1 flex w-full">
+        <div className="flex-1 flex overflow-hidden w-full">
           {isInstructionsCollapsed ? (
             <div className="w-12 border-r border-gray-200 flex items-start justify-center pt-4">
               <Button 
@@ -39,7 +39,7 @@ const Layout = () => {
               </Button>
             </div>
           ) : (
-            <div className="w-1/2 md:w-2/5 xl:w-1/3 h-full">
+            <div className="w-1/2 md:w-2/5 xl:w-1/3 h-full overflow-hidden">
               <InstructionsPanel 
                 collapsible={true}
                 onCollapse={() => setIsInstructionsCollapsed(true)}
@@ -47,7 +47,7 @@ const Layout = () => {
             </div>
           )}
           
-          <div className={`${isInstructionsCollapsed ? 'flex-1' : 'w-1/2 md:w-3/5 xl:w-2/3'} h-full relative flex`}>
+          <div className={`${isInstructionsCollapsed ? 'flex-1' : 'w-1/2 md:w-3/5 xl:w-2/3'} h-full overflow-hidden relative flex`}>
             <ChatInterface />
             
             <Sidebar side="right">
