@@ -56,18 +56,18 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
     <div className="grid grid-cols-2 gap-2 h-full">
       {/* Left Model Column */}
       <div className="border-r pr-2 flex flex-col h-full">
-        <div className="sticky top-0 bg-white p-1 mb-1 z-10 flex items-center justify-center">
-          <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+        <div className="sticky top-0 bg-white p-2 mb-2 z-10 flex items-center justify-center">
+          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
             {leftModel.name}
           </span>
         </div>
-        <div className="overflow-y-auto flex-1 py-2 px-2">
+        <div className="overflow-y-auto flex-1 py-4 px-2">
           {safeLeftMessages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center p-2">
-              <div className="mb-1 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <GitCompareArrows className="h-5 w-5 text-blue-600" />
+            <div className="flex flex-col items-center justify-center h-full text-center p-4">
+              <div className="mb-2 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <GitCompareArrows className="h-6 w-6 text-blue-600" />
               </div>
-              <p className="text-gray-500 text-xs mt-1">
+              <p className="text-gray-500 text-sm mt-2">
                 Nhắn tin để bắt đầu trò chuyện với {leftModel.name}
               </p>
             </div>
@@ -76,24 +76,24 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
               <div 
                 key={message.id} 
                 className={cn(
-                  "chat-message mb-2",
+                  "chat-message mb-4",
                   message.role === "user" ? "user-message" : "assistant-message"
                 )}
               >
                 <div className="flex items-start">
                   <div className={cn(
-                    "w-5 h-5 rounded-full mr-2 flex-shrink-0 flex items-center justify-center",
+                    "w-6 h-6 rounded-full mr-3 flex-shrink-0 flex items-center justify-center",
                     message.role === "user" ? "bg-fpt-orange" : "bg-fpt-blue"
                   )}>
                     <span className="text-xs text-white font-bold">
                       {message.role === "user" ? "U" : "L"}
                     </span>
                   </div>
-                  <div className="space-y-0.5 flex-1">
+                  <div className="space-y-1 flex-1">
                     <p className="text-xs font-medium text-gray-500">
                       {message.role === "user" ? "Bạn" : leftModel.name}
                     </p>
-                    <div className="message-content whitespace-pre-wrap text-xs">
+                    <div className="message-content whitespace-pre-wrap">
                       {message.content}
                     </div>
                   </div>
@@ -102,21 +102,20 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
             ))
           )}
         </div>
-        <div className="border-t border-gray-200 p-1 bg-white mt-auto">
-          <form onSubmit={handleLeftSubmit} className="flex space-x-1">
+        <div className="border-t border-gray-200 p-4 bg-white mt-auto">
+          <form onSubmit={handleLeftSubmit} className="flex space-x-2">
             <Input
               value={leftInput}
               onChange={(e) => setLeftInput(e.target.value)}
               placeholder={`Nhắn tin với ${leftModel.name}...`}
               disabled={isProcessing}
-              className="flex-1 h-8 text-xs"
+              className="flex-1"
             />
             <Button 
               type="submit" 
               disabled={isProcessing || leftInput.trim() === ""}
-              className="h-8 text-xs px-2"
             >
-              <Send className="h-3 w-3 mr-1" />
+              <Send className="h-4 w-4 mr-2" />
               Gửi
             </Button>
           </form>
@@ -125,18 +124,18 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
       
       {/* Right Model Column */}
       <div className="pl-2 flex flex-col h-full">
-        <div className="sticky top-0 bg-white p-1 mb-1 z-10 flex items-center justify-center">
-          <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+        <div className="sticky top-0 bg-white p-2 mb-2 z-10 flex items-center justify-center">
+          <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
             {rightModel.name}
           </span>
         </div>
-        <div className="overflow-y-auto flex-1 py-2 px-2">
+        <div className="overflow-y-auto flex-1 py-4 px-2">
           {safeRightMessages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center p-2">
-              <div className="mb-1 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                <GitCompareArrows className="h-5 w-5 text-green-600" />
+            <div className="flex flex-col items-center justify-center h-full text-center p-4">
+              <div className="mb-2 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <GitCompareArrows className="h-6 w-6 text-green-600" />
               </div>
-              <p className="text-gray-500 text-xs mt-1">
+              <p className="text-gray-500 text-sm mt-2">
                 Nhắn tin để bắt đầu trò chuyện với {rightModel.name}
               </p>
             </div>
@@ -145,24 +144,24 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
               <div 
                 key={message.id} 
                 className={cn(
-                  "chat-message mb-2",
+                  "chat-message mb-4",
                   message.role === "user" ? "user-message" : "assistant-message"
                 )}
               >
                 <div className="flex items-start">
                   <div className={cn(
-                    "w-5 h-5 rounded-full mr-2 flex-shrink-0 flex items-center justify-center",
+                    "w-6 h-6 rounded-full mr-3 flex-shrink-0 flex items-center justify-center",
                     message.role === "user" ? "bg-fpt-orange" : "bg-green-600"
                   )}>
                     <span className="text-xs text-white font-bold">
                       {message.role === "user" ? "U" : "R"}
                     </span>
                   </div>
-                  <div className="space-y-0.5 flex-1">
+                  <div className="space-y-1 flex-1">
                     <p className="text-xs font-medium text-gray-500">
                       {message.role === "user" ? "Bạn" : rightModel.name}
                     </p>
-                    <div className="message-content whitespace-pre-wrap text-xs">
+                    <div className="message-content whitespace-pre-wrap">
                       {message.content}
                     </div>
                   </div>
@@ -171,21 +170,20 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
             ))
           )}
         </div>
-        <div className="border-t border-gray-200 p-1 bg-white mt-auto">
-          <form onSubmit={handleRightSubmit} className="flex space-x-1">
+        <div className="border-t border-gray-200 p-4 bg-white mt-auto">
+          <form onSubmit={handleRightSubmit} className="flex space-x-2">
             <Input
               value={rightInput}
               onChange={(e) => setRightInput(e.target.value)}
               placeholder={`Nhắn tin với ${rightModel.name}...`}
               disabled={isProcessing}
-              className="flex-1 h-8 text-xs"
+              className="flex-1"
             />
             <Button 
               type="submit" 
               disabled={isProcessing || rightInput.trim() === ""}
-              className="h-8 text-xs px-2"
             >
-              <Send className="h-3 w-3 mr-1" />
+              <Send className="h-4 w-4 mr-2" />
               Gửi
             </Button>
           </form>

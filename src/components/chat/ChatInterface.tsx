@@ -6,8 +6,11 @@ import { useToast } from "@/hooks/use-toast";
 import { useSession } from "@/context/SessionContext";
 import { useCompare } from "@/context/CompareContext";
 import ChatMessageList from "./ChatMessageList";
+import ModelSelector from "./ModelSelector";
+import ComparisonModelSelectors from "./ComparisonModelSelectors";
 import ComparisonView from "./ComparisonView";
-import { Send } from "lucide-react";
+import { History, Send, GitCompareArrows, Settings } from "lucide-react";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ContextPrompt from './ContextPrompt';
 import ChatTopbar from './ChatTopbar';
@@ -119,9 +122,9 @@ const ChatInterface = () => {
         handleToggleCompareMode={handleToggleCompareMode}
       />
       
-      <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {showContextPrompt && (
-          <div className="p-2 border-b border-gray-200 bg-gray-50 max-h-24 overflow-auto">
+          <div className="p-4 border-b border-gray-200 bg-gray-50">
             <ContextPrompt 
               value={contextPrompt}
               onChange={handleContextChange}
@@ -129,7 +132,7 @@ const ChatInterface = () => {
           </div>
         )}
         
-        <ScrollArea className="flex-1 min-h-0">
+        <ScrollArea className="flex-1">
           {isCompareMode ? (
             <ComparisonView 
               leftMessages={comparisonMessages.leftMessages}
@@ -140,7 +143,7 @@ const ChatInterface = () => {
           )}
         </ScrollArea>
         
-        <div className="border-t border-gray-200 p-2 bg-white">
+        <div className="border-t border-gray-200 p-4 bg-white">
           <form onSubmit={handleSubmit} className="flex space-x-2">
             <Input
               ref={inputRef}
@@ -148,19 +151,18 @@ const ChatInterface = () => {
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Type your prompt here..."
               disabled={isProcessing}
-              className="flex-1 h-9"
+              className="flex-1"
             />
             <Button 
               type="submit" 
               disabled={isProcessing || inputValue.trim() === ""}
-              className="h-9"
             >
               <Send className="h-4 w-4 mr-2" />
               Send
             </Button>
           </form>
           {isProcessing && (
-            <div className="text-xs text-center mt-1 text-gray-500 animate-pulse">
+            <div className="text-xs text-center mt-2 text-gray-500 animate-pulse">
               Processing your request...
             </div>
           )}

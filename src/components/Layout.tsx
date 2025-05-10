@@ -21,13 +21,13 @@ const Layout = () => {
   const [isInstructionsCollapsed, setIsInstructionsCollapsed] = useState(false);
   
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col h-screen">
       <Header />
       
       <SidebarProvider defaultOpen={false}>
         <div className="flex-1 flex overflow-hidden w-full">
           {isInstructionsCollapsed ? (
-            <div className="w-10 border-r border-gray-200 flex items-start justify-center pt-4">
+            <div className="w-12 border-r border-gray-200 flex items-start justify-center pt-4">
               <Button 
                 variant="ghost" 
                 size="icon" 
@@ -39,7 +39,7 @@ const Layout = () => {
               </Button>
             </div>
           ) : (
-            <div className="w-[40%] md:w-[35%] lg:w-1/3 h-full overflow-hidden">
+            <div className="w-1/2 md:w-2/5 xl:w-1/3 h-full overflow-hidden">
               <InstructionsPanel 
                 collapsible={true}
                 onCollapse={() => setIsInstructionsCollapsed(true)}
@@ -47,13 +47,13 @@ const Layout = () => {
             </div>
           )}
           
-          <div className={`${isInstructionsCollapsed ? 'flex-1' : 'w-[60%] md:w-[65%] lg:w-2/3'} h-full overflow-hidden relative flex`}>
+          <div className={`${isInstructionsCollapsed ? 'flex-1' : 'w-1/2 md:w-3/5 xl:w-2/3'} h-full overflow-hidden relative flex`}>
             <ChatInterface />
             
             <Sidebar side="right">
               <SidebarHeader>
                 <div className="flex items-center gap-2 px-2">
-                  <h3 className="font-medium text-sm">Chat History</h3>
+                  <h3 className="font-medium">Chat History</h3>
                 </div>
               </SidebarHeader>
               <SidebarContent>

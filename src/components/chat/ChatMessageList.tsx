@@ -64,29 +64,29 @@ const ChatMessageList = () => {
   }
   
   return (
-    <div className="py-2 px-2">
+    <div className="py-4 px-2">
       {currentSession.messages.map((message) => (
         <div 
           key={message.id} 
           className={cn(
-            "chat-message mb-3",
+            "chat-message mb-4",
             message.role === "user" ? "user-message" : "assistant-message"
           )}
         >
           <div className="flex items-start">
             <div className={cn(
-              "w-6 h-6 rounded-full mr-2 flex-shrink-0 flex items-center justify-center",
+              "w-6 h-6 rounded-full mr-3 flex-shrink-0 flex items-center justify-center",
               message.role === "user" ? "bg-fpt-orange" : "bg-fpt-blue"
             )}>
               <span className="text-xs text-white font-bold">
                 {message.role === "user" ? "U" : "A"}
               </span>
             </div>
-            <div className="space-y-0.5 flex-1">
+            <div className="space-y-1 flex-1">
               <p className="text-xs font-medium text-gray-500">
                 {message.role === "user" ? "You" : "Assistant"}
               </p>
-              <div className="message-content whitespace-pre-wrap text-sm">
+              <div className="message-content whitespace-pre-wrap">
                 {message.content}
               </div>
             </div>
