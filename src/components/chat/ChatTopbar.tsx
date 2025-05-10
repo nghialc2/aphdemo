@@ -45,7 +45,7 @@ const ChatTopbar = ({
                   <span className="hidden sm:inline">Context</span>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent side="bottom" className="max-w-[200px]">
                 <p>{showContextPrompt ? "Hide Context" : "Set Context"}</p>
               </TooltipContent>
             </Tooltip>
@@ -63,7 +63,7 @@ const ChatTopbar = ({
                   <span className="hidden sm:inline">{isCompareMode ? "Exit" : "Compare"}</span>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent side="bottom" className="max-w-[200px]">
                 <p>{isCompareMode ? "Exit Compare Mode" : "Enter Compare Mode"}</p>
               </TooltipContent>
             </Tooltip>
@@ -76,7 +76,7 @@ const ChatTopbar = ({
                   <span className="hidden sm:inline">History</span>
                 </SidebarTrigger>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent side="bottom" className="max-w-[200px]">
                 <p>View Chat History</p>
               </TooltipContent>
             </Tooltip>
