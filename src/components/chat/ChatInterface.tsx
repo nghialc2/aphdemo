@@ -6,8 +6,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useSession } from "@/context/SessionContext";
 import { useCompare } from "@/context/CompareContext";
 import ChatMessageList from "./ChatMessageList";
+import ModelSelector from "./ModelSelector";
+import ComparisonModelSelectors from "./ComparisonModelSelectors";
 import ComparisonView from "./ComparisonView";
-import { Send } from "lucide-react";
+import { History, Send, GitCompareArrows, Settings } from "lucide-react";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import ContextPrompt from './ContextPrompt';
 import ChatTopbar from './ChatTopbar';
 
@@ -118,7 +122,7 @@ const ChatInterface = () => {
         handleToggleCompareMode={handleToggleCompareMode}
       />
       
-      <div className="flex flex-col h-full">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {showContextPrompt && (
           <div className="p-4 border-b border-gray-200 bg-gray-50">
             <ContextPrompt 
@@ -128,8 +132,7 @@ const ChatInterface = () => {
           </div>
         )}
         
-        {/* Message list section with fixed height */}
-        <div className="flex-grow overflow-auto" style={{ height: "calc(100% - 100px)" }}>
+        <ScrollArea className="flex-1">
           {isCompareMode ? (
             <ComparisonView 
               leftMessages={comparisonMessages.leftMessages}
@@ -138,10 +141,9 @@ const ChatInterface = () => {
           ) : (
             <ChatMessageList />
           )}
-        </div>
+        </ScrollArea>
         
-        {/* Input section with fixed position at the bottom */}
-        <div className="border-t border-gray-200 p-4 bg-white" style={{ minHeight: "100px" }}>
+        <div className="border-t border-gray-200 p-4 bg-white">
           <form onSubmit={handleSubmit} className="flex space-x-2">
             <Input
               ref={inputRef}
