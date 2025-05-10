@@ -124,7 +124,7 @@ const ChatInterface = () => {
       
       <div className="flex-1 flex flex-col overflow-hidden">
         {showContextPrompt && (
-          <div className="p-4 border-b border-gray-200 bg-gray-50">
+          <div className="p-2 border-b border-gray-200 bg-gray-50">
             <ContextPrompt 
               value={contextPrompt}
               onChange={handleContextChange}
@@ -143,7 +143,7 @@ const ChatInterface = () => {
           )}
         </ScrollArea>
         
-        <div className="border-t border-gray-200 p-4 bg-white">
+        <div className="border-t border-gray-200 p-2 bg-white">
           <form onSubmit={handleSubmit} className="flex space-x-2">
             <Input
               ref={inputRef}
@@ -162,7 +162,7 @@ const ChatInterface = () => {
             </Button>
           </form>
           {isProcessing && (
-            <div className="text-xs text-center mt-2 text-gray-500 animate-pulse">
+            <div className="text-xs text-center mt-1 text-gray-500 animate-pulse">
               Processing your request...
             </div>
           )}

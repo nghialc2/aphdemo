@@ -27,10 +27,10 @@ const ChatTopbar = ({
   return (
     <div className="sticky top-0 z-10 bg-white border-b border-gray-200">
       {/* Main topbar with title and right-side controls */}
-      <div className="flex items-center justify-between px-4 py-2">
+      <div className="flex items-center justify-between px-3 py-1">
         <h2 className="font-medium text-fpt-orange">Chat</h2>
         
-        <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex items-center gap-1 sm:gap-1">
           <TooltipProvider delayDuration={300}>
             {/* Context Button */}
             <Tooltip>
@@ -39,7 +39,7 @@ const ChatTopbar = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowContextPrompt(!showContextPrompt)}
-                  className="h-8 px-2 sm:px-3"
+                  className="h-7 px-2"
                 >
                   <Settings className="h-4 w-4 sm:mr-1" />
                   <span className="hidden sm:inline">Context</span>
@@ -57,7 +57,7 @@ const ChatTopbar = ({
                   variant="ghost"
                   size="sm"
                   onClick={handleToggleCompareMode}
-                  className={`h-8 px-2 sm:px-3 ${isCompareMode ? "bg-blue-100 text-blue-800" : ""}`}
+                  className={`h-7 px-2 ${isCompareMode ? "bg-blue-100 text-blue-800" : ""}`}
                 >
                   <GitCompareArrows className="h-4 w-4 sm:mr-1" />
                   <span className="hidden sm:inline">{isCompareMode ? "Exit" : "Compare"}</span>
@@ -71,7 +71,7 @@ const ChatTopbar = ({
             {/* History Button */}
             <Tooltip>
               <TooltipTrigger asChild>
-                <SidebarTrigger className="h-8 px-2 sm:px-3">
+                <SidebarTrigger className="h-7 px-2">
                   <History className="h-4 w-4 sm:mr-1" />
                   <span className="hidden sm:inline">History</span>
                 </SidebarTrigger>
@@ -85,7 +85,7 @@ const ChatTopbar = ({
       </div>
       
       {/* Model selector section - appears below the main topbar */}
-      <div className="px-4 py-1 border-t border-gray-100 flex justify-end">
+      <div className="px-3 py-1 border-t border-gray-100 flex justify-end">
         {isCompareMode ? <ComparisonModelSelectors /> : <ModelSelector />}
       </div>
     </div>
