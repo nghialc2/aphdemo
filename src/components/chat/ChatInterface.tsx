@@ -8,7 +8,6 @@ import { useCompare } from "@/context/CompareContext";
 import ChatMessageList from "./ChatMessageList";
 import ComparisonView from "./ComparisonView";
 import { Send } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import ContextPrompt from './ContextPrompt';
 import ChatTopbar from './ChatTopbar';
 
@@ -119,7 +118,7 @@ const ChatInterface = () => {
         handleToggleCompareMode={handleToggleCompareMode}
       />
       
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex flex-col h-full">
         {showContextPrompt && (
           <div className="p-4 border-b border-gray-200 bg-gray-50">
             <ContextPrompt 
@@ -129,8 +128,8 @@ const ChatInterface = () => {
           </div>
         )}
         
-        {/* Reduced max-height to reserve space for input at bottom */}
-        <div className="flex-1 overflow-auto" style={{ maxHeight: "calc(100% - 80px)" }}>
+        {/* Message list section with fixed height */}
+        <div className="flex-grow overflow-auto" style={{ height: "calc(100% - 100px)" }}>
           {isCompareMode ? (
             <ComparisonView 
               leftMessages={comparisonMessages.leftMessages}
@@ -141,7 +140,8 @@ const ChatInterface = () => {
           )}
         </div>
         
-        <div className="border-t border-gray-200 p-4 bg-white mt-auto">
+        {/* Input section with fixed position at the bottom */}
+        <div className="border-t border-gray-200 p-4 bg-white" style={{ minHeight: "100px" }}>
           <form onSubmit={handleSubmit} className="flex space-x-2">
             <Input
               ref={inputRef}
