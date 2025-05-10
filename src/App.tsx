@@ -19,6 +19,21 @@ const removeLovableBadge = () => {
 };
 removeLovableBadge();
 
+// Add global style to ensure the app takes up the full screen height
+const addGlobalStyle = () => {
+  const style = document.createElement('style');
+  style.textContent = `
+    html, body, #root {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+  `;
+  document.head.appendChild(style);
+};
+addGlobalStyle();
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>

@@ -21,7 +21,7 @@ const Layout = () => {
   const [isInstructionsCollapsed, setIsInstructionsCollapsed] = useState(false);
   
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen overflow-hidden">
       <Header />
       
       <SidebarProvider defaultOpen={false}>
