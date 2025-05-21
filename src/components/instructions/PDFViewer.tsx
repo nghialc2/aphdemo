@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { FileText, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -34,14 +34,30 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const [hasError, setHasError] = useState(false);
   const [scale, setScale] = useState(1);
   const [pdfData, setPdfData] = useState<ArrayBuffer | null>(null);
+  
+  // Refs for panning functionality
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isPanning, setIsPanning] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [startPanPosition, setStartPanPosition] = useState({ x: 0, y: 0 });
 
-  // Check cache and fetch PDF
+  // Improved PDF caching with memory cache and localStorage
+  const pdfCache = useRef<Map<string, ArrayBuffer>>(new Map());
+
+  // Check cache and fetch PDF - optimized version
   useEffect(() => {
     const cacheKey = `${CACHE_KEY_PREFIX}${currentUrl}`;
     
     const fetchAndCachePDF = async () => {
       try {
-        // Check if PDF is in cache
+        // First check memory cache (fastest)
+        if (pdfCache.current.has(currentUrl)) {
+          console.log('Loading PDF from memory cache:', currentUrl);
+          setPdfData(pdfCache.current.get(currentUrl) || null);
+          return;
+        }
+        
+        // Then check localStorage
         const cachedPdf = localStorage.getItem(cacheKey);
         if (cachedPdf) {
           console.log('Loading PDF from cache:', currentUrl);
@@ -52,7 +68,11 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           for (let i = 0; i < len; i++) {
             bytes[i] = binaryString.charCodeAt(i);
           }
-          setPdfData(bytes.buffer);
+          const arrayBuffer = bytes.buffer;
+          
+          // Store in memory cache for faster subsequent access
+          pdfCache.current.set(currentUrl, arrayBuffer);
+          setPdfData(arrayBuffer);
           return;
         }
         
@@ -62,6 +82,9 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         if (!response.ok) throw new Error('PDF fetch failed');
         
         const arrayBuffer = await response.arrayBuffer();
+        
+        // Store in memory cache
+        pdfCache.current.set(currentUrl, arrayBuffer);
         setPdfData(arrayBuffer);
         
         // Store in localStorage (convert ArrayBuffer to base64 string)
@@ -131,6 +154,35 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const zoomIn = () => setScale(prev => Math.min(prev + 0.2, 2.5));
   const zoomOut = () => setScale(prev => Math.max(prev - 0.2, 0.5));
 
+  // Pan handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (scale > 1) {
+      setIsPanning(true);
+      setStartPanPosition({ x: e.clientX - position.x, y: e.clientY - position.y });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isPanning && scale > 1) {
+      const newX = e.clientX - startPanPosition.x;
+      const newY = e.clientY - startPanPosition.y;
+      setPosition({ x: newX, y: newY });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsPanning(false);
+  };
+
+  const handleMouseLeave = () => {
+    setIsPanning(false);
+  };
+
+  // Reset position when changing pages or zoom level
+  useEffect(() => {
+    setPosition({ x: 0, y: 0 });
+  }, [page, scale <= 1]);
+
   if (hasError) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center text-red-500">
@@ -157,7 +209,11 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
 
   return (
     <div className="w-full flex flex-col items-center space-y-4">
-      <div className="w-full border rounded-md relative" style={{ minHeight: 600 }}>
+      <div 
+        ref={containerRef}
+        className="w-full border rounded-md relative overflow-hidden" 
+        style={{ minHeight: 600 }}
+      >
         {/* Zoom controls */}
         <div className="absolute top-2 right-2 flex space-x-2 z-10 bg-gray-50 p-1 rounded-md shadow-sm">
           <Button
@@ -181,26 +237,38 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           </span>
         </div>
 
-        <Document
-          file={pdfData || currentUrl}
-          onLoadSuccess={onLoadSuccess}
-          onLoadError={onLoadError}
-          loading={
-            <div className="flex flex-col items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-fpt-blue mb-2"></div>
-              <p>Đang tải tài liệu...</p>
-            </div>
-          }
-          className="py-4 flex justify-center"
+        <div 
+          className={`py-4 flex justify-center ${scale > 1 ? 'cursor-grab active:cursor-grabbing' : ''}`}
+          style={{ 
+            overflow: 'auto',
+            transform: scale > 1 ? `translate(${position.x}px, ${position.y}px)` : 'none',
+            transition: isPanning ? 'none' : 'transform 0.1s ease-out'
+          }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
         >
-          <Page
-            pageNumber={page}
-            width={550}
-            scale={scale}
-            renderAnnotationLayer // enable annotation layer
-            renderTextLayer       // enable selectable text layer
-          />
-        </Document>
+          <Document
+            file={pdfData || currentUrl}
+            onLoadSuccess={onLoadSuccess}
+            onLoadError={onLoadError}
+            loading={
+              <div className="flex flex-col items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-fpt-blue mb-2"></div>
+                <p>Đang tải tài liệu...</p>
+              </div>
+            }
+          >
+            <Page
+              pageNumber={page}
+              width={550}
+              scale={scale}
+              renderAnnotationLayer // enable annotation layer
+              renderTextLayer       // enable selectable text layer
+            />
+          </Document>
+        </div>
       </div>
 
       {numPages > 0 && (
