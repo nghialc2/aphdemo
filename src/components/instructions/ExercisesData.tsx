@@ -11,18 +11,16 @@ export const exercisesData: Exercise[] = [
     content: (
       <div className="space-y-4 text-sm">
         <h4 className="font-semibold text-base text-fpt-blue">Tối ưu hóa tuyển dụng với AI</h4>
-        
-        <PDFViewer 
-          // SỬ DỤNG URL RAW CONTENT CHÍNH XÁC TỪ GITHUB
-          // Tên file bạn đã đổi thành 'huong_dan_thuc_hanh_tao_JD.pdf' trên GitHub
-          pdfUrl="https://raw.githubusercontent.com/nghialc2/aphdemo/main/public/huong_dan_thuc_hanh_tao_JD.pdf" 
-          fileName="Hướng dẫn thực hành tạo JD.pdf" 
-          fallbackUrls={[
-            // Đảm bảo đường dẫn fallback này cũng khớp với tên file mới và được host cục bộ bởi Lovable
-            "/huong_dan_thuc_hanh_tao_JD.pdf" 
-          ]}
+
+        <PDFViewer
+          // SỬ DỤNG ĐƯỜNG DẪN TƯƠNG ĐỐI VÌ FILE NẰM TRONG THƯ MỤC PUBLIC CỦA DỰ ÁN LOVABLE
+          pdfUrl="/huong_dan_thuc_hanh_tao_JD.pdf"
+          fileName="Hướng dẫn thực hành tạo JD.pdf"
+          // Trong trường hợp này, có thể không cần fallbackUrls nếu file cục bộ là nguồn chính
+          fallbackUrls={[]}
         />
       </div>
+    )
     )
   },
   {
