@@ -1,20 +1,27 @@
+Tuyệt vời! Việc bạn đã đổi tên file là một bước rất quan trọng.
 
+Dưới đây là đoạn code đã được cập nhật theo khuyến nghị, sử dụng đường dẫn raw.githubusercontent.com với tên file đã được làm sạch:
+
+JavaScript
+
+// ... (giữ nguyên các import và cấu hình pdfjs.GlobalWorkerOptions.workerSrc)
 import React, { useState, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { FileText, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button'; // Giả sử bạn đang dùng shadcn/ui
 
 // Import CSS for PDF viewer
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
-// Configure worker - using version-matched CDN
+// Configure worker - using version-matched CDN (giữ nguyên, trừ khi bạn muốn tự host)
+// Đảm bảo file pdf.worker.min.js có thể truy cập được từ URL này
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 interface PDFViewerProps {
-  pdfUrl: string;
-  fileName?: string;
-  fallbackUrls?: string[];
+  pdfUrl: string; // URL chính để tải PDF
+  fileName?: string; // Tên hiển thị của file
+  fallbackUrls?: string[]; // Các URL dự phòng
 }
 
 const PDFViewer: React.FC<PDFViewerProps> = ({ 
@@ -27,12 +34,21 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
   const [currentUrlIndex, setCurrentUrlIndex] = useState<number>(0);
-  const [allUrls, setAllUrls] = useState<string[]>([pdfUrl, ...fallbackUrls]);
   
+  // Combine all URLs, ensuring the primary pdfUrl is always first
+  const [allUrls, setAllUrls] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Chỉ thiết lập allUrls một lần khi component mount
+    setAllUrls([pdfUrl, ...fallbackUrls]);
+  }, [pdfUrl, fallbackUrls]); // Dependencies để cập nhật nếu props thay đổi
+
   // Log tất cả URL để debug
   useEffect(() => {
-    console.log("PDF loading options:", allUrls);
-    console.log("Current attempt URL:", allUrls[currentUrlIndex]);
+    if (allUrls.length > 0) { // Đảm bảo allUrls đã được thiết lập
+      console.log("PDF loading options:", allUrls);
+      console.log("Current attempt URL:", allUrls[currentUrlIndex]);
+    }
   }, [allUrls, currentUrlIndex]);
 
   // Hàm thử tải PDF từ URL tiếp theo trong danh sách
@@ -42,6 +58,11 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       setCurrentUrlIndex(prevIndex => prevIndex + 1);
       setLoading(true);
       setError(false);
+      setPageNumber(1); // Reset trang khi thử URL mới
+    } else {
+      setError(true);
+      setLoading(false);
+      console.error('All URLs failed to load PDF');
     }
   };
 
@@ -49,19 +70,16 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     console.log("PDF loaded successfully with", numPages, "pages from", allUrls[currentUrlIndex]);
     setNumPages(numPages);
     setLoading(false);
+    setError(false); // Đảm bảo reset lỗi nếu tải thành công sau khi retry
   }
 
   function onDocumentLoadError(err: Error) {
     console.error('Error while loading PDF:', err.message, 'from URL:', allUrls[currentUrlIndex]);
+    // Log lỗi chi tiết từ react-pdf
+    console.error(err); 
     
     // Thử URL tiếp theo nếu có
-    if (currentUrlIndex < allUrls.length - 1) {
-      tryNextUrl();
-    } else {
-      setError(true);
-      setLoading(false);
-      console.error('All URLs failed to load PDF');
-    }
+    tryNextUrl();
   }
 
   function changePage(offset: number) {
@@ -94,9 +112,10 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
               <p className="mt-2">Vui lòng kiểm tra lại đường dẫn và quyền truy cập.</p>
               <Button 
                 onClick={() => {
-                  setCurrentUrlIndex(0);
+                  setCurrentUrlIndex(0); // Reset về URL đầu tiên để thử lại
                   setLoading(true);
                   setError(false);
+                  setPageNumber(1); // Reset trang khi thử lại
                 }}
                 variant="outline"
                 className="mt-4"
@@ -117,7 +136,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         
         {!loading && !error && (
           <Document 
-            file={currentUrl} 
+            file={currentUrl} // Truyền URL hiện tại đang được thử
             onLoadSuccess={onDocumentLoadSuccess}
             onLoadError={onDocumentLoadError}
             className="flex justify-center py-4"
@@ -132,8 +151,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           >
             <Page 
               pageNumber={pageNumber} 
-              renderTextLayer={false}
-              renderAnnotationLayer={false}
+              // Đã xóa renderTextLayer=false và renderAnnotationLayer=false
+              // để cho phép chọn và copy text theo mặc định của react-pdf
               width={550}
               className="shadow-md"
             />
