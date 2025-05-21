@@ -12,7 +12,7 @@ export const exercisesData: Exercise[] = [
         <h4 className="font-semibold text-base text-fpt-blue">Tối ưu hóa tuyển dụng với AI</h4>
         
         <PDFViewer 
-          pdfUrl="/HƯỚNG DẪN THỰC HÀNH TẠO JD.pdf" 
+          pdfUrl="https://github.com/nghialc2/aphdemo/blob/main/public/H%C6%AF%E1%BB%9ANG%20D%E1%BA%AAN%20TH%E1%BB%B0C%20H%C3%80NH%20T%E1%BA%A0O%20JD.pdf" 
           fileName="Hướng dẫn thực hành tạo JD.pdf" 
           fallbackUrls={[
             "/HƯỚNG DẪN THỰC HÀNH TẠO JD.pdf"
