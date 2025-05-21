@@ -29,6 +29,16 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const [page, setPage] = useState(1);
   const [hasError, setHasError] = useState(false);
 
+   // Preload PDF
+  useEffect(() => {
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'document';
+    link.href = pdfUrl;
+    document.head.appendChild(link);
+    return () => { document.head.removeChild(link); };
+  }, [pdfUrl]);
+  
   // Try next URL on error
   const tryNext = () => {
     if (currentIndex < urls.length - 1) {
