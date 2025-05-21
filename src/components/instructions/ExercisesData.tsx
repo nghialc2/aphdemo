@@ -13,11 +13,11 @@ export const exercisesData: Exercise[] = [
         <h4 className="font-semibold text-base text-fpt-blue">Tối ưu hóa tuyển dụng với AI</h4>
 
         <PDFViewer
-          // SỬ DỤNG ĐƯỜNG DẪN TƯƠNG ĐỐI VÌ FILE NẰM TRONG THƯ MỤC PUBLIC CỦA DỰ ÁN LOVABLE
           pdfUrl="/huong_dan_thuc_hanh_tao_JD.pdf"
           fileName="Hướng dẫn thực hành tạo JD.pdf"
-          // Trong trường hợp này, có thể không cần fallbackUrls nếu file cục bộ là nguồn chính
-          fallbackUrls={[]}
+          fallbackUrls={[
+            "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" // Fallback URL đến một PDF test nếu file local không hoạt động
+          ]}
         />
       </div>
     )

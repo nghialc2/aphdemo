@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { FileText, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -7,8 +8,8 @@ import { Button } from '@/components/ui/button';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
-// Configure worker to use local file instead of CDN
-pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
+// Set worker from CDN
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 interface PDFViewerProps {
   pdfUrl: string; // URL chính để tải PDF
@@ -32,7 +33,12 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
 
   useEffect(() => {
     // Set allUrls when component mounts
+    console.log("PDFViewer mounted, setting URLs:", pdfUrl);
     setAllUrls([pdfUrl, ...fallbackUrls]);
+    
+    // In case we're in development mode, output pdfjs version and worker path
+    console.log("PDF.js version:", pdfjs.version);
+    console.log("PDF.js worker path:", pdfjs.GlobalWorkerOptions.workerSrc);
   }, [pdfUrl, fallbackUrls]);
 
   // Log all URLs for debugging
@@ -144,6 +150,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
               pageNumber={pageNumber}
               width={550}
               className="shadow-md"
+              renderAnnotationLayer={false} 
+              renderTextLayer={false}
             />
           </Document>
         )}
