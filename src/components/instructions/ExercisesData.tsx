@@ -12,8 +12,15 @@ export const exercisesData: Exercise[] = [
       <div className="space-y-4 text-sm">
         <h4 className="font-semibold text-base text-fpt-blue">Tối ưu hóa tuyển dụng với AI</h4>
         
-        {/* Sử dụng file PDF local để tránh vấn đề CORS */}
-        <PDFViewer pdfUrl="/exercise1.pdf" fileName="Bài tập 1.pdf" />
+        {/* Sử dụng file PDF từ GitHub repo */}
+        <PDFViewer 
+          pdfUrl="/exercise1.pdf" 
+          fileName="Bài tập 1.pdf" 
+          fallbackUrls={[
+            "/exercise1.pdf",
+            "https://raw.githubusercontent.com/[YOUR_GITHUB_USERNAME]/fpt-prompt-arena/main/exercise1.pdf"
+          ]}
+        />
       </div>
     )
   },

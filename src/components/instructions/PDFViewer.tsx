@@ -14,46 +14,52 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 interface PDFViewerProps {
   pdfUrl: string;
   fileName?: string;
+  fallbackUrls?: string[];
 }
 
-const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, fileName = "document.pdf" }) => {
+const PDFViewer: React.FC<PDFViewerProps> = ({ 
+  pdfUrl, 
+  fileName = "document.pdf",
+  fallbackUrls = [] 
+}) => {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
-  const [processedUrl, setProcessedUrl] = useState<string>("");
-
-  // Convert Google Drive URL to a direct download format
+  const [currentUrlIndex, setCurrentUrlIndex] = useState<number>(0);
+  const [allUrls, setAllUrls] = useState<string[]>([pdfUrl, ...fallbackUrls]);
+  
+  // Log tất cả URL để debug
   useEffect(() => {
-    const getDirectDownloadUrl = (url: string): string => {
-      if (url.includes('drive.google.com/file/d/')) {
-        // Extract file ID from URL
-        const fileIdMatch = url.match(/\/d\/([^\/]+)/);
-        if (fileIdMatch && fileIdMatch[1]) {
-          const fileId = fileIdMatch[1];
-          // Use a more reliable format for Google Drive links
-          return `https://drive.google.com/uc?id=${fileId}&export=download`;
-        }
-      }
-      return url;
-    };
+    console.log("PDF loading options:", allUrls);
+  }, [allUrls]);
 
-    console.log("Original URL:", pdfUrl);
-    const directUrl = getDirectDownloadUrl(pdfUrl);
-    console.log("Processed URL:", directUrl);
-    setProcessedUrl(directUrl);
-  }, [pdfUrl]);
+  // Hàm thử tải PDF từ URL tiếp theo trong danh sách
+  const tryNextUrl = () => {
+    if (currentUrlIndex < allUrls.length - 1) {
+      console.log(`Thử tải từ URL tiếp theo: ${allUrls[currentUrlIndex + 1]}`);
+      setCurrentUrlIndex(prevIndex => prevIndex + 1);
+      setLoading(true);
+      setError(false);
+    }
+  };
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
-    console.log("PDF loaded successfully with", numPages, "pages");
+    console.log("PDF loaded successfully with", numPages, "pages from", allUrls[currentUrlIndex]);
     setNumPages(numPages);
     setLoading(false);
   }
 
-  function onDocumentLoadError(error: Error) {
-    console.error('Error while loading PDF:', error);
-    setError(true);
-    setLoading(false);
+  function onDocumentLoadError(err: Error) {
+    console.error('Error while loading PDF:', err, 'from URL:', allUrls[currentUrlIndex]);
+    
+    // Thử URL tiếp theo nếu có
+    if (currentUrlIndex < allUrls.length - 1) {
+      tryNextUrl();
+    } else {
+      setError(true);
+      setLoading(false);
+    }
   }
 
   function changePage(offset: number) {
@@ -62,9 +68,9 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, fileName = "document.pdf"
       setPageNumber(newPageNumber);
     }
   }
-
-  // Use our built-in sample PDF as a fallback for testing/development
-  const fallbackPdf = "/exercise1.pdf";
+  
+  // Current URL that we're trying to load
+  const currentUrl = allUrls[currentUrlIndex];
   
   return (
     <div className="flex flex-col items-center w-full space-y-4">
@@ -73,7 +79,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, fileName = "document.pdf"
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-fpt-blue mx-auto mb-4"></div>
-              <p>Đang tải tài liệu...</p>
+              <p>Đang tải tài liệu từ {currentUrl}...</p>
             </div>
           </div>
         )}
@@ -82,32 +88,34 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, fileName = "document.pdf"
           <div className="flex items-center justify-center h-64">
             <div className="text-center text-red-500">
               <FileText className="h-16 w-16 mx-auto mb-4" />
-              <p>Không thể tải tài liệu từ Google Drive (có thể do hạn chế CORS).</p>
-              <p className="mt-2">Đang thử tải tài liệu mặc định...</p>
-              <Document 
-                file={fallbackPdf}
-                onLoadSuccess={onDocumentLoadSuccess}
-                onLoadError={(err) => console.error('Fallback PDF error:', err)}
-                className="flex justify-center py-4 mt-4"
+              <p>Không thể tải tài liệu PDF từ bất kỳ nguồn nào đã thử.</p>
+              <p className="mt-2">Vui lòng kiểm tra lại đường dẫn và quyền truy cập.</p>
+              <Button 
+                onClick={() => {
+                  setCurrentUrlIndex(0);
+                  setLoading(true);
+                  setError(false);
+                }}
+                variant="outline"
+                className="mt-4"
               >
-                <Page 
-                  pageNumber={1} 
-                  renderTextLayer={false}
-                  renderAnnotationLayer={false}
-                  width={550}
-                  className="shadow-md"
-                />
-              </Document>
-              <a href={processedUrl} target="_blank" rel="noopener noreferrer" className="text-fpt-blue hover:underline mt-2 block">
+                Thử lại
+              </Button>
+              <a 
+                href={currentUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-fpt-blue hover:underline mt-4 block"
+              >
                 Nhấn vào đây để mở tài liệu trong tab mới
               </a>
             </div>
           </div>
         )}
         
-        {!loading && !error && processedUrl && (
+        {!loading && !error && (
           <Document 
-            file={processedUrl} 
+            file={currentUrl} 
             onLoadSuccess={onDocumentLoadSuccess}
             onLoadError={onDocumentLoadError}
             className="flex justify-center py-4"
@@ -161,7 +169,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, fileName = "document.pdf"
         <p>
           {!error && (
             <>
-              {fileName} - <a href={processedUrl} target="_blank" rel="noopener noreferrer" className="text-fpt-blue hover:underline">
+              {fileName} - <a href={currentUrl} target="_blank" rel="noopener noreferrer" className="text-fpt-blue hover:underline">
                 Mở trong tab mới
               </a>
             </>
