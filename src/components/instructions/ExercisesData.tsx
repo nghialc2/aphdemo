@@ -1,6 +1,10 @@
 
 import React from 'react';
 import { Exercise } from './ExerciseContent';
+import PDFViewer from './PDFViewer';
+
+// PDF file path
+const exercisePdfPath = "/exercise1.pdf";
 
 export const exercisesData: Exercise[] = [
   {
@@ -11,7 +15,9 @@ export const exercisesData: Exercise[] = [
       <div className="space-y-4 text-sm">
         <h4 className="font-semibold text-base text-fpt-blue">Tối ưu hóa tuyển dụng với AI</h4>
         
-        <div className="space-y-2">
+        <PDFViewer pdfUrl={exercisePdfPath} fileName="Bai_tap_1.pdf" />
+        
+        <div className="space-y-2 mt-4">
           <p className="font-medium">Mục tiêu:</p>
           <p>Viết câu lệnh prompt giúp AI có thể hỗ trợ hiệu quả trong quy trình tuyển dụng từ sàng lọc hồ sơ đến đánh giá ứng viên.</p>
         </div>

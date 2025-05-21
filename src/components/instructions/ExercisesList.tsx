@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Exercise } from './ExerciseContent';
+import { FileText } from 'lucide-react';
 
 interface ExercisesListProps {
   exercises: Exercise[];
@@ -25,7 +26,12 @@ const ExercisesList: React.FC<ExercisesListProps> = ({ exercises, onExerciseClic
           } pl-3 cursor-pointer hover:bg-gray-50`}
           onClick={() => onExerciseClick(exercise)}
         >
-          <p className="font-medium">{exercise.title}</p>
+          <div className="flex justify-between items-center">
+            <p className="font-medium">{exercise.title}</p>
+            {exercise.id === 'exercise-1' && (
+              <FileText className="h-4 w-4 text-fpt-blue" />
+            )}
+          </div>
           <p className="text-sm">
             Nhấp vào đây để xem chi tiết bài tập
           </p>
