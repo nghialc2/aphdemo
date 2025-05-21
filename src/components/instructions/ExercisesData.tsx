@@ -1,10 +1,7 @@
 
 import React from 'react';
 import { Exercise } from './ExerciseContent';
-import PDFViewer from './PDFViewer';
-
-// Google Drive embed URL
-const googleDrivePdfUrl = "https://drive.google.com/file/d/19A-kFNVb5FmY3EnP_BTpkPPHWGEZ_Ija/preview";
+import PracticeGuide from './PracticeGuide';
 
 export const exercisesData: Exercise[] = [
   {
@@ -15,7 +12,8 @@ export const exercisesData: Exercise[] = [
       <div className="space-y-4 text-sm">
         <h4 className="font-semibold text-base text-fpt-blue">Tối ưu hóa tuyển dụng với AI</h4>
         
-        <PDFViewer pdfUrl={googleDrivePdfUrl} fileName="Bai_tap_1.pdf" />
+        <PracticeGuide />
+      </div>
     )
   },
   {
