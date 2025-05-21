@@ -13,10 +13,10 @@ export const exercisesData: Exercise[] = [
         <h4 className="font-semibold text-base text-fpt-blue">Tối ưu hóa tuyển dụng với AI</h4>
 
         <PDFViewer
-          pdfUrl="/huong_dan_thuc_hanh_tao_JD.pdf"
+          pdfUrl="https://raw.githubusercontent.com/nghialc2/aphdemo/main/public/huong_dan_thuc_hanh_tao_JD.pdf"
           fileName="Hướng dẫn thực hành tạo JD.pdf"
           fallbackUrls={[
-            "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" // Fallback URL đến một PDF test nếu file local không hoạt động
+            "/huong_dan_thuc_hanh_tao_JD.pdf"
           ]}
         />
       </div>
