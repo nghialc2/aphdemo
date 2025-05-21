@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Exercise } from './ExerciseContent';
 import PDFViewer from './PDFViewer';
@@ -12,13 +11,11 @@ export const exercisesData: Exercise[] = [
       <div className="space-y-4 text-sm">
         <h4 className="font-semibold text-base text-fpt-blue">Tối ưu hóa tuyển dụng với AI</h4>
         
-        {/* Sử dụng file PDF từ GitHub repo */}
         <PDFViewer 
-          pdfUrl="/exercise1.pdf" 
-          fileName="Bài tập 1.pdf" 
+          pdfUrl="/HƯỚNG DẪN THỰC HÀNH TẠO JD.pdf" 
+          fileName="Hướng dẫn thực hành tạo JD.pdf" 
           fallbackUrls={[
-            "/exercise1.pdf",
-            "https://nghiac2.github.io/nghiac2/HUONG_DAN_THUC_HANH_TAO_JD.pdf"
+            "/HƯỚNG DẪN THỰC HÀNH TẠO JD.pdf"
           ]}
         />
       </div>
