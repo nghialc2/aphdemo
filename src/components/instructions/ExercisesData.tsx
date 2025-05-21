@@ -18,7 +18,7 @@ export const exercisesData: Exercise[] = [
           fileName="Bài tập 1.pdf" 
           fallbackUrls={[
             "/exercise1.pdf",
-            "https://raw.githubusercontent.com/nghialc2/fpt-prompt-arena/main/exercise1.pdf"
+            "https://nghiac2.github.io/nghiac2/HUONG_DAN_THUC_HANH_TAO_JD.pdf"
           ]}
         />
       </div>
