@@ -16,6 +16,7 @@ export const exercisesData: Exercise[] = [
         <h4 className="font-semibold text-base text-fpt-blue">Tối ưu hóa tuyển dụng với AI</h4>
         
         <PDFViewer pdfUrl={googleDrivePdfUrl} fileName="Bai_tap_1.pdf" />
+      </div>
     )
   },
   {
