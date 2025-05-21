@@ -4,8 +4,12 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import { FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-// Cấu hình worker cho pdfjs
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+// Import CSS for PDF viewer
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
+
+// Configure worker - using version-matched CDN
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 interface PDFViewerProps {
   pdfUrl: string;
@@ -19,16 +23,16 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, fileName = "document.pdf"
   const [error, setError] = useState<boolean>(false);
   const [processedUrl, setProcessedUrl] = useState<string>("");
 
-  // Chuyển đổi Google Drive URL sang dạng có thể tải trực tiếp
+  // Convert Google Drive URL to a direct download format
   useEffect(() => {
     const getDirectDownloadUrl = (url: string): string => {
       if (url.includes('drive.google.com/file/d/')) {
-        // Lấy file ID từ URL
+        // Extract file ID from URL
         const fileIdMatch = url.match(/\/d\/([^\/]+)/);
         if (fileIdMatch && fileIdMatch[1]) {
           const fileId = fileIdMatch[1];
-          // Sử dụng export=view thay vì export=download để tương thích tốt hơn
-          return `https://drive.google.com/uc?export=view&id=${fileId}`;
+          // Use a more reliable format for Google Drive links
+          return `https://drive.google.com/uc?id=${fileId}&export=download`;
         }
       }
       return url;
@@ -59,6 +63,9 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, fileName = "document.pdf"
     }
   }
 
+  // Use our built-in sample PDF as a fallback for testing/development
+  const fallbackPdf = "/exercise1.pdf";
+  
   return (
     <div className="flex flex-col items-center w-full space-y-4">
       <div className="border rounded-md w-full" style={{ minHeight: '600px' }}>
@@ -75,7 +82,22 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, fileName = "document.pdf"
           <div className="flex items-center justify-center h-64">
             <div className="text-center text-red-500">
               <FileText className="h-16 w-16 mx-auto mb-4" />
-              <p>Không thể tải tài liệu. Vui lòng thử lại sau.</p>
+              <p>Không thể tải tài liệu từ Google Drive (có thể do hạn chế CORS).</p>
+              <p className="mt-2">Đang thử tải tài liệu mặc định...</p>
+              <Document 
+                file={fallbackPdf}
+                onLoadSuccess={onDocumentLoadSuccess}
+                onLoadError={(err) => console.error('Fallback PDF error:', err)}
+                className="flex justify-center py-4 mt-4"
+              >
+                <Page 
+                  pageNumber={1} 
+                  renderTextLayer={false}
+                  renderAnnotationLayer={false}
+                  width={550}
+                  className="shadow-md"
+                />
+              </Document>
               <a href={processedUrl} target="_blank" rel="noopener noreferrer" className="text-fpt-blue hover:underline mt-2 block">
                 Nhấn vào đây để mở tài liệu trong tab mới
               </a>
