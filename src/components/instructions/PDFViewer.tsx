@@ -3,19 +3,20 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import { FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-// Import CSS for PDF viewer layers
+// Import layer CSS
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 
-// CHỈNH SỬA LẠI: Sử dụng CDN và chỉ định phiên bản Worker chính xác
-// Dựa trên lỗi trước đó của bạn ("The API version "4.8.69" does not match the Worker version "3.11.174".")
-// Chúng ta cần Worker version 4.8.69 để khớp với API.
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@4.8.69/build/pdf.worker.min.js`;
+// Point pdf.js to the locally hosted worker in /public
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
 interface PDFViewerProps {
-  pdfUrl: string;       // Main PDF URL (e.g., "/filename.pdf" when placed in public/)
-  fileName?: string;    // Display name
-  fallbackUrls?: string[]; // Optional backup URLs
+  /** URL of the PDF in public folder, e.g. '/huong_dan_thuc_hanh_tao_JD.pdf' */
+  pdfUrl: string;
+  /** Optional display name for footer */
+  fileName?: string;
+  /** Optional backup URLs in case primary fails */
+  fallbackUrls?: string[];
 }
 
 const PDFViewer: React.FC<PDFViewerProps> = ({
@@ -23,66 +24,53 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   fileName = 'document.pdf',
   fallbackUrls = [],
 }) => {
-  // Combine primary and fallback URLs
+  // Combine primary + fallback URLs
   const [urls] = useState<string[]>([pdfUrl, ...fallbackUrls]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const currentUrl = urls[currentIndex];
+  const [index, setIndex] = useState(0);
+  const currentUrl = urls[index];
 
   const [numPages, setNumPages] = useState<number>(0);
   const [page, setPage] = useState(1);
-  const [hasError, setHasError] = useState(false);
+  const [error, setError] = useState(false);
 
-  const tryNextUrl = () => {
-    if (currentIndex < urls.length - 1) {
-      setCurrentIndex(idx => idx + 1);
-      setHasError(false);
+  // Advance to next URL on error
+  const tryNext = () => {
+    if (index < urls.length - 1) {
+      setIndex(i => i + 1);
+      setError(false);
       setPage(1);
     } else {
-      setHasError(true);
+      setError(true);
     }
   };
 
-  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+  const onSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
-    setHasError(false);
+    setError(false);
   };
 
-  const onDocumentLoadError = (error: any) => {
-    console.error('PDF load error:', error);
-    // Thêm log để kiểm tra lỗi version API/Worker nếu có
-    if (error && error.message && error.message.includes("API version") && error.message.includes("Worker version")) {
-      console.error("Phiên bản API và Worker không khớp! Vui lòng kiểm tra lại pdfjs.GlobalWorkerOptions.workerSrc.");
-    }
-    tryNextUrl();
+  const onError = (e: any) => {
+    console.error('PDF load error:', e);
+    tryNext();
   };
 
   const changePage = (delta: number) => {
-    setPage(prev => Math.min(Math.max(prev + delta, 1), numPages));
+    setPage(p => Math.min(Math.max(p + delta, 1), numPages));
   };
 
-  // If all URLs fail, show error UI
-  if (hasError) {
+  if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center text-red-500">
         <FileText className="h-16 w-16 mb-4" />
         <p>Không thể tải PDF từ các nguồn.</p>
         <Button
           variant="outline"
+          onClick={() => { setIndex(0); setError(false); setPage(1); }}
           className="mt-2"
-          onClick={() => {
-            setCurrentIndex(0);
-            setHasError(false);
-            setPage(1);
-          }}
         >
           Thử lại
         </Button>
-        <a
-          href={currentUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-2 text-fpt-blue hover:underline"
-        >
+        <a href={currentUrl} target="_blank" rel="noopener noreferrer" className="mt-2 text-fpt-blue hover:underline">
           Mở ở tab mới
         </a>
       </div>
@@ -94,12 +82,12 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       <div className="w-full border rounded-md" style={{ minHeight: 600 }}>
         <Document
           file={currentUrl}
-          onLoadSuccess={onDocumentLoadSuccess}
-          onLoadError={onDocumentLoadError}
+          onLoadSuccess={onSuccess}
+          onLoadError={onError}
           loading={
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-fpt-blue mx-auto mb-2"></div>
-              <p>Đang tải...</p>
+            <div className="flex flex-col items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-fpt-blue mb-2"></div>
+              <p>Đang tải tài liệu...</p>
             </div>
           }
           className="py-4 flex justify-center"
@@ -107,29 +95,19 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           <Page
             pageNumber={page}
             width={550}
-            // renderAnnotationLayer={false} // Giữ lại nếu không muốn chú thích
-            // renderTextLayer={false} // Giữ lại nếu không muốn chọn text
+            renderAnnotationLayer={false}
+            renderTextLayer={false}
           />
         </Document>
       </div>
 
       {numPages > 0 && (
         <div className="flex items-center space-x-4">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => changePage(-1)}
-            disabled={page <= 1}
-          >
+          <Button size="sm" variant="outline" onClick={() => changePage(-1)} disabled={page <= 1}>
             <ChevronLeft className="h-4 w-4 mr-1" /> Trang trước
           </Button>
           <span>{page} / {numPages}</span>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => changePage(1)}
-            disabled={page >= numPages}
-          >
+          <Button size="sm" variant="outline" onClick={() => changePage(1)} disabled={page >= numPages}>
             Trang sau <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </div>
@@ -137,15 +115,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
 
       {numPages > 0 && (
         <div className="text-xs text-gray-500">
-          {fileName} -{' '}
-          <a
-            href={currentUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-fpt-blue hover:underline"
-          >
-            Mở ở tab mới
-          </a>
+          {fileName} – <a href={currentUrl} target="_blank" rel="noopener noreferrer" className="text-fpt-blue hover:underline">Mở ở tab mới</a>
         </div>
       )}
     </div>
