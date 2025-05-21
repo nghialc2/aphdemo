@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronLeft, Book, BookOpen } from "lucide-react";
+import { ChevronLeft, Book, BookOpen, FileText } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Import our new components
@@ -10,6 +10,7 @@ import WelcomeContent from './instructions/WelcomeContent';
 import ExercisesList from './instructions/ExercisesList';
 import ExerciseContent from './instructions/ExerciseContent';
 import ExamplesContent from './instructions/ExamplesContent';
+import ThongTinContent from './instructions/ThongTinContent';
 import { exercisesData } from './instructions/ExercisesData';
 import { Exercise } from './instructions/ExerciseContent';
 
@@ -62,6 +63,10 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
             <BookOpen className="mr-2 h-4 w-4" />
             <span>Ví Dụ</span>
           </TabsTrigger>
+          <TabsTrigger value="thongtin" className="flex items-center">
+            <FileText className="mr-2 h-4 w-4" />
+            <span>Thông Tin</span>
+          </TabsTrigger>
         </TabsList>
         
         <div className="flex-1 relative overflow-hidden">
@@ -98,6 +103,17 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
             <ScrollArea className="h-full">
               <div className="p-4">
                 <ExamplesContent />
+              </div>
+            </ScrollArea>
+          </TabsContent>
+          
+          <TabsContent 
+            value="thongtin" 
+            className="absolute inset-0 m-0"
+          >
+            <ScrollArea className="h-full">
+              <div className="p-4">
+                <ThongTinContent />
               </div>
             </ScrollArea>
           </TabsContent>

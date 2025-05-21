@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,8 +8,8 @@ import { Button } from '@/components/ui/button';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 
-// Point PDF.js to local worker
-pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
+// Point PDF.js to CDN worker to ensure compatibility
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 interface PDFViewerProps {
   pdfUrl: string;           // Path to PDF in public/
@@ -28,27 +29,40 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const [numPages, setNumPages] = useState<number>(0);
   const [page, setPage] = useState(1);
   const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    console.log(`Attempting to load PDF from: ${currentUrl}`);
+    setIsLoading(true);
+    // Reset error state when URL changes
+    setHasError(false);
+  }, [currentUrl]);
 
   // Try next URL on error
   const tryNext = () => {
+    console.log(`Error loading PDF from ${currentUrl}, trying next URL if available`);
     if (currentIndex < urls.length - 1) {
       setCurrentIndex(i => i + 1);
       setHasError(false);
       setPage(1);
     } else {
+      console.error("All PDF URLs failed to load");
       setHasError(true);
     }
   };
 
   // PDF loaded successfully
   const onLoadSuccess = ({ numPages }: { numPages: number }) => {
+    console.log(`PDF loaded successfully with ${numPages} pages`);
     setNumPages(numPages);
     setHasError(false);
+    setIsLoading(false);
   };
 
   // Error loading PDF
   const onLoadError = (error: any) => {
     console.error('PDF load error:', error);
+    setIsLoading(false);
     tryNext();
   };
 
