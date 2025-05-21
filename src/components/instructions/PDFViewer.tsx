@@ -7,14 +7,15 @@ import { Button } from '@/components/ui/button';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 
-// Use local worker to ensure version match
-// Copy pdf.worker.min.js from node_modules/pdfjs-dist/build into your public/ folder
-pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+// CHỈNH SỬA LẠI: Sử dụng CDN và chỉ định phiên bản Worker chính xác
+// Dựa trên lỗi trước đó của bạn ("The API version "4.8.69" does not match the Worker version "3.11.174".")
+// Chúng ta cần Worker version 4.8.69 để khớp với API.
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@4.8.69/build/pdf.worker.min.js`;
 
 interface PDFViewerProps {
-  pdfUrl: string;           // Main PDF URL (e.g., "/filename.pdf" when placed in public/)
-  fileName?: string;        // Display name
-  fallbackUrls?: string[];  // Optional backup URLs
+  pdfUrl: string;       // Main PDF URL (e.g., "/filename.pdf" when placed in public/)
+  fileName?: string;    // Display name
+  fallbackUrls?: string[]; // Optional backup URLs
 }
 
 const PDFViewer: React.FC<PDFViewerProps> = ({
@@ -48,6 +49,10 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
 
   const onDocumentLoadError = (error: any) => {
     console.error('PDF load error:', error);
+    // Thêm log để kiểm tra lỗi version API/Worker nếu có
+    if (error && error.message && error.message.includes("API version") && error.message.includes("Worker version")) {
+      console.error("Phiên bản API và Worker không khớp! Vui lòng kiểm tra lại pdfjs.GlobalWorkerOptions.workerSrc.");
+    }
     tryNextUrl();
   };
 
@@ -102,8 +107,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           <Page
             pageNumber={page}
             width={550}
-            renderAnnotationLayer={false}
-            renderTextLayer={false}
+            // renderAnnotationLayer={false} // Giữ lại nếu không muốn chú thích
+            // renderTextLayer={false} // Giữ lại nếu không muốn chọn text
           />
         </Document>
       </div>
