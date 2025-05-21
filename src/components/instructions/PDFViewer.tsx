@@ -1,11 +1,14 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-// Cấu hình worker cho pdfjs
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+// Cấu hình worker cho pdfjs theo cách mới
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.js',
+  import.meta.url,
+).toString();
 
 interface PDFViewerProps {
   pdfUrl: string;
@@ -17,23 +20,30 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, fileName = "document.pdf"
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
+  const [processedUrl, setProcessedUrl] = useState<string>("");
 
   // Chuyển đổi Google Drive URL sang dạng có thể tải trực tiếp
-  const getDirectDownloadUrl = (url: string): string => {
-    if (url.includes('drive.google.com/file/d/')) {
-      // Lấy file ID từ URL
-      const fileIdMatch = url.match(/\/d\/([^\/]+)/);
-      if (fileIdMatch && fileIdMatch[1]) {
-        const fileId = fileIdMatch[1];
-        return `https://drive.google.com/uc?export=download&id=${fileId}`;
+  useEffect(() => {
+    const getDirectDownloadUrl = (url: string): string => {
+      if (url.includes('drive.google.com/file/d/')) {
+        // Lấy file ID từ URL
+        const fileIdMatch = url.match(/\/d\/([^\/]+)/);
+        if (fileIdMatch && fileIdMatch[1]) {
+          const fileId = fileIdMatch[1];
+          return `https://drive.google.com/uc?export=download&id=${fileId}`;
+        }
       }
-    }
-    return url;
-  };
+      return url;
+    };
 
-  const processedUrl = getDirectDownloadUrl(pdfUrl);
+    console.log("Original URL:", pdfUrl);
+    const directUrl = getDirectDownloadUrl(pdfUrl);
+    console.log("Processed URL:", directUrl);
+    setProcessedUrl(directUrl);
+  }, [pdfUrl]);
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
+    console.log("PDF loaded successfully with", numPages, "pages");
     setNumPages(numPages);
     setLoading(false);
   }
@@ -75,12 +85,20 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, fileName = "document.pdf"
           </div>
         )}
         
-        {!loading && !error && (
+        {!loading && !error && processedUrl && (
           <Document 
             file={processedUrl} 
             onLoadSuccess={onDocumentLoadSuccess}
             onLoadError={onDocumentLoadError}
             className="flex justify-center py-4"
+            loading={
+              <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-fpt-blue mx-auto mb-4"></div>
+                  <p>Đang tải tài liệu...</p>
+                </div>
+              </div>
+            }
           >
             <Page 
               pageNumber={pageNumber} 
