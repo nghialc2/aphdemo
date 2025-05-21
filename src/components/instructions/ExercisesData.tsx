@@ -3,8 +3,8 @@ import React from 'react';
 import { Exercise } from './ExerciseContent';
 import PDFViewer from './PDFViewer';
 
-// PDF file path
-const exercisePdfPath = "/exercise1.pdf";
+// Google Drive embed URL
+const googleDrivePdfUrl = "https://drive.google.com/file/d/19A-kFNVb5FmY3EnP_BTpkPPHWGEZ_Ija/preview";
 
 export const exercisesData: Exercise[] = [
   {
@@ -15,7 +15,7 @@ export const exercisesData: Exercise[] = [
       <div className="space-y-4 text-sm">
         <h4 className="font-semibold text-base text-fpt-blue">Tối ưu hóa tuyển dụng với AI</h4>
         
-        <PDFViewer pdfUrl={exercisePdfPath} fileName="Bai_tap_1.pdf" />
+        <PDFViewer pdfUrl={googleDrivePdfUrl} fileName="Bai_tap_1.pdf" />
         
         <div className="space-y-2 mt-4">
           <p className="font-medium">Mục tiêu:</p>
