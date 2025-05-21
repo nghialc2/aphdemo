@@ -7,10 +7,9 @@ import { Button } from '@/components/ui/button';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 
-// Use jsDelivr CDN to load worker matching the API version
-// This ensures worker version === pdfjs.version
-pdfjs.GlobalWorkerOptions.workerSrc =
-  `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+// Use local worker to ensure version match
+// Copy pdf.worker.min.js from node_modules/pdfjs-dist/build into your public/ folder
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
 interface PDFViewerProps {
   pdfUrl: string;           // Main PDF URL (e.g., "/filename.pdf" when placed in public/)
