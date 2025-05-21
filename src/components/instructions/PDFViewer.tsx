@@ -1,62 +1,44 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-// Import CSS for PDF viewer
-import 'react-pdf/dist/Page/AnnotationLayer.css';
-import 'react-pdf/dist/Page/TextLayer.css';
+// CSS for PDF viewer (ESM path)
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
 
-// Set worker from CDN
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+// Set worker from CDN (full URL to avoid mixed-content issues)
+pdfjs.GlobalWorkerOptions.workerSrc =
+  `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 interface PDFViewerProps {
-  pdfUrl: string; // URL chính để tải PDF
-  fileName?: string; // Tên hiển thị của file
-  fallbackUrls?: string[]; // Các URL dự phòng
+  pdfUrl: string;
+  fileName?: string;
+  fallbackUrls?: string[];
 }
 
-const PDFViewer: React.FC<PDFViewerProps> = ({ 
-  pdfUrl, 
-  fileName = "document.pdf",
-  fallbackUrls = [] 
+const PDFViewer: React.FC<PDFViewerProps> = ({
+  pdfUrl,
+  fileName = 'document.pdf',
+  fallbackUrls = [],
 }) => {
+  // Initialize URLs (primary + fallbacks)
+  const [allUrls] = useState<string[]>([pdfUrl, ...fallbackUrls]);
+  const [currentUrlIndex, setCurrentUrlIndex] = useState<number>(0);
+  const currentUrl = allUrls[currentUrlIndex];
+
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
-  const [currentUrlIndex, setCurrentUrlIndex] = useState<number>(0);
-  
-  // Combine all URLs, ensuring the primary pdfUrl is always first
-  const [allUrls, setAllUrls] = useState<string[]>([]);
 
-  useEffect(() => {
-    // Set allUrls when component mounts
-    console.log("PDFViewer mounted, setting URLs:", pdfUrl);
-    setAllUrls([pdfUrl, ...fallbackUrls]);
-    
-    // In case we're in development mode, output pdfjs version and worker path
-    console.log("PDF.js version:", pdfjs.version);
-    console.log("PDF.js worker path:", pdfjs.GlobalWorkerOptions.workerSrc);
-  }, [pdfUrl, fallbackUrls]);
-
-  // Log all URLs for debugging
-  useEffect(() => {
-    if (allUrls.length > 0) {
-      console.log("PDF loading options:", allUrls);
-      console.log("Current attempt URL:", allUrls[currentUrlIndex]);
-    }
-  }, [allUrls, currentUrlIndex]);
-
-  // Try loading PDF from the next URL in the list
+  // Try next URL in case of load failure
   const tryNextUrl = () => {
     if (currentUrlIndex < allUrls.length - 1) {
-      console.log(`Trying to load from next URL: ${allUrls[currentUrlIndex + 1]}`);
-      setCurrentUrlIndex(prevIndex => prevIndex + 1);
+      setCurrentUrlIndex(idx => idx + 1);
       setLoading(true);
       setError(false);
-      setPageNumber(1); // Reset page when trying a new URL
+      setPageNumber(1);
     } else {
       setError(true);
       setLoading(false);
@@ -64,34 +46,34 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     }
   };
 
-  function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
-    console.log("PDF loaded successfully with", numPages, "pages from", allUrls[currentUrlIndex]);
+  // Handlers for PDF.js
+  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
     setLoading(false);
-    setError(false); // Reset error if loading succeeds after retry
-  }
+    setError(false);
+  };
 
-  function onDocumentLoadError(err: Error) {
-    console.error('Error while loading PDF:', err.message, 'from URL:', allUrls[currentUrlIndex]);
-    console.error(err); 
-    
-    // Try next URL if available
+  const onDocumentLoadError = (err: Error) => {
+    console.error('Error loading PDF:', err);
     tryNextUrl();
-  }
+  };
 
-  function changePage(offset: number) {
-    const newPageNumber = pageNumber + offset;
-    if (newPageNumber >= 1 && newPageNumber <= (numPages || 1)) {
-      setPageNumber(newPageNumber);
-    }
-  }
-  
-  // Current URL that we're trying to load
-  const currentUrl = allUrls[currentUrlIndex];
-  
+  // Page navigation
+  const changePage = (offset: number) => {
+    setPageNumber(prev => {
+      const next = prev + offset;
+      if (numPages && next >= 1 && next <= numPages) return next;
+      return prev;
+    });
+  };
+
+  // If no URLs, render nothing
+  if (!allUrls.length) return null;
+
   return (
     <div className="flex flex-col items-center w-full space-y-4">
       <div className="border rounded-md w-full" style={{ minHeight: '600px' }}>
+        {/* Loading state */}
         {loading && (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
@@ -100,39 +82,41 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
             </div>
           </div>
         )}
-        
+
+        {/* Error state */}
         {error && (
           <div className="flex items-center justify-center h-64">
             <div className="text-center text-red-500">
               <FileText className="h-16 w-16 mx-auto mb-4" />
               <p>Could not load PDF document from any of the tried sources.</p>
               <p className="mt-2">Please check the URL and access permissions.</p>
-              <Button 
+              <Button
                 onClick={() => {
-                  setCurrentUrlIndex(0); // Reset to first URL to try again
+                  setCurrentUrlIndex(0);
                   setLoading(true);
                   setError(false);
-                  setPageNumber(1); // Reset page when trying again
+                  setPageNumber(1);
                 }}
                 variant="outline"
                 className="mt-4"
               >
                 Try Again
               </Button>
-              <a 
-                href={currentUrl} 
-                target="_blank" 
-                rel="noopener noreferrer" 
+              <a
+                href={currentUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-fpt-blue hover:underline mt-4 block"
               >
-                Click here to open document in new tab
+                Open in new tab
               </a>
             </div>
           </div>
         )}
-        
+
+        {/* PDF document view */}
         {!loading && !error && (
-          <Document 
+          <Document
             file={currentUrl}
             onLoadSuccess={onDocumentLoadSuccess}
             onLoadError={onDocumentLoadError}
@@ -146,53 +130,57 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
               </div>
             }
           >
-            <Page 
+            <Page
               pageNumber={pageNumber}
               width={550}
               className="shadow-md"
-              renderAnnotationLayer={false} 
+              renderAnnotationLayer={false}
               renderTextLayer={false}
             />
           </Document>
         )}
       </div>
-      
+
+      {/* Pagination controls */}
       {!loading && !error && numPages && (
         <div className="flex items-center justify-center space-x-4">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => changePage(-1)} 
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => changePage(-1)}
             disabled={pageNumber <= 1}
           >
             <ChevronLeft className="h-4 w-4 mr-1" /> Previous Page
           </Button>
-          
           <div className="text-sm">
             Page {pageNumber} / {numPages}
           </div>
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => changePage(1)} 
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => changePage(1)}
             disabled={pageNumber >= numPages}
           >
             Next Page <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </div>
       )}
-      
+
+      {/* Footer with file link */}
       <div className="text-xs text-gray-500 text-center w-full">
-        <p>
-          {!error && (
-            <>
-              {fileName} - <a href={currentUrl} target="_blank" rel="noopener noreferrer" className="text-fpt-blue hover:underline">
-                Open in new tab
-              </a>
-            </>
-          )}
-        </p>
+        {!error && (
+          <>
+            {fileName} -{' '}
+            <a
+              href={currentUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-fpt-blue hover:underline"
+            >
+              Open in new tab
+            </a>
+          </>
+        )}
       </div>
     </div>
   );
