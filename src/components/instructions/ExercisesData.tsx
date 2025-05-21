@@ -21,7 +21,6 @@ export const exercisesData: Exercise[] = [
         />
       </div>
     )
-    )
   },
   {
     id: "exercise-2",
