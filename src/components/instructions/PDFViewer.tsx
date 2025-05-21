@@ -4,11 +4,8 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import { FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-// Cấu hình worker cho pdfjs theo cách mới
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.js',
-  import.meta.url,
-).toString();
+// Cấu hình worker cho pdfjs
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 interface PDFViewerProps {
   pdfUrl: string;
@@ -30,7 +27,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, fileName = "document.pdf"
         const fileIdMatch = url.match(/\/d\/([^\/]+)/);
         if (fileIdMatch && fileIdMatch[1]) {
           const fileId = fileIdMatch[1];
-          return `https://drive.google.com/uc?export=download&id=${fileId}`;
+          // Sử dụng export=view thay vì export=download để tương thích tốt hơn
+          return `https://drive.google.com/uc?export=view&id=${fileId}`;
         }
       }
       return url;
