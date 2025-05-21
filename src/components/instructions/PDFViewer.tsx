@@ -32,7 +32,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   // Log tất cả URL để debug
   useEffect(() => {
     console.log("PDF loading options:", allUrls);
-  }, [allUrls]);
+    console.log("Current attempt URL:", allUrls[currentUrlIndex]);
+  }, [allUrls, currentUrlIndex]);
 
   // Hàm thử tải PDF từ URL tiếp theo trong danh sách
   const tryNextUrl = () => {
@@ -51,7 +52,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   }
 
   function onDocumentLoadError(err: Error) {
-    console.error('Error while loading PDF:', err, 'from URL:', allUrls[currentUrlIndex]);
+    console.error('Error while loading PDF:', err.message, 'from URL:', allUrls[currentUrlIndex]);
     
     // Thử URL tiếp theo nếu có
     if (currentUrlIndex < allUrls.length - 1) {
@@ -59,6 +60,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     } else {
       setError(true);
       setLoading(false);
+      console.error('All URLs failed to load PDF');
     }
   }
 
