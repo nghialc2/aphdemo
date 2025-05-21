@@ -59,13 +59,13 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
             <Book className="mr-2 h-4 w-4" />
             <span>Hướng Dẫn</span>
           </TabsTrigger>
-          <TabsTrigger value="examples" className="flex items-center">
-            <BookOpen className="mr-2 h-4 w-4" />
-            <span>Ví Dụ</span>
-          </TabsTrigger>
           <TabsTrigger value="thongtin" className="flex items-center">
             <FileText className="mr-2 h-4 w-4" />
             <span>Thông Tin</span>
+          </TabsTrigger>
+          <TabsTrigger value="examples" className="flex items-center">
+            <BookOpen className="mr-2 h-4 w-4" />
+            <span>Ví Dụ</span>
           </TabsTrigger>
         </TabsList>
         
