@@ -12,10 +12,14 @@ export const exercisesData: Exercise[] = [
         <h4 className="font-semibold text-base text-fpt-blue">Tối ưu hóa tuyển dụng với AI</h4>
         
         <PDFViewer 
-          pdfUrl="https://github.com/nghialc2/aphdemo/blob/main/public/H%C6%AF%E1%BB%9ANG%20D%E1%BA%AAN%20TH%E1%BB%B0C%20H%C3%80NH%20T%E1%BA%A0O%20JD.pdf" 
+          // ĐÃ SỬA: Sử dụng URL raw content từ GitHub
+          // Đảm bảo bạn đã đổi tên file thành huong_dan_thuc_hanh_tao_JD.pdf trên GitHub
+          pdfUrl="https://raw.githubusercontent.com/nghialc2/aphdemo/main/public/huong_dan_thuc_hanh_tao_JD.pdf" 
           fileName="Hướng dẫn thực hành tạo JD.pdf" 
+          // fallbackUrls có thể không cần thiết nếu đường dẫn chính hoạt động tốt
+          // hoặc bạn có thể giữ nó nếu muốn thử lại với đường dẫn cục bộ nếu raw content không tải được
           fallbackUrls={[
-            "/HƯỚNG DẪN THỰC HÀNH TẠO JD.pdf"
+            "/huong_dan_thuc_hanh_tao_JD.pdf" // Đảm bảo đường dẫn này cũng khớp với tên file mới
           ]}
         />
       </div>
