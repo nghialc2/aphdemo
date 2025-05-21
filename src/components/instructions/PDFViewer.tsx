@@ -18,6 +18,21 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, fileName = "document.pdf"
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
 
+  // Chuyển đổi Google Drive URL sang dạng có thể tải trực tiếp
+  const getDirectDownloadUrl = (url: string): string => {
+    if (url.includes('drive.google.com/file/d/')) {
+      // Lấy file ID từ URL
+      const fileIdMatch = url.match(/\/d\/([^\/]+)/);
+      if (fileIdMatch && fileIdMatch[1]) {
+        const fileId = fileIdMatch[1];
+        return `https://drive.google.com/uc?export=download&id=${fileId}`;
+      }
+    }
+    return url;
+  };
+
+  const processedUrl = getDirectDownloadUrl(pdfUrl);
+
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
     setNumPages(numPages);
     setLoading(false);
@@ -53,7 +68,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, fileName = "document.pdf"
             <div className="text-center text-red-500">
               <FileText className="h-16 w-16 mx-auto mb-4" />
               <p>Không thể tải tài liệu. Vui lòng thử lại sau.</p>
-              <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="text-fpt-blue hover:underline mt-2 block">
+              <a href={processedUrl} target="_blank" rel="noopener noreferrer" className="text-fpt-blue hover:underline mt-2 block">
                 Nhấn vào đây để mở tài liệu trong tab mới
               </a>
             </div>
@@ -62,7 +77,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, fileName = "document.pdf"
         
         {!loading && !error && (
           <Document 
-            file={pdfUrl} 
+            file={processedUrl} 
             onLoadSuccess={onDocumentLoadSuccess}
             onLoadError={onDocumentLoadError}
             className="flex justify-center py-4"
@@ -108,7 +123,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, fileName = "document.pdf"
         <p>
           {!error && (
             <>
-              {fileName} - <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="text-fpt-blue hover:underline">
+              {fileName} - <a href={processedUrl} target="_blank" rel="noopener noreferrer" className="text-fpt-blue hover:underline">
                 Mở trong tab mới
               </a>
             </>
