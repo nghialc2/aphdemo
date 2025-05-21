@@ -15,7 +15,7 @@ export const exercisesData: Exercise[] = [
       <div className="space-y-4 text-sm">
         <h4 className="font-semibold text-base text-fpt-blue">Tối ưu hóa tuyển dụng với AI</h4>
         
-        <PDFViewer pdfUrl={https://drive.google.com/file/d/19A-kFNVb5FmY3EnP_BTpkPPHWGEZ_Ija/view?usp=drive_link} fileName="Bai_tap_1.pdf" />
+        <PDFViewer pdfUrl={"https://drive.google.com/file/d/19A-kFNVb5FmY3EnP_BTpkPPHWGEZ_Ija/view?usp=drive_link"} fileName="Bai_tap_1.pdf" />
       </div>
     )
   },
