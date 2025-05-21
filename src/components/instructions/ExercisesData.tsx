@@ -1,9 +1,11 @@
 
 import React from 'react';
 import { Exercise } from './ExerciseContent';
-import PracticeGuide from './PracticeGuide';
+import PDFViewer from './PDFViewer';
 
-// Create and export the exercisesData array
+// Google Drive embed URL
+const googleDrivePdfUrl = "https://drive.google.com/file/d/19A-kFNVb5FmY3EnP_BTpkPPHWGEZ_Ija/preview";
+
 export const exercisesData: Exercise[] = [
   {
     id: "exercise-1",
@@ -12,7 +14,8 @@ export const exercisesData: Exercise[] = [
     content: (
       <div className="space-y-4 text-sm">
         <h4 className="font-semibold text-base text-fpt-blue">Tối ưu hóa tuyển dụng với AI</h4>
-        <PracticeGuide />
+        
+        <PDFViewer pdfUrl={googleDrivePdfUrl} fileName="Bai_tap_1.pdf" />
       </div>
     )
   },
@@ -32,7 +35,3 @@ export const exercisesData: Exercise[] = [
     description: "Tạo một câu lệnh để AI thiết kế giải pháp tăng cường gắn kết và hài lòng của nhân viên trong tổ chức."
   }
 ];
-
-export default function ExercisesData() {
-  return null;
-}
