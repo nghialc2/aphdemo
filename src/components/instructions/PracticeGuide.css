@@ -126,3 +126,22 @@
 .instruction-list {
   margin-top: 10px;
 }
+
+/* Styles for nested lists */
+.practice-guide-container ul ul { /* For nested ul elements */
+  list-style-type: circle; /* Empty circle bullet points */
+  margin-left: 20px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.practice-guide-container ul ul ul { /* For 3-level nested ul elements */
+  list-style-type: square; /* Square bullet points */
+  margin-left: 20px;
+}
+
+.practice-guide-container ul li,
+.practice-guide-container ol li {
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
