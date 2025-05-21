@@ -1,6 +1,11 @@
 
-import React from 'react';
-import { FileText } from 'lucide-react';
+import React, { useState } from 'react';
+import { Document, Page, pdfjs } from 'react-pdf';
+import { FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+// Cấu hình worker cho pdfjs
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 interface PDFViewerProps {
   pdfUrl: string;
@@ -8,21 +13,107 @@ interface PDFViewerProps {
 }
 
 const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, fileName = "document.pdf" }) => {
+  const [numPages, setNumPages] = useState<number | null>(null);
+  const [pageNumber, setPageNumber] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<boolean>(false);
+
+  function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
+    setNumPages(numPages);
+    setLoading(false);
+  }
+
+  function onDocumentLoadError(error: Error) {
+    console.error('Error while loading PDF:', error);
+    setError(true);
+    setLoading(false);
+  }
+
+  function changePage(offset: number) {
+    const newPageNumber = pageNumber + offset;
+    if (newPageNumber >= 1 && newPageNumber <= (numPages || 1)) {
+      setPageNumber(newPageNumber);
+    }
+  }
+
   return (
     <div className="flex flex-col items-center w-full space-y-4">
-      <div className="border rounded-md w-full overflow-hidden" style={{ height: '600px' }}>
-        <iframe
-          src={pdfUrl}
-          width="100%"
-          height="100%"
-          allow="autoplay"
-          style={{ border: "none" }}
-          title={fileName}
-        />
+      <div className="border rounded-md w-full" style={{ minHeight: '600px' }}>
+        {loading && (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-fpt-blue mx-auto mb-4"></div>
+              <p>Đang tải tài liệu...</p>
+            </div>
+          </div>
+        )}
+        
+        {error && (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center text-red-500">
+              <FileText className="h-16 w-16 mx-auto mb-4" />
+              <p>Không thể tải tài liệu. Vui lòng thử lại sau.</p>
+              <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="text-fpt-blue hover:underline mt-2 block">
+                Nhấn vào đây để mở tài liệu trong tab mới
+              </a>
+            </div>
+          </div>
+        )}
+        
+        {!loading && !error && (
+          <Document 
+            file={pdfUrl} 
+            onLoadSuccess={onDocumentLoadSuccess}
+            onLoadError={onDocumentLoadError}
+            className="flex justify-center py-4"
+          >
+            <Page 
+              pageNumber={pageNumber} 
+              renderTextLayer={false}
+              renderAnnotationLayer={false}
+              width={550}
+              className="shadow-md"
+            />
+          </Document>
+        )}
       </div>
       
+      {!loading && !error && numPages && (
+        <div className="flex items-center justify-center space-x-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => changePage(-1)} 
+            disabled={pageNumber <= 1}
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" /> Trang trước
+          </Button>
+          
+          <div className="text-sm">
+            Trang {pageNumber} / {numPages}
+          </div>
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => changePage(1)} 
+            disabled={pageNumber >= numPages}
+          >
+            Trang sau <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
+      )}
+      
       <div className="text-xs text-gray-500 text-center w-full">
-        <p>Nếu tài liệu không hiển thị, hãy <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="text-fpt-blue hover:underline">nhấn vào đây</a> để xem trong tab mới</p>
+        <p>
+          {!error && (
+            <>
+              {fileName} - <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="text-fpt-blue hover:underline">
+                Mở trong tab mới
+              </a>
+            </>
+          )}
+        </p>
       </div>
     </div>
   );
