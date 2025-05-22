@@ -102,30 +102,124 @@ const ExamplesContent: React.FC = () => {
     </div>
 
     <p className="font-semibold text-fpt-blue mb-2">Giai đoạn 3: Soạn thảo JD và Tinh chỉnh Cuối cùng (Iterative & Constraint Prompt)</p>
-    <div className="whitespace-pre-wrap p-2 bg-gray-100 rounded">
-      **Prompt 4 (Soạn thảo JD)**
-      ```
-      Dựa trên phân tích công việc bạn vừa cung cấp cho vị trí Trưởng ca cửa hàng, hãy soạn thảo một bản mô tả công việc (JD) hoàn chỉnh.
+   <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
+  <p className="font-medium">Nâng cao: Context-Aware Iterative Prompting (Ví dụ tạo JD):</p>
+  <div className="text-sm font-mono bg-white p-2 rounded mt-1 border border-gray-200">
+    <p className="font-semibold text-fpt-blue mb-2">Giai đoạn 1: Thiết lập Ngữ cảnh Doanh nghiệp và Mục tiêu Tổng thể (Context Prompt)</p>
+    <div className="whitespace-pre-wrap mb-4 p-2 bg-gray-100 rounded" style={{ wordBreak: 'break-word' }}>
+      {/* Prompt 1 */}
+      <div dangerouslySetInnerHTML={{
+        __html: `
+        <strong>Prompt 1 (Thiết lập ngữ cảnh)</strong>
+        <pre>
+        Bạn là một chuyên viên HR đang làm việc với tôi. Tôi là chuyên viên tuyển dụng tại Công ty CP Bán lẻ SmartLife (SmartLife Retail JSC).
 
-      #REQUIREMENT:
-      - JD phải hấp dẫn, thể hiện rõ vai trò quan trọng của vị trí trong bối cảnh tăng trưởng và chuyển đổi số của SmartLife.
-      - Các mục bắt buộc trong JD: Chức danh, Bộ phận, Báo cáo cho, Địa điểm, Tóm tắt công việc, Trách nhiệm chính, Yêu cầu ứng viên (kinh nghiệm, học vấn, kỹ năng cứng - có yếu tố công nghệ, dữ liệu; kỹ năng mềm, phẩm chất cá nhân), Quyền lợi & phúc lợi, Quy trình ứng tuyển, Tuyên bố Đa dạng & Hòa nhập.
-      - Giọng văn chuyên nghiệp nhưng truyền cảm hứng, thu hút nhân sự trẻ, có khả năng thích ứng với công nghệ.
-      - Độ dài khoảng 500-700 từ.
-      ```
+        <strong>Về SmartLife:</strong>
+        <ul>
+            <li>Chuỗi siêu thị/cửa hàng tiện lợi quy mô 400 nhân sự.</li>
+            <li>Đang chuẩn bị mở 10 cửa hàng mới trong 6 tháng tới (giai đoạn tăng trưởng mạnh).</li>
+            <li>Đẩy mạnh chuyển đổi số, ứng dụng AI và dữ liệu lớn vào vận hành, bán hàng và quản trị nhân sự để đột phá tăng trưởng.</li>
+            <li>Văn hóa công ty đề cao học hỏi và đổi mới.</li>
+        </ul>
+
+        <strong>Thách thức hiện tại:</strong>
+        <ul>
+            <li>Tỷ lệ nghỉ việc cao ở các vị trí nhân viên bán hàng và trưởng ca.</li>
+            <li>Đội ngũ quản lý trung gian nhiều người gắn bó lâu năm nhưng chưa quen công nghệ số, cần tái đào tạo/upskilling.</li>
+        </ul>
+
+        <strong>Mục tiêu của bộ phận HR:</strong>
+        <ul>
+            <li>Chủ động ứng dụng công nghệ, đặc biệt là AI, để tối ưu hóa quy trình nhân sự.</li>
+            <li>Xây dựng đội ngũ đáp ứng giai đoạn tăng trưởng và chuyển đổi số.</li>
+        </ul>
+
+        Hãy xác nhận bạn đã hiểu ngữ cảnh công ty chúng tôi.
+        </pre>
+        `
+      }} />
+    </div>
+
+    <p className="font-semibold text-fpt-blue mb-2">Giai đoạn 2: Bắt đầu Hoạch định Nhân sự và Phân tích Công việc (Initial Task Prompt & Iteration)</p>
+    <div className="whitespace-pre-wrap mb-4 p-2 bg-gray-100 rounded" style={{ wordBreak: 'break-word' }}>
+      {/* Prompt 2 */}
+      <div dangerouslySetInnerHTML={{
+        __html: `
+        <strong>Prompt 2 (Hoạch định nhân sự ban đầu)</strong>
+        <pre>
+        Dựa trên ngữ cảnh đã cho, hãy hoạch định nhu cầu nhân sự tổng thể cho giai đoạn mở rộng sắp tới (10 cửa hàng mới trong 6 tháng).
+        <ul>
+            <li>Xác định các vị trí cần tuyển mới và nhu cầu tái đào tạo.</li>
+            <li>Ước tính số lượng nhân sự cần cho mỗi vị trí chủ chốt.</li>
+            <li>Liệt kê các kỹ năng ưu tiên (cả cứng và mềm) cho nhân sự mới và cần phát triển ở nhân sự hiện tại.</li>
+        </ul>
+        </pre>
+        `
+      }} />
       <br/>
-      **Prompt 5 (Tinh chỉnh JD)**
-      ```
-      Bản JD này tốt, nhưng tôi muốn nhấn mạnh hơn nữa yếu tố "chuyển đổi số" và "văn hóa học hỏi" trong phần trách nhiệm và yêu cầu ứng viên.
-      - Hãy thêm cụ thể hơn về việc Trưởng ca sẽ sử dụng dữ liệu/công cụ số trong công việc hàng ngày.
-      - Làm nổi bật khả năng học hỏi công nghệ mới là một kỹ năng quan trọng.
-      - Đồng thời, đề xuất một câu tagline hấp dẫn cho JD để thu hút nhân sự trẻ, năng động.
-      ```
+      {/* Prompt 3 */}
+      <div dangerouslySetInnerHTML={{
+        __html: `
+        <strong>Prompt 3 (Tinh chỉnh Kế hoạch & Chọn vị trí)</strong>
+        <pre>
+        Kế hoạch này khá tốt. Bây giờ, tôi muốn tập trung vào vị trí "Trưởng ca cửa hàng". Vị trí này rất quan trọng vì liên quan trực tiếp đến tỷ lệ nghỉ việc cao.
+
+        Hãy phân tích chi tiết công việc cho vị trí "Trưởng ca cửa hàng", bao gồm:
+        <ul>
+            <li>Mục tiêu chính của vị trí.</li>
+            <li>Các nhiệm vụ và trách nhiệm cụ thể.</li>
+            <li>Tiêu chí thành công của một Trưởng ca xuất sắc.</li>
+            <li>Những thách thức đặc thù mà một Trưởng ca có thể gặp phải tại SmartLife trong bối cảnh chuyển đổi số.</li>
+        </ul>
+        </pre>
+        `
+      }} />
+    </div>
+
+    <p className="font-semibold text-fpt-blue mb-2">Giai đoạn 3: Soạn thảo JD và Tinh chỉnh Cuối cùng (Iterative & Constraint Prompt)</p>
+    <div className="whitespace-pre-wrap p-2 bg-gray-100 rounded" style={{ wordBreak: 'break-word' }}>
+      {/* Prompt 4 */}
+      <div dangerouslySetInnerHTML={{
+        __html: `
+        <strong>Prompt 4 (Soạn thảo JD)</strong>
+        <pre>
+        Dựa trên phân tích công việc bạn vừa cung cấp cho vị trí Trưởng ca cửa hàng, hãy soạn thảo một bản mô tả công việc (JD) hoàn chỉnh.
+
+        #REQUIREMENT:
+        <ul>
+            <li>JD phải hấp dẫn, thể hiện rõ vai trò quan trọng của vị trí trong bối cảnh tăng trưởng và chuyển đổi số của SmartLife.</li>
+            <li>Các mục bắt buộc trong JD: Chức danh, Bộ phận, Báo cáo cho, Địa điểm, Tóm tắt công việc, Trách nhiệm chính, Yêu cầu ứng viên (kinh nghiệm, học vấn, kỹ năng cứng - có yếu tố công nghệ, dữ liệu; kỹ năng mềm, phẩm chất cá nhân), Quyền lợi & phúc lợi, Quy trình ứng tuyển, Tuyên bố Đa dạng & Hòa nhập.</li>
+            <li>Giọng văn chuyên nghiệp nhưng truyền cảm hứng, thu hút nhân sự trẻ, có khả năng thích ứng với công nghệ.</li>
+            <li>Độ dài khoảng 500-700 từ.</li>
+        </ul>
+        </pre>
+        `
+      }} />
       <br/>
-      **Prompt 6 (Kiểm tra cuối cùng)**
-      ```
-      Bạn có thể đọc lại toàn bộ JD và đảm bảo rằng nó không có lỗi chính tả, ngữ pháp và tuân thủ tất cả các yêu cầu tôi đã đưa ra không? Cuối cùng, hãy đưa ra một đánh giá ngắn về mức độ hấp dẫn của JD này đối với một ứng viên tiềm năng trong ngành bán lẻ hiện đại.
-      ```
+      {/* Prompt 5 */}
+      <div dangerouslySetInnerHTML={{
+        __html: `
+        <strong>Prompt 5 (Tinh chỉnh JD)</strong>
+        <pre>
+        Bản JD này tốt, nhưng tôi muốn nhấn mạnh hơn nữa yếu tố "chuyển đổi số" và "văn hóa học hỏi" trong phần trách nhiệm và yêu cầu ứng viên.
+        <ul>
+            <li>Hãy thêm cụ thể hơn về việc Trưởng ca sẽ sử dụng dữ liệu/công cụ số trong công việc hàng ngày.</li>
+            <li>Làm nổi bật khả năng học hỏi công nghệ mới là một kỹ năng quan trọng.</li>
+            <li>Đồng thời, đề xuất một câu tagline hấp dẫn cho JD để thu hút nhân sự trẻ, năng động.</li>
+        </ul>
+        </pre>
+        `
+      }} />
+      <br/>
+      {/* Prompt 6 */}
+      <div dangerouslySetInnerHTML={{
+        __html: `
+        <strong>Prompt 6 (Kiểm tra cuối cùng)</strong>
+        <pre>
+        Bạn có thể đọc lại toàn bộ JD và đảm bảo rằng nó không có lỗi chính tả, ngữ pháp và tuân thủ tất cả các yêu cầu tôi đã đưa ra không? Cuối cùng, hãy đưa ra một đánh giá ngắn về mức độ hấp dẫn của JD này đối với một ứng viên tiềm năng trong ngành bán lẻ hiện đại.
+        </pre>
+        `
+      }} />
     </div>
   </div>
   <p className="text-xs mt-2 text-gray-500">
