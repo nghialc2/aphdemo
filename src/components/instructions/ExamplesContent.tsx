@@ -52,7 +52,7 @@ Bạn là chuyên viên HR tại Công ty CP Bán lẻ SmartLife (SmartLife Reta
         </div>
         
         <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
-          <p className="font-medium">Nâng cao: Context-Aware Iterative Prompting (Ví dụ tạo JD):</p>
+          <p className="font-medium">Nâng cao: Context-Aware Iterative Prompting (Prompt lặp có ngữ cảnh):</p>
           <div className="text-sm font-mono bg-white p-2 rounded mt-1 border border-gray-200">
             <p className="font-semibold text-fpt-blue mb-2">Giai đoạn 1: Thiết lập Ngữ cảnh Doanh nghiệp và Mục tiêu Tổng thể (Context Prompt)</p>
             <div className="whitespace-pre-wrap mb-4 p-2 bg-gray-100 rounded break-words overflow-hidden">
