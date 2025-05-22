@@ -37,6 +37,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   
   // Refs for panning functionality
   const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [isPanning, setIsPanning] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [startPanPosition, setStartPanPosition] = useState({ x: 0, y: 0 });
@@ -156,9 +157,15 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
 
   // Pan handlers
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (scale > 1) {
+    if (scale > 1 && contentRef.current) {
       setIsPanning(true);
       setStartPanPosition({ x: e.clientX - position.x, y: e.clientY - position.y });
+      e.preventDefault(); // Prevent default behavior
+      
+      // Change cursor during panning
+      if (contentRef.current) {
+        contentRef.current.style.cursor = 'grabbing';
+      }
     }
   };
 
@@ -167,15 +174,22 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       const newX = e.clientX - startPanPosition.x;
       const newY = e.clientY - startPanPosition.y;
       setPosition({ x: newX, y: newY });
+      e.preventDefault(); // Prevent default behavior
     }
   };
 
   const handleMouseUp = () => {
-    setIsPanning(false);
+    if (isPanning && contentRef.current) {
+      setIsPanning(false);
+      contentRef.current.style.cursor = 'grab';
+    }
   };
 
   const handleMouseLeave = () => {
-    setIsPanning(false);
+    if (isPanning && contentRef.current) {
+      setIsPanning(false);
+      contentRef.current.style.cursor = 'grab';
+    }
   };
 
   // Reset position when changing pages or zoom level
@@ -211,7 +225,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     <div className="w-full flex flex-col items-center space-y-4">
       <div 
         ref={containerRef}
-        className="w-full border rounded-md relative overflow-hidden" 
+        className="w-full border rounded-md relative overflow-auto" 
         style={{ minHeight: 600 }}
       >
         {/* Zoom controls */}
@@ -238,36 +252,44 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         </div>
 
         <div 
-          className={`py-4 flex justify-center ${scale > 1 ? 'cursor-grab active:cursor-grabbing' : ''}`}
+          ref={contentRef}
+          className="py-4 flex justify-center"
           style={{ 
+            cursor: scale > 1 ? 'grab' : 'default',
             overflow: 'auto',
-            transform: scale > 1 ? `translate(${position.x}px, ${position.y}px)` : 'none',
-            transition: isPanning ? 'none' : 'transform 0.1s ease-out'
+            maxHeight: '600px',
           }}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseLeave}
         >
-          <Document
-            file={pdfData || currentUrl}
-            onLoadSuccess={onLoadSuccess}
-            onLoadError={onLoadError}
-            loading={
-              <div className="flex flex-col items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-fpt-blue mb-2"></div>
-                <p>Đang tải tài liệu...</p>
-              </div>
-            }
+          <div
+            style={{ 
+              transform: scale > 1 ? `translate(${position.x}px, ${position.y}px)` : 'none',
+              transition: isPanning ? 'none' : 'transform 0.1s ease-out'
+            }}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseLeave}
           >
-            <Page
-              pageNumber={page}
-              width={550}
-              scale={scale}
-              renderAnnotationLayer // enable annotation layer
-              renderTextLayer       // enable selectable text layer
-            />
-          </Document>
+            <Document
+              file={pdfData || currentUrl}
+              onLoadSuccess={onLoadSuccess}
+              onLoadError={onLoadError}
+              loading={
+                <div className="flex flex-col items-center justify-center h-64">
+                  <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-fpt-blue mb-2"></div>
+                  <p>Đang tải tài liệu...</p>
+                </div>
+              }
+            >
+              <Page
+                pageNumber={page}
+                width={550}
+                scale={scale}
+                renderAnnotationLayer // enable annotation layer
+                renderTextLayer       // enable selectable text layer
+              />
+            </Document>
+          </div>
         </div>
       </div>
 
