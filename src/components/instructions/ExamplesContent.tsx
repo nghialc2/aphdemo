@@ -21,7 +21,7 @@ const ExamplesContent: React.FC = () => {
         
         <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
           <p className="font-medium">Structured Prompting (Prompt có cấu trúc):</p>
-          <div className="text-sm font-mono bg-white p-2 rounded mt-1 border border-gray-200 whitespace-pre-wrap">
+          <div className="text-sm font-mono bg-white p-2 rounded mt-1 border border-gray-200 whitespace-pre-wrap break-words overflow-hidden">
 {`
 Bạn là chuyên viên HR tại Công ty CP Bán lẻ SmartLife (SmartLife Retail JSC) - chuỗi siêu thị/cửa hàng tiện lợi quy mô 400 nhân sự, đang chuẩn bị mở 10 cửa hàng mới trong 6 tháng tới. Công ty đang đẩy mạnh chuyển đổi số và ứng dụng AI. Tỷ lệ nghỉ việc ở nhân viên tuyến đầu cao.
 
@@ -55,10 +55,11 @@ Bạn là chuyên viên HR tại Công ty CP Bán lẻ SmartLife (SmartLife Reta
           <p className="font-medium">Nâng cao: Context-Aware Iterative Prompting (Ví dụ tạo JD):</p>
           <div className="text-sm font-mono bg-white p-2 rounded mt-1 border border-gray-200">
             <p className="font-semibold text-fpt-blue mb-2">Giai đoạn 1: Thiết lập Ngữ cảnh Doanh nghiệp và Mục tiêu Tổng thể (Context Prompt)</p>
-            <div className="whitespace-pre-wrap mb-4 p-2 bg-gray-100 rounded">
+            <div className="whitespace-pre-wrap mb-4 p-2 bg-gray-100 rounded break-words overflow-hidden">
               <strong>Prompt 1 (Thiết lập ngữ cảnh)</strong>
-              <pre>
-{`Bạn là một chuyên viên HR đang làm việc với tôi. Tôi là chuyên viên tuyển dụng tại Công ty CP Bán lẻ SmartLife (SmartLife Retail JSC).
+              <pre className="overflow-x-auto text-xs md:text-sm whitespace-pre-wrap break-words overflow-hidden">
+{`
+Bạn là một chuyên viên HR đang làm việc với tôi. Tôi là chuyên viên tuyển dụng tại Công ty CP Bán lẻ SmartLife (SmartLife Retail JSC).
 
 **Về SmartLife:**
 - Chuỗi siêu thị/cửa hàng tiện lợi quy mô 400 nhân sự.
@@ -79,18 +80,20 @@ Hãy xác nhận bạn đã hiểu ngữ cảnh công ty chúng tôi.`}
             </div>
 
             <p className="font-semibold text-fpt-blue mb-2">Giai đoạn 2: Bắt đầu Hoạch định Nhân sự và Phân tích Công việc (Initial Task Prompt & Iteration)</p>
-            <div className="whitespace-pre-wrap mb-4 p-2 bg-gray-100 rounded">
+            <div className="whitespace-pre-wrap mb-4 p-2 bg-gray-100 rounded break-words overflow-hidden">
               <strong>Prompt 2 (Hoạch định nhân sự ban đầu)</strong>
-              <pre>
-{`Dựa trên ngữ cảnh đã cho, hãy hoạch định nhu cầu nhân sự tổng thể cho giai đoạn mở rộng sắp tới (10 cửa hàng mới trong 6 tháng).
+              <pre className="overflow-x-auto text-xs md:text-sm whitespace-pre-wrap break-words overflow-hidden">
+{`
+Dựa trên ngữ cảnh đã cho, hãy hoạch định nhu cầu nhân sự tổng thể cho giai đoạn mở rộng sắp tới (10 cửa hàng mới trong 6 tháng).
 - Xác định các vị trí cần tuyển mới và các vị trí cần tái đào tạo.
 - Ước tính số lượng nhân sự cần cho mỗi vị trí chủ chốt.
 - Liệt kê các kỹ năng ưu tiên (cả cứng và mềm) cho nhân sự mới và cần phát triển ở nhân sự hiện tại.`}
               </pre>
               <br />
               <strong>Prompt 3 (Tinh chỉnh Kế hoạch & Chọn vị trí)</strong>
-              <pre>
-{`Kế hoạch này khá tốt. Bây giờ, tôi muốn tập trung vào vị trí "Trưởng ca cửa hàng". Vị trí này rất quan trọng vì liên quan trực tiếp đến tỷ lệ nghỉ việc cao.
+              <pre className="overflow-x-auto text-xs md:text-sm whitespace-pre-wrap break-words overflow-hidden">
+{`
+Kế hoạch này khá tốt. Bây giờ, tôi muốn tập trung vào vị trí "Trưởng ca cửa hàng". Vị trí này rất quan trọng vì liên quan trực tiếp đến tỷ lệ nghỉ việc cao.
 
 Hãy phân tích chi tiết công việc cho vị trí "Trưởng ca cửa hàng", bao gồm:
 - Mục tiêu chính của vị trí.
@@ -101,10 +104,11 @@ Hãy phân tích chi tiết công việc cho vị trí "Trưởng ca cửa hàng
             </div>
 
             <p className="font-semibold text-fpt-blue mb-2">Giai đoạn 3: Soạn thảo JD và Tinh chỉnh Cuối cùng (Iterative & Constraint Prompt)</p>
-            <div className="whitespace-pre-wrap p-2 bg-gray-100 rounded">
+            <div className="whitespace-pre-wrap p-2 bg-gray-100 rounded break-words overflow-hidden">
               <strong>Prompt 4 (Soạn thảo JD)</strong>
-              <pre>
-{`Dựa trên phân tích công việc bạn vừa cung cấp cho vị trí Trưởng ca cửa hàng, hãy soạn thảo một bản mô tả công việc (JD) hoàn chỉnh.
+              <pre className="overflow-x-auto text-xs md:text-sm whitespace-pre-wrap break-words overflow-hidden">
+{`
+Dựa trên phân tích công việc bạn vừa cung cấp cho vị trí Trưởng ca cửa hàng, hãy soạn thảo một bản mô tả công việc (JD) hoàn chỉnh.
 
 #REQUIREMENT:
 - JD phải hấp dẫn, thể hiện rõ vai trò quan trọng của vị trí trong bối cảnh tăng trưởng và chuyển đổi số của SmartLife.
@@ -114,16 +118,18 @@ Hãy phân tích chi tiết công việc cho vị trí "Trưởng ca cửa hàng
               </pre>
               <br />
               <strong>Prompt 5 (Tinh chỉnh JD)</strong>
-              <pre>
-{`Bản JD này tốt, nhưng tôi muốn nhấn mạnh hơn nữa yếu tố "chuyển đổi số" và "văn hóa học hỏi" trong phần trách nhiệm và yêu cầu ứng viên.
+              <pre className="overflow-x-auto text-xs md:text-sm whitespace-pre-wrap break-words overflow-hidden">
+{`
+Bản JD này tốt, nhưng tôi muốn nhấn mạnh hơn nữa yếu tố "chuyển đổi số" và "văn hóa học hỏi" trong phần trách nhiệm và yêu cầu ứng viên.
 - Hãy thêm cụ thể hơn về việc Trưởng ca sẽ sử dụng dữ liệu/công cụ số trong công việc hàng ngày.
 - Làm nổi bật khả năng học hỏi công nghệ mới là một kỹ năng quan trọng.
 - Đồng thời, đề xuất một câu tagline hấp dẫn cho JD để thu hút nhân sự trẻ, năng động.`}
               </pre>
               <br />
               <strong>Prompt 6 (Kiểm tra cuối cùng)</strong>
-              <pre>
-{`Bạn có thể đọc lại toàn bộ JD và đảm bảo rằng nó không có lỗi chính tả, ngữ pháp và tuân thủ tất cả các yêu cầu tôi đã đưa ra không? Cuối cùng, hãy đưa ra một đánh giá ngắn về mức độ hấp dẫn của JD này đối với một ứng viên tiềm năng trong ngành bán lẻ hiện đại.`}
+              <pre className="overflow-x-auto text-xs md:text-sm whitespace-pre-wrap break-words overflow-hidden">
+{`
+Bạn có thể đọc lại toàn bộ JD và đảm bảo rằng nó không có lỗi chính tả, ngữ pháp và tuân thủ tất cả các yêu cầu tôi đã đưa ra không? Cuối cùng, hãy đưa ra một đánh giá ngắn về mức độ hấp dẫn của JD này đối với một ứng viên tiềm năng trong ngành bán lẻ hiện đại.`}
               </pre>
             </div>
           </div>
