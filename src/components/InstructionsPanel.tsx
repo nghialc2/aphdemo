@@ -65,7 +65,7 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
           </TabsTrigger>
           <TabsTrigger value="examples" className="flex items-center">
             <BookOpen className="mr-2 h-4 w-4" />
-            <span>Ví Dụ</span>
+            <span>Ví dụ về Prompt</span>
           </TabsTrigger>
         </TabsList>
         
