@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
@@ -13,6 +12,14 @@ const Header = ({ toggleSidebar, isSidebarOpen }: HeaderProps) => {
   return (
     <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
       <div className="flex items-center space-x-4">
+        {/* FSB Logo */}
+        <div className="flex-shrink-0">
+          <img 
+            src="/public/logo_FSB_new.png" 
+            alt="FPT School of Business & Technology" 
+            className="h-10 w-auto"
+          />
+        </div>
         <h1 className="text-xl font-bold text-fpt-orange">AI-Powered HRM Demo Lab</h1>
       </div>
       
