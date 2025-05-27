@@ -1,14 +1,150 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState, ChangeEvent, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
-import { Mail } from 'lucide-react';
+import { Ripple, AuthTabs, TechOrbitDisplay } from '@/components/ui/modern-animated-sign-in';
+
+type FormData = {
+  email: string;
+  password: string;
+};
+
+const iconsArray = [
+  {
+    component: () => (
+      <img
+        width={100}
+        height={100}
+        src='https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg'
+        alt='HTML5'
+      />
+    ),
+    className: 'size-[30px] border-none bg-transparent',
+    duration: 20,
+    delay: 20,
+    radius: 100,
+    path: false,
+    reverse: false,
+  },
+  {
+    component: () => (
+      <img
+        width={100}
+        height={100}
+        src='https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg'
+        alt='CSS3'
+      />
+    ),
+    className: 'size-[30px] border-none bg-transparent',
+    duration: 20,
+    delay: 10,
+    radius: 100,
+    path: false,
+    reverse: false,
+  },
+  {
+    component: () => (
+      <img
+        width={100}
+        height={100}
+        src='https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/typescript/typescript-original.svg'
+        alt='TypeScript'
+      />
+    ),
+    className: 'size-[50px] border-none bg-transparent',
+    radius: 210,
+    duration: 20,
+    path: false,
+    reverse: false,
+  },
+  {
+    component: () => (
+      <img
+        width={100}
+        height={100}
+        src='https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg'
+        alt='JavaScript'
+      />
+    ),
+    className: 'size-[50px] border-none bg-transparent',
+    radius: 210,
+    duration: 20,
+    delay: 20,
+    path: false,
+    reverse: false,
+  },
+  {
+    component: () => (
+      <img
+        width={100}
+        height={100}
+        src='https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tailwindcss/tailwindcss-original.svg'
+        alt='TailwindCSS'
+      />
+    ),
+    className: 'size-[30px] border-none bg-transparent',
+    duration: 20,
+    delay: 20,
+    radius: 150,
+    path: false,
+    reverse: true,
+  },
+  {
+    component: () => (
+      <img
+        width={100}
+        height={100}
+        src='https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nextjs/nextjs-original.svg'
+        alt='Nextjs'
+      />
+    ),
+    className: 'size-[30px] border-none bg-transparent',
+    duration: 20,
+    delay: 10,
+    radius: 150,
+    path: false,
+    reverse: true,
+  },
+  {
+    component: () => (
+      <img
+        width={100}
+        height={100}
+        src='https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/react/react-original.svg'
+        alt='React'
+      />
+    ),
+    className: 'size-[50px] border-none bg-transparent',
+    radius: 270,
+    duration: 20,
+    path: false,
+    reverse: true,
+  },
+  {
+    component: () => (
+      <img
+        width={100}
+        height={100}
+        src='https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/figma/figma-original.svg'
+        alt='Figma'
+      />
+    ),
+    className: 'size-[50px] border-none bg-transparent',
+    radius: 270,
+    duration: 20,
+    delay: 60,
+    path: false,
+    reverse: true,
+  },
+];
 
 const Login = () => {
   const { user, signInWithGoogle, loading } = useAuth();
   const navigate = useNavigate();
+  const [formData, setFormData] = useState<FormData>({
+    email: '',
+    password: '',
+  });
 
   useEffect(() => {
     // Redirect to home if already logged in
@@ -16,6 +152,56 @@ const Login = () => {
       navigate('/');
     }
   }, [user, navigate]);
+
+  const handleInputChange = (
+    event: ChangeEvent<HTMLInputElement>,
+    name: keyof FormData
+  ) => {
+    const value = event.target.value;
+
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    console.log('Form submitted', formData);
+    // You can add regular email/password login here if needed
+  };
+
+  const goToForgotPassword = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+    console.log('forgot password');
+  };
+
+  const formFields = {
+    header: 'Chào mừng trở lại',
+    subHeader: 'Đăng nhập vào tài khoản của bạn',
+    fields: [
+      {
+        label: 'Email',
+        required: true,
+        type: 'email',
+        placeholder: 'Nhập địa chỉ email của bạn',
+        onChange: (event: ChangeEvent<HTMLInputElement>) =>
+          handleInputChange(event, 'email'),
+      },
+      {
+        label: 'Mật khẩu',
+        required: true,
+        type: 'password',
+        placeholder: 'Nhập mật khẩu của bạn',
+        onChange: (event: ChangeEvent<HTMLInputElement>) =>
+          handleInputChange(event, 'password'),
+      },
+    ],
+    submitButton: 'Đăng nhập',
+    textVariantButton: 'Quên mật khẩu?',
+  };
 
   if (loading) {
     return (
@@ -29,32 +215,23 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-fpt-blue">
-            Đăng nhập vào APH Demo
-          </CardTitle>
-          <CardDescription>
-            Chỉ dành cho sinh viên và giảng viên FSB
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Button
-            onClick={signInWithGoogle}
-            className="w-full bg-white hover:bg-gray-50 text-gray-900 border border-gray-300"
-            disabled={loading}
-          >
-            <Mail className="h-5 w-5 mr-2" />
-            Đăng nhập với Gmail @fsb.edu.vn
-          </Button>
-          
-          <div className="text-sm text-gray-600 text-center">
-            <p>Chỉ các email có tên miền @fsb.edu.vn mới được phép truy cập</p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <section className='flex max-lg:justify-center min-h-screen'>
+      {/* Left Side */}
+      <span className='flex flex-col justify-center w-1/2 max-lg:hidden relative'>
+        <Ripple mainCircleSize={100} />
+        <TechOrbitDisplay iconsArray={iconsArray} text="APH Demo" />
+      </span>
+
+      {/* Right Side */}
+      <span className='w-1/2 h-[100dvh] flex flex-col justify-center items-center max-lg:w-full max-lg:px-[10%]'>
+        <AuthTabs
+          formFields={formFields}
+          goTo={goToForgotPassword}
+          handleSubmit={handleSubmit}
+          onGoogleLogin={signInWithGoogle}
+        />
+      </span>
+    </section>
   );
 };
 
