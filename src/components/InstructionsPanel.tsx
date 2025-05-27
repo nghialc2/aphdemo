@@ -30,12 +30,17 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
   const handleExerciseClick = (exercise: Exercise) => {
     setSelectedExercise(exercise);
     setCurrentView('exercise');
+    setActiveTab("instructions"); // Reset to instructions tab when entering exercise view
   };
 
   const handleBackToMain = () => {
     setCurrentView('main');
     setSelectedExercise(null);
+    setActiveTab("instructions"); // Reset to instructions tab when going back
   };
+
+  // Show additional tabs only when viewing exercise-1
+  const showAdditionalTabs = currentView === 'exercise' && selectedExercise?.id === 'exercise-1';
   
   return (
     <div className="h-full flex flex-col bg-white">
@@ -59,14 +64,18 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
             <Book className="mr-2 h-4 w-4" />
             <span>Hướng Dẫn</span>
           </TabsTrigger>
-          <TabsTrigger value="thongtin" className="flex items-center">
-            <FileText className="mr-2 h-4 w-4" />
-            <span>Thông Tin</span>
-          </TabsTrigger>
-          <TabsTrigger value="examples" className="flex items-center">
-            <BookOpen className="mr-2 h-4 w-4" />
-            <span>Ví dụ về Prompt</span>
-          </TabsTrigger>
+          {showAdditionalTabs && (
+            <>
+              <TabsTrigger value="thongtin" className="flex items-center">
+                <FileText className="mr-2 h-4 w-4" />
+                <span>Thông Tin</span>
+              </TabsTrigger>
+              <TabsTrigger value="examples" className="flex items-center">
+                <BookOpen className="mr-2 h-4 w-4" />
+                <span>Ví dụ về Prompt</span>
+              </TabsTrigger>
+            </>
+          )}
         </TabsList>
         
         <div className="flex-1 relative overflow-hidden">
@@ -96,27 +105,31 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
             </ScrollArea>
           </TabsContent>
           
-          <TabsContent 
-            value="examples" 
-            className="absolute inset-0 m-0"
-          >
-            <ScrollArea className="h-full">
-              <div className="p-4">
-                <ExamplesContent />
-              </div>
-            </ScrollArea>
-          </TabsContent>
-          
-          <TabsContent 
-            value="thongtin" 
-            className="absolute inset-0 m-0"
-          >
-            <ScrollArea className="h-full">
-              <div className="p-4">
-                <ThongTinContent />
-              </div>
-            </ScrollArea>
-          </TabsContent>
+          {showAdditionalTabs && (
+            <>
+              <TabsContent 
+                value="examples" 
+                className="absolute inset-0 m-0"
+              >
+                <ScrollArea className="h-full">
+                  <div className="p-4">
+                    <ExamplesContent />
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+              
+              <TabsContent 
+                value="thongtin" 
+                className="absolute inset-0 m-0"
+              >
+                <ScrollArea className="h-full">
+                  <div className="p-4">
+                    <ThongTinContent />
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+            </>
+          )}
         </div>
       </Tabs>
     </div>
