@@ -145,6 +145,32 @@
   }
 }
 
+/* FadeIn animation keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Success animation keyframes */
+@keyframes success {
+  0% {
+    background-color: #9333ea;
+  }
+  50% {
+    background-color: #10b981;
+    transform: scale(1.05);
+  }
+  100% {
+    background-color: #9333ea;
+  }
+}
+
 /* Gradient animation utility class */
 .animate-gradient-x {
   animation: gradient-x 3s ease infinite;
@@ -153,4 +179,14 @@
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+/* FadeIn animation utility class */
+.animate-fadeIn {
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* Success animation utility class */
+.animate-success {
+  animation: success 0.6s ease-in-out;
 }
