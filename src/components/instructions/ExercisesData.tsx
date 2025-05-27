@@ -25,32 +25,20 @@ export const exercisesData: Exercise[] = [
   {
     id: "exercise-1-2",
     title: "Bài 1.2: Tối ưu hóa tuyển dụng với AI - Scanning & Interview",
-    description: "Sử dụng AI để tối ưu hóa quy trình sàng lọc hồ sơ và phỏng vấn ứng viên."
+    description: "Sử dụng AI để tối ưu hóa quy trình sàng lọc hồ sơ và phỏng vấn ứng viên.",
     content: (
       <div className="space-y-4 text-sm">
         <h4 className="font-semibold text-base text-fpt-blue">Tối ưu hóa tuyển dụng với AI - Scanning & Interview</h4>
 
         <PDFViewer
-          pdfUrl="content: (
-      <div className="space-y-4 text-sm">
-        <h4 className="font-semibold text-base text-fpt-blue">Tối ưu hóa tuyển dụng với AI - Scanning & Interview</h4>
-
-        <PDFViewer
-          pdfUrl="https://raw.githubusercontent.com/nghialc2/aphdemo/main/public/huong_dan_thuc_hanh_tao_JD.pdf"
-          fileName="huong_dan_thuc_hanh_tao_workflow.pdf"
+          pdfUrl="https://raw.githubusercontent.com/nghialc2/aphdemo/main/public/huong_dan_thuc_hanh_tao_workflow.pdf"
+          fileName="Hướng dẫn thực hành tạo workflow.pdf"
           fallbackUrls={[
             "/huong_dan_thuc_hanh_tao_workflow.pdf"
           ]}
         />
       </div>
-    )"
-          fileName="Hướng dẫn thực hành tạo JD.pdf"
-          fallbackUrls={[
-            "/huong_dan_thuc_hanh_tao_JD.pdf"
-          ]}
-        />
-      </div>
-    ) 
+    )
   },
   {
     id: "exercise-2",
