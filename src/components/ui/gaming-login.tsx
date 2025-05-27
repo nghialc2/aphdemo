@@ -75,10 +75,10 @@ export const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUrl }) =>
 // Main LoginForm Component
 export const LoginForm: React.FC<LoginFormProps> = ({ onGoogleLogin }) => {
     return (
-        <div className="p-8 rounded-2xl backdrop-blur-md bg-black/50 border border-white/10 shadow-2xl">
+        <div className="p-8 rounded-2xl backdrop-blur-md bg-black/15 border border-white/10 shadow-2xl">
             <div className="mb-8 text-center">
                 <h2 className="text-3xl font-bold mb-2 relative group">
-                    <span className="absolute -inset-1 bg-gradient-to-r from-purple-600/30 via-pink-500/30 to-blue-500/30 blur-xl opacity-75 group-hover:opacity-100 transition-all duration-500 animate-pulse"></span>
+                    <span className="absolute -inset-1 bg-gradient-to-r from-purple-600/30 via-pink-500/30 to-blue-500/30 blur-xl opacity-40 group-hover:opacity-100 transition-all duration-500 animate-pulse"></span>
                     <span className="relative inline-block text-3xl font-bold mb-2 text-white">
                         AI-Powered HRM
                     </span>
