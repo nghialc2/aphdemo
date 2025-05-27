@@ -2,6 +2,7 @@
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import PDFViewer from './PDFViewer';
 
 interface GammaContentProps {
   onBackClick?: () => void;
@@ -35,7 +36,6 @@ const GammaContent: React.FC<GammaContentProps> = ({ onBackClick }) => {
         </p>
       </div>
       
-      content: (
       <div className="space-y-4 text-sm">
         <h4 className="font-semibold text-base text-fpt-blue">Hướng dẫn sử dụng Gamma</h4>
 
@@ -47,7 +47,7 @@ const GammaContent: React.FC<GammaContentProps> = ({ onBackClick }) => {
           ]}
         />
       </div>
-    )
+    </div>
   );
 };
 
