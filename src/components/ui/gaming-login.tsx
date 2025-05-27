@@ -80,13 +80,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onGoogleLogin }) => {
                 <h2 className="text-3xl font-bold mb-2 relative group">
                     <span className="absolute -inset-1 bg-gradient-to-r from-purple-600/30 via-pink-500/30 to-blue-500/30 blur-xl opacity-70 group-hover:opacity-100 transition-all duration-500 animate-pulse"></span>
                     <span className="relative inline-block text-3xl font-bold mb-2 text-white">
-                        AI-Powered HRM
+                        AI-Powered HRM Training Lab
                     </span>
                 </h2>
                 <p className="text-white/80 flex flex-col items-center space-y-1">
                     <span className="relative group cursor-default">
                         <span className="absolute -inset-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span>
-                        <span className="relative inline-block animate-pulse">Chào mừng bạn đã đến với khóa học Quản trị Nhân sự trong Kỷ nguyên AI của Viện Quản trị và Công nghệ FSB</span>
+                        <span className="relative inline-block animate-pulse">Chào mừng bạn đã đến với khóa học AI-Powered HRM của Viện Quản trị và Công nghệ FSB</span>
                     </span>
                     <span className="text-xs text-white/50 animate-pulse">
                         [Đăng nhập để tiếp tục]
