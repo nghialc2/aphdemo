@@ -46,7 +46,14 @@ export const exercisesData: Exercise[] = [
     description: "",
     content: (
       <div className="space-y-4 text-sm">
-        <h4 className="font-semibold text-base text-fpt-blue">Hãy tải dữ liệu demo thực hành tại đây: https://drive.google.com/drive/folders/1tzpQ2eMUbpMKPQmwO-cZ2Hgsgf-1R0Jg?usp=sharing</h4>
+       <a 
+  href="https://drive.google.com/drive/folders/1tzpQ2eMUbpMKPQmwO-cZ2Hgsgf-1R0Jg?usp=sharing"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="font-semibold text-base text-fpt-blue hover:text-blue-800 underline block"
+>
+  Hãy tải dữ liệu demo thực hành tại đây
+</a>
 
         <PDFViewer
           pdfUrl="https://raw.githubusercontent.com/nghialc2/aphdemo/main/public/Huong_dan_thuc_hanh_custom_GPT_TNA.pdf"
