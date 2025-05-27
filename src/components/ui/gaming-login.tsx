@@ -1,3 +1,4 @@
+
 'use client';
 import React from 'react';
 
@@ -109,23 +110,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onGoogleLogin }) => {
     );
 };
 
-// Demo Component để hiển thị
-const LoginDemo = () => {
-    const handleGoogleLogin = () => {
-        console.log('Google login clicked');
-    };
-
-    return (
-        <div className="relative min-h-screen flex items-center justify-center p-4">
-            <VideoBackground videoUrl="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" />
-            <div className="relative z-20 w-full max-w-md">
-                <LoginForm 
-                    onSubmit={() => {}} 
-                    onGoogleLogin={handleGoogleLogin}
-                />
-            </div>
-        </div>
-    );
+// Export the components as properties of the default export to match Login.tsx expectations
+const LoginPage = {
+    VideoBackground,
+    LoginForm
 };
 
-export default LoginDemo;
+export default LoginPage;
