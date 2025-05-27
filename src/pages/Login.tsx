@@ -239,10 +239,28 @@ const Login = () => {
         <TechOrbitDisplay iconsArray={iconsArray} text="" />
         {/* Large Orange Gradient Text */}
         <div className="absolute inset-0 flex items-center justify-center z-20">
-          <h1 className="text-6xl lg:text-7xl xl:text-8xl font-bold bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 bg-clip-text text-transparent text-center leading-tight">
+          <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold bg-gradient-to-r from-orange-300 via-orange-500 to-pink-500 bg-clip-text text-transparent text-center leading-tight animate-gradient-x bg-[length:200%_200%]">
             AI-Powered<br />HRM
           </h1>
         </div>
+        <style jsx>{`
+          @keyframes gradient-x {
+            0%, 100% {
+              background-position: 0% 50%;
+            }
+            50% {
+              background-position: 100% 50%;
+            }
+          }
+          .animate-gradient-x {
+            animation: gradient-x 3s ease infinite;
+            background: linear-gradient(-45deg, #fdba74, #fb923c, #f97316, #ec4899, #f59e0b);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+          }
+        `}</style>
       </span>
 
       {/* Right Side */}
