@@ -1,4 +1,3 @@
-
 import { useEffect, useState, ChangeEvent, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -243,24 +242,6 @@ const Login = () => {
             AI-Powered<br />HRM
           </h1>
         </div>
-        <style jsx>{`
-          @keyframes gradient-x {
-            0%, 100% {
-              background-position: 0% 50%;
-            }
-            50% {
-              background-position: 100% 50%;
-            }
-          }
-          .animate-gradient-x {
-            animation: gradient-x 3s ease infinite;
-            background: linear-gradient(-45deg, #fdba74, #fb923c, #f97316, #ec4899, #f59e0b);
-            background-size: 400% 400%;
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-          }
-        `}</style>
       </span>
 
       {/* Right Side */}
