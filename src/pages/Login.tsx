@@ -185,7 +185,7 @@ const Login = () => {
       {
         label: 'Email',
         required: true,
-        type: 'email',
+        type: 'email' as const,
         placeholder: 'Nhập địa chỉ email của bạn',
         onChange: (event: ChangeEvent<HTMLInputElement>) =>
           handleInputChange(event, 'email'),
@@ -193,7 +193,7 @@ const Login = () => {
       {
         label: 'Mật khẩu',
         required: true,
-        type: 'password',
+        type: 'password' as const,
         placeholder: 'Nhập mật khẩu của bạn',
         onChange: (event: ChangeEvent<HTMLInputElement>) =>
           handleInputChange(event, 'password'),
