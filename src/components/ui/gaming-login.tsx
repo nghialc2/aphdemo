@@ -60,6 +60,10 @@ export const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUrl }) =>
             <video
                 ref={videoRef}
                 className="absolute inset-0 min-w-full min-h-full object-cover w-auto h-auto"
+                style={{
+                    objectPosition: 'center top',
+                    transform: 'translateY(-10%)'
+                }}
                 autoPlay
                 loop
                 muted

@@ -20,7 +20,7 @@ const Header = ({ toggleSidebar, isSidebarOpen }: HeaderProps) => {
             className="h-10 w-auto"
           />
         </div>
-        <h1 className="text-xl font-bold text-fpt-orange">AI-Powered HRM Demo Lab</h1>
+        <h1 className="text-xl font-bold text-fpt-orange">AI-Powered HRM Training Lab</h1>
       </div>
       
       <div className="flex items-center space-x-4">
