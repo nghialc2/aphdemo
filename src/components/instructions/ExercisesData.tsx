@@ -43,7 +43,20 @@ export const exercisesData: Exercise[] = [
   {
     id: "exercise-2-1",
     title: "Bài 2.1: Thiết kế đào tạo cá nhân hóa bằng AI - TNA",
-    description: "Tạo một câu lệnh để AI thực hiện phân tích nhu cầu đào tạo (TNA) dựa trên kỹ năng hiện tại và mục tiêu phát triển của nhân viên."
+    description: "Hãy tải dữ liệu demo thực hành tại đây: https://drive.google.com/drive/folders/1tzpQ2eMUbpMKPQmwO-cZ2Hgsgf-1R0Jg?usp=sharing."
+     content: (
+      <div className="space-y-4 text-sm">
+        <h4 className="font-semibold text-base text-fpt-blue">Thiết kế đào tạo cá nhân hóa bằng AI - TNA</h4>
+
+        <PDFViewer
+          pdfUrl="https://raw.githubusercontent.com/nghialc2/aphdemo/main/public/Huong_dan_thuc_hanh_custom_GPT_TNA.pdf"
+          fileName="Huong_dan_thuc_hanh_custom_GPT_TNA.pdf"
+          fallbackUrls={[
+            "/Huong_dan_thuc_hanh_custom_GPT_TNA.pdf"
+          ]}
+        />
+      </div>
+    ) 
   },
   {
     id: "exercise-2-2",
