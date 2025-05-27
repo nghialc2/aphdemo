@@ -43,8 +43,8 @@ export const exercisesData: Exercise[] = [
   {
     id: "exercise-2-1",
     title: "Bài 2.1: Thiết kế đào tạo cá nhân hóa bằng AI - TNA",
-    description: "Hãy tải dữ liệu demo thực hành tại đây: https://drive.google.com/drive/folders/1tzpQ2eMUbpMKPQmwO-cZ2Hgsgf-1R0Jg?usp=sharing."
-     content: (
+    description: "Hãy tải dữ liệu demo thực hành tại đây: https://drive.google.com/drive/folders/1tzpQ2eMUbpMKPQmwO-cZ2Hgsgf-1R0Jg?usp=sharing.",
+    content: (
       <div className="space-y-4 text-sm">
         <h4 className="font-semibold text-base text-fpt-blue">Thiết kế đào tạo cá nhân hóa bằng AI - TNA</h4>
 
