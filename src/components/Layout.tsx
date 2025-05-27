@@ -24,10 +24,15 @@ import {
 
 const Layout = () => {
   const [isInstructionsCollapsed, setIsInstructionsCollapsed] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
   
   return (
     <div className="flex flex-col h-screen">
-      <Header />
+      <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
       
       <SidebarProvider defaultOpen={false}>
         <div className="flex-1 flex overflow-hidden w-full">
