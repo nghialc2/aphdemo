@@ -15,11 +15,11 @@ const ExercisesList: React.FC<ExercisesListProps> = ({ exercises, onExerciseClic
         Bài Tập Hôm Nay
       </h3>
       
-      {exercises.map((exercise) => (
+     {exercises.map((exercise) => (
         <div 
           key={exercise.id}
           className={`border-l-4 ${
-            exercise.id === 'exercise-1' ? 'border-fpt-blue' : 
+            exercise.id === 'exercise-1-1' || exercise.id === 'exercise-1-2' ? 'border-fpt-blue' : 
             exercise.id === 'exercise-2' ? 'border-fpt-orange' : 
             exercise.id === 'exercise-3' ? 'border-fpt-green' :
             'border-fpt-blue'
@@ -28,7 +28,7 @@ const ExercisesList: React.FC<ExercisesListProps> = ({ exercises, onExerciseClic
         >
           <div className="flex justify-between items-center">
             <p className="font-medium">{exercise.title}</p>
-            {exercise.id === 'exercise-1' && (
+            {(exercise.id === 'exercise-1-1' || exercise.id === 'exercise-1-2') && (
               <FileText className="h-4 w-4 text-fpt-blue" />
             )}
           </div>
