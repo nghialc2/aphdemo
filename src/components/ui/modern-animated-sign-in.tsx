@@ -565,13 +565,7 @@ interface AuthTabsProps {
   formFields: {
     header: string;
     subHeader?: string;
-    fields: Array<{
-      label: string;
-      required?: boolean;
-      type: string;
-      placeholder: string;
-      onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    }>;
+    fields: Field[];
     submitButton: string;
     textVariantButton?: string;
   };
@@ -633,4 +627,6 @@ export {
   AuthTabs,
   Label,
   BottomGradient,
+  type Field,
+  type FieldType,
 };
