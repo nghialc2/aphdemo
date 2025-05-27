@@ -80,7 +80,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onGoogleLogin }) => {
                 <h2 className="text-3xl font-bold mb-2 relative group">
                     <span className="absolute -inset-1 bg-gradient-to-r from-purple-600/30 via-pink-500/30 to-blue-500/30 blur-xl opacity-70 group-hover:opacity-100 transition-all duration-500 animate-pulse"></span>
                     <span className="relative inline-block text-3xl font-bold mb-2 text-white">
-                        AI-Powered HRM Training Lab
+                        APH Training Lab
                     </span>
                 </h2>
                 <p className="text-white/80 flex flex-col items-center space-y-1">
