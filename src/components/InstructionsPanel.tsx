@@ -184,7 +184,7 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
               >
                 <ScrollArea className="h-full">
                   <div className="p-4">
-                    <GammaContent />
+                    <GammaContent onBackClick={handleBackToMain} />
                   </div>
                 </ScrollArea>
               </TabsContent>
@@ -195,7 +195,7 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
               >
                 <ScrollArea className="h-full">
                   <div className="p-4">
-                    <GensparkContent />
+                    <GensparkContent onBackClick={handleBackToMain} />
                   </div>
                 </ScrollArea>
               </TabsContent>
@@ -206,7 +206,7 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
               >
                 <ScrollArea className="h-full">
                   <div className="p-4">
-                    <NapkinContent />
+                    <NapkinContent onBackClick={handleBackToMain} />
                   </div>
                 </ScrollArea>
               </TabsContent>
@@ -217,7 +217,7 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
               >
                 <ScrollArea className="h-full">
                   <div className="p-4">
-                    <InvideoContent />
+                    <InvideoContent onBackClick={handleBackToMain} />
                   </div>
                 </ScrollArea>
               </TabsContent>
@@ -228,7 +228,7 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
               >
                 <ScrollArea className="h-full">
                   <div className="p-4">
-                    <HeygenContent />
+                    <HeygenContent onBackClick={handleBackToMain} />
                   </div>
                 </ScrollArea>
               </TabsContent>

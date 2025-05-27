@@ -1,9 +1,29 @@
 
 import React from 'react';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
-const NapkinContent: React.FC = () => {
+interface NapkinContentProps {
+  onBackClick?: () => void;
+}
+
+const NapkinContent: React.FC<NapkinContentProps> = ({ onBackClick }) => {
   return (
     <div className="space-y-4">
+      {onBackClick && (
+        <div className="flex items-center space-x-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onBackClick}
+            className="flex items-center text-fpt-blue"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Quay lại
+          </Button>
+        </div>
+      )}
+      
       <h3 className="text-xl font-bold text-fpt-orange">
         Napkin
       </h3>
