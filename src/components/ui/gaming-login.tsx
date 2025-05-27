@@ -43,7 +43,7 @@ const SocialButton: React.FC<SocialButtonProps> = ({ icon, onClick }) => {
 };
 
 // VideoBackground Component
-const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUrl }) => {
+export const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUrl }) => {
     const videoRef = React.useRef<HTMLVideoElement>(null);
     
     React.useEffect(() => {
@@ -73,7 +73,7 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUrl }) => {
 };
 
 // Main LoginForm Component
-const LoginForm: React.FC<LoginFormProps> = ({ onGoogleLogin }) => {
+export const LoginForm: React.FC<LoginFormProps> = ({ onGoogleLogin }) => {
     return (
         <div className="p-8 rounded-2xl backdrop-blur-md bg-black/15 border border-white/10 shadow-2xl">
             <div className="mb-8 text-center">
