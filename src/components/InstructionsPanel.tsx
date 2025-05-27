@@ -11,6 +11,11 @@ import ExercisesList from './instructions/ExercisesList';
 import ExerciseContent from './instructions/ExerciseContent';
 import ExamplesContent from './instructions/ExamplesContent';
 import ThongTinContent from './instructions/ThongTinContent';
+import GammaContent from './instructions/GammaContent';
+import GensparkContent from './instructions/GensparkContent';
+import NapkinContent from './instructions/NapkinContent';
+import InvideoContent from './instructions/InvideoContent';
+import HeygenContent from './instructions/HeygenContent';
 import { exercisesData } from './instructions/ExercisesData';
 import { Exercise } from './instructions/ExerciseContent';
 
@@ -30,17 +35,26 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
   const handleExerciseClick = (exercise: Exercise) => {
     setSelectedExercise(exercise);
     setCurrentView('exercise');
-    setActiveTab("instructions"); // Reset to instructions tab when entering exercise view
+    
+    // Set default tab based on exercise
+    if (exercise.id === 'exercise-2-2') {
+      setActiveTab("gamma"); // Default to first tab for exercise-2-2
+    } else {
+      setActiveTab("instructions"); // Default to instructions for other exercises
+    }
   };
 
   const handleBackToMain = () => {
     setCurrentView('main');
     setSelectedExercise(null);
-    setActiveTab("instructions"); // Reset to instructions tab when going back
+    setActiveTab("instructions");
   };
 
-  // Show additional tabs for both exercise-1-1 and exercise-1-2
-  const showAdditionalTabs = currentView === 'exercise' && (selectedExercise?.id === 'exercise-1-1' || selectedExercise?.id === 'exercise-1-2');
+  // Show additional tabs for exercise-1-1 and exercise-1-2
+  const showExercise1Tabs = currentView === 'exercise' && (selectedExercise?.id === 'exercise-1-1' || selectedExercise?.id === 'exercise-1-2');
+  
+  // Show special tabs for exercise-2-2 (without instructions tab)
+  const showExercise22Tabs = currentView === 'exercise' && selectedExercise?.id === 'exercise-2-2';
   
   return (
     <div className="h-full flex flex-col bg-white">
@@ -60,11 +74,16 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
         className="flex-1 flex flex-col"
       >
         <TabsList className="px-4 py-2 justify-start border-b w-full rounded-none bg-gray-50 flex-shrink-0">
-          <TabsTrigger value="instructions" className="flex items-center">
-            <Book className="mr-2 h-4 w-4" />
-            <span>Hướng Dẫn</span>
-          </TabsTrigger>
-          {showAdditionalTabs && (
+          {/* Show instructions tab for main view and exercises other than 2-2 */}
+          {(currentView === 'main' || !showExercise22Tabs) && (
+            <TabsTrigger value="instructions" className="flex items-center">
+              <Book className="mr-2 h-4 w-4" />
+              <span>Hướng Dẫn</span>
+            </TabsTrigger>
+          )}
+          
+          {/* Show additional tabs for exercise-1-1 and exercise-1-2 */}
+          {showExercise1Tabs && (
             <>
               <TabsTrigger value="thongtin" className="flex items-center">
                 <FileText className="mr-2 h-4 w-4" />
@@ -76,36 +95,61 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
               </TabsTrigger>
             </>
           )}
+          
+          {/* Show special tabs for exercise-2-2 */}
+          {showExercise22Tabs && (
+            <>
+              <TabsTrigger value="gamma" className="flex items-center">
+                <span>Gamma</span>
+              </TabsTrigger>
+              <TabsTrigger value="genspark" className="flex items-center">
+                <span>Genspark</span>
+              </TabsTrigger>
+              <TabsTrigger value="napkin" className="flex items-center">
+                <span>Napkin</span>
+              </TabsTrigger>
+              <TabsTrigger value="invideo" className="flex items-center">
+                <span>Invideo</span>
+              </TabsTrigger>
+              <TabsTrigger value="heygen" className="flex items-center">
+                <span>Heygen</span>
+              </TabsTrigger>
+            </>
+          )}
         </TabsList>
         
         <div className="flex-1 relative overflow-hidden">
-          <TabsContent 
-            value="instructions" 
-            className="absolute inset-0 m-0"
-          >
-            <ScrollArea className="h-full">
-              <div className="p-4 space-y-6">
-                {currentView === 'main' ? (
-                  <>
-                    <WelcomeContent />
-                    <ExercisesList 
-                      exercises={exercisesData} 
-                      onExerciseClick={handleExerciseClick} 
-                    />
-                  </>
-                ) : (
-                  selectedExercise && (
-                    <ExerciseContent 
-                      exercise={selectedExercise} 
-                      onBackClick={handleBackToMain} 
-                    />
-                  )
-                )}
-              </div>
-            </ScrollArea>
-          </TabsContent>
+          {/* Instructions tab content */}
+          {(currentView === 'main' || !showExercise22Tabs) && (
+            <TabsContent 
+              value="instructions" 
+              className="absolute inset-0 m-0"
+            >
+              <ScrollArea className="h-full">
+                <div className="p-4 space-y-6">
+                  {currentView === 'main' ? (
+                    <>
+                      <WelcomeContent />
+                      <ExercisesList 
+                        exercises={exercisesData} 
+                        onExerciseClick={handleExerciseClick} 
+                      />
+                    </>
+                  ) : (
+                    selectedExercise && (
+                      <ExerciseContent 
+                        exercise={selectedExercise} 
+                        onBackClick={handleBackToMain} 
+                      />
+                    )
+                  )}
+                </div>
+              </ScrollArea>
+            </TabsContent>
+          )}
           
-          {showAdditionalTabs && (
+          {/* Additional tabs for exercise-1-1 and exercise-1-2 */}
+          {showExercise1Tabs && (
             <>
               <TabsContent 
                 value="examples" 
@@ -125,6 +169,66 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
                 <ScrollArea className="h-full">
                   <div className="p-4">
                     <ThongTinContent />
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+            </>
+          )}
+          
+          {/* Special tabs for exercise-2-2 */}
+          {showExercise22Tabs && (
+            <>
+              <TabsContent 
+                value="gamma" 
+                className="absolute inset-0 m-0"
+              >
+                <ScrollArea className="h-full">
+                  <div className="p-4">
+                    <GammaContent />
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+              
+              <TabsContent 
+                value="genspark" 
+                className="absolute inset-0 m-0"
+              >
+                <ScrollArea className="h-full">
+                  <div className="p-4">
+                    <GensparkContent />
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+              
+              <TabsContent 
+                value="napkin" 
+                className="absolute inset-0 m-0"
+              >
+                <ScrollArea className="h-full">
+                  <div className="p-4">
+                    <NapkinContent />
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+              
+              <TabsContent 
+                value="invideo" 
+                className="absolute inset-0 m-0"
+              >
+                <ScrollArea className="h-full">
+                  <div className="p-4">
+                    <InvideoContent />
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+              
+              <TabsContent 
+                value="heygen" 
+                className="absolute inset-0 m-0"
+              >
+                <ScrollArea className="h-full">
+                  <div className="p-4">
+                    <HeygenContent />
                   </div>
                 </ScrollArea>
               </TabsContent>
