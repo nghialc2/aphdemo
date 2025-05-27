@@ -41,9 +41,14 @@ export const exercisesData: Exercise[] = [
     )
   },
   {
-    id: "exercise-2",
-    title: "Bài 2: Thiết kế đào tạo cá nhân hóa bằng AI",
-    description: "Tạo một câu lệnh để AI xây dựng chương trình đào tạo dựa trên kỹ năng hiện tại và mục tiêu phát triển của nhân viên."
+    id: "exercise-2-1",
+    title: "Bài 2.1: Thiết kế đào tạo cá nhân hóa bằng AI - TNA",
+    description: "Tạo một câu lệnh để AI thực hiện phân tích nhu cầu đào tạo (TNA) dựa trên kỹ năng hiện tại và mục tiêu phát triển của nhân viên."
+  },
+  {
+    id: "exercise-2-2",
+    title: "Bài 2.2: Thiết kế đào tạo cá nhân hóa bằng AI - Thiết kế học liệu",
+    description: "Tạo một câu lệnh để AI xây dựng chương trình đào tạo và thiết kế học liệu phù hợp với kết quả phân tích TNA."
   },
   {
     id: "exercise-3",

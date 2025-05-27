@@ -21,7 +21,8 @@ const ExercisesList: React.FC<ExercisesListProps> = ({ exercises, onExerciseClic
           className={`border-l-4 ${
             exercise.id === 'exercise-1-1' ? 'border-fpt-blue' : 
             exercise.id === 'exercise-1-2' ? 'border-fpt-blue' : 
-            exercise.id === 'exercise-2' ? 'border-fpt-orange' : 
+            exercise.id === 'exercise-2-1' ? 'border-fpt-orange' :
+            exercise.id === 'exercise-2-2' ? 'border-fpt-orange' :
             exercise.id === 'exercise-3' ? 'border-fpt-green' :
             'border-fpt-blue'
           } pl-3 cursor-pointer hover:bg-gray-50`}
