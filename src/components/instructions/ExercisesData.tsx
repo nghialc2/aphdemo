@@ -5,12 +5,12 @@ import PDFViewer from './PDFViewer';
 
 export const exercisesData: Exercise[] = [
   {
-    id: "exercise-1",
-    title: "Bài 1: Tối ưu hóa tuyển dụng với AI",
+    id: "exercise-1-1",
+    title: "Bài 1.1: Tối ưu hóa tuyển dụng với AI - Tạo JD",
     description: "Viết một câu lệnh xác định cách AI có thể hỗ trợ quy trình tuyển dụng, từ sàng lọc hồ sơ đến đánh giá ứng viên.",
     content: (
       <div className="space-y-4 text-sm">
-        <h4 className="font-semibold text-base text-fpt-blue">Tối ưu hóa tuyển dụng với AI</h4>
+        <h4 className="font-semibold text-base text-fpt-blue">Tối ưu hóa tuyển dụng với AI - Tạo JD</h4>
 
         <PDFViewer
           pdfUrl="https://raw.githubusercontent.com/nghialc2/aphdemo/main/public/huong_dan_thuc_hanh_tao_JD.pdf"
@@ -21,6 +21,11 @@ export const exercisesData: Exercise[] = [
         />
       </div>
     )
+  },
+  {
+    id: "exercise-1-2",
+    title: "Bài 1.2: Tối ưu hóa tuyển dụng với AI - Scanning & Interview",
+    description: "Sử dụng AI để tối ưu hóa quy trình sàng lọc hồ sơ và phỏng vấn ứng viên."
   },
   {
     id: "exercise-2",

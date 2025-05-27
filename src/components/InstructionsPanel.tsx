@@ -39,8 +39,8 @@ const InstructionsPanel: React.FC<InstructionsPanelProps> = ({
     setActiveTab("instructions"); // Reset to instructions tab when going back
   };
 
-  // Show additional tabs only when viewing exercise-1
-  const showAdditionalTabs = currentView === 'exercise' && selectedExercise?.id === 'exercise-1';
+  // Show additional tabs for both exercise-1-1 and exercise-1-2
+  const showAdditionalTabs = currentView === 'exercise' && (selectedExercise?.id === 'exercise-1-1' || selectedExercise?.id === 'exercise-1-2');
   
   return (
     <div className="h-full flex flex-col bg-white">
