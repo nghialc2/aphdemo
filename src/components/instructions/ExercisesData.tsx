@@ -47,7 +47,7 @@ export const exercisesData: Exercise[] = [
     content: (
       <div className="space-y-4 text-sm">
        <a 
-  href="https://drive.google.com/drive/folders/1tzpQ2eMUbpMKPQmwO-cZ2Hgsgf-1R0Jg?usp=sharing"
+  href="https://drive.google.com/drive/folders/1zr9Qhx-AsTP6_JsPb8xSyufGOYBBzziX?usp=sharing"
   target="_blank"
   rel="noopener noreferrer"
   className="font-semibold text-base text-fpt-blue hover:text-blue-800 underline block"
@@ -56,10 +56,10 @@ export const exercisesData: Exercise[] = [
 </a>
 
         <PDFViewer
-          pdfUrl="https://raw.githubusercontent.com/nghialc2/aphdemo/main/public/Huong_dan_thuc_hanh_custom_GPT_TNA.pdf"
-          fileName="Huong_dan_thuc_hanh_custom_GPT_TNA.pdf"
+          pdfUrl="https://raw.githubusercontent.com/nghialc2/aphdemo/main/public/Huong_dan_thuc_hanh_custom_GPT_Analysis_Design.pdf"
+          fileName="Huong_dan_thuc_hanh_custom_GPT_Analysis_Design.pdf"
           fallbackUrls={[
-            "/Huong_dan_thuc_hanh_custom_GPT_TNA.pdf"
+            "/Huong_dan_thuc_hanh_custom_GPT_Analysis_Design.pdf"
           ]}
         />
       </div>
