@@ -35,14 +35,16 @@ const NapkinContent: React.FC<NapkinContentProps> = ({ onBackClick }) => {
         </p>
       </div>
       
-      <div className="bg-fpt-lightGreen p-4 rounded-md">
-        <p className="font-medium text-fpt-green">Hướng dẫn sử dụng Napkin:</p>
-        <ol className="list-decimal list-inside mt-2 space-y-2">
-          <li>Truy cập Napkin AI</li>
-          <li>Mô tả loại biểu đồ cần tạo</li>
-          <li>Cung cấp dữ liệu hoặc ý tưởng</li>
-          <li>Tạo và tùy chỉnh biểu đồ</li>
-        </ol>
+      <div className="space-y-4 text-sm">
+        <h4 className="font-semibold text-base text-fpt-blue">Hướng dẫn sử dụng Napkin</h4>
+
+        <PDFViewer
+          pdfUrl="https://raw.githubusercontent.com/nghialc2/aphdemo/main/public/huong_dan_truc_quan_hoa_du_lieu_bang_napkin.pdf"
+          fileName="huong_dan_truc_quan_hoa_du_lieu_bang_napkin.pdf"
+          fallbackUrls={[
+            "/huong_dan_truc_quan_hoa_du_lieu_bang_napkin.pdf"
+          ]}
+        />
       </div>
     </div>
   );

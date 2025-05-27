@@ -35,15 +35,16 @@ const InvideoContent: React.FC<InvideoContentProps> = ({ onBackClick }) => {
         </p>
       </div>
       
-      <div className="bg-fpt-lightGreen p-4 rounded-md">
-        <p className="font-medium text-fpt-green">Hướng dẫn sử dụng Invideo:</p>
-        <ol className="list-decimal list-inside mt-2 space-y-2">
-          <li>Đăng ký tài khoản Invideo</li>
-          <li>Chọn template video phù hợp</li>
-          <li>Nhập nội dung văn bản đào tạo</li>
-          <li>Để AI tạo video tự động</li>
-          <li>Chỉnh sửa và xuất video</li>
-        </ol>
+      <div className="space-y-4 text-sm">
+        <h4 className="font-semibold text-base text-fpt-blue">Hướng dẫn sử dụng INVIDEO</h4>
+
+        <PDFViewer
+          pdfUrl="https://raw.githubusercontent.com/nghialc2/aphdemo/main/public/huong_dan_thuc_hanh_tao_video_bang_INVIDEO.pdf"
+          fileName="huong_dan_thuc_hanh_tao_video_bang_INVIDEO.pdf"
+          fallbackUrls={[
+            "/huong_dan_thuc_hanh_tao_video_bang_INVIDEO.pdf"
+          ]}
+        />
       </div>
     </div>
   );

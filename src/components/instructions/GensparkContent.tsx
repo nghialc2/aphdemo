@@ -35,14 +35,16 @@ const GensparkContent: React.FC<GensparkContentProps> = ({ onBackClick }) => {
         </p>
       </div>
       
-      <div className="bg-fpt-lightGreen p-4 rounded-md">
-        <p className="font-medium text-fpt-green">Hướng dẫn sử dụng Genspark:</p>
-        <ol className="list-decimal list-inside mt-2 space-y-2">
-          <li>Đăng nhập vào Genspark</li>
-          <li>Mô tả chủ đề đào tạo cần thiết</li>
-          <li>Để AI tạo ra các ý tưởng và nội dung</li>
-          <li>Chỉnh sửa và tùy chỉnh theo nhu cầu</li>
-        </ol>
+      <div className="space-y-4 text-sm">
+        <h4 className="font-semibold text-base text-fpt-blue">Hướng dẫn sử dụng Genspark</h4>
+
+        <PDFViewer
+          pdfUrl="https://raw.githubusercontent.com/nghialc2/aphdemo/main/public/huong_dan_thuc_hanh_tao_slide_bang_genspark.pdf"
+          fileName="huong_dan_thuc_hanh_tao_slide_bang_genspark.pdf"
+          fallbackUrls={[
+            "/huong_dan_thuc_hanh_tao_slide_bang_genspark.pdf"
+          ]}
+        />
       </div>
     </div>
   );

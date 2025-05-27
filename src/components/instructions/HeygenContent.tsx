@@ -35,15 +35,16 @@ const HeygenContent: React.FC<HeygenContentProps> = ({ onBackClick }) => {
         </p>
       </div>
       
-      <div className="bg-fpt-lightGreen p-4 rounded-md">
-        <p className="font-medium text-fpt-green">Hướng dẫn sử dụng Heygen:</p>
-        <ol className="list-decimal list-inside mt-2 space-y-2">
-          <li>Tạo tài khoản Heygen</li>
-          <li>Chọn avatar phù hợp</li>
-          <li>Nhập script đào tạo</li>
-          <li>Tùy chỉnh giọng nói và cử chỉ</li>
-          <li>Tạo video với avatar AI</li>
-        </ol>
+      <div className="space-y-4 text-sm">
+        <h4 className="font-semibold text-base text-fpt-blue">Hướng dẫn sử dụng Heygen</h4>
+
+        <PDFViewer
+          pdfUrl="https://raw.githubusercontent.com/nghialc2/aphdemo/main/public/huong_dan_thuc_hanh_tao_video_co_avatar_bang_heygen.pdf"
+          fileName="huong_dan_thuc_hanh_tao_video_co_avatar_bang_heygen.pdf"
+          fallbackUrls={[
+            "/huong_dan_thuc_hanh_tao_video_co_avatar_bang_heygen.pdf"
+          ]}
+        />
       </div>
     </div>
   );
