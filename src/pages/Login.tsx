@@ -233,10 +233,16 @@ const Login = () => {
         />
       </div>
 
-      {/* Left Side */}
+       {/* Left Side */}
       <span className='flex flex-col justify-center w-1/2 max-lg:hidden relative'>
         <Ripple mainCircleSize={100} />
-        <TechOrbitDisplay iconsArray={iconsArray} text="APH Demo" />
+        <TechOrbitDisplay iconsArray={iconsArray} text="" />
+        {/* Large Orange Gradient Text */}
+        <div className="absolute inset-0 flex items-center justify-center z-20">
+          <h1 className="text-6xl lg:text-7xl xl:text-8xl font-bold bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 bg-clip-text text-transparent text-center leading-tight">
+            AI-Powered<br />HRM
+          </h1>
+        </div>
       </span>
 
       {/* Right Side */}
