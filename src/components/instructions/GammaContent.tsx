@@ -35,16 +35,19 @@ const GammaContent: React.FC<GammaContentProps> = ({ onBackClick }) => {
         </p>
       </div>
       
-      <div className="bg-fpt-lightGreen p-4 rounded-md">
-        <p className="font-medium text-fpt-green">Hướng dẫn sử dụng Gamma:</p>
-        <ol className="list-decimal list-inside mt-2 space-y-2">
-          <li>Truy cập vào trang web Gamma</li>
-          <li>Tạo tài khoản hoặc đăng nhập</li>
-          <li>Chọn loại nội dung muốn tạo</li>
-          <li>Sử dụng AI để tạo nội dung tự động</li>
-        </ol>
+      content: (
+      <div className="space-y-4 text-sm">
+        <h4 className="font-semibold text-base text-fpt-blue">Hướng dẫn sử dụng Gamma</h4>
+
+        <PDFViewer
+          pdfUrl="https://raw.githubusercontent.com/nghialc2/aphdemo/main/public/Huong_dan_thuc_hanh_tao_slide_bang_gamma.pdf"
+          fileName="Huong_dan_thuc_hanh_tao_slide_bang_gamma.pdf"
+          fallbackUrls={[
+            "/Huong_dan_thuc_hanh_tao_slide_bang_gamma.pdf"
+          ]}
+        />
       </div>
-    </div>
+    )
   );
 };
 
