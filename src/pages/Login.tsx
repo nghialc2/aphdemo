@@ -23,11 +23,6 @@ const Login = () => {
     };
   }, [user, navigate]);
 
-  const handleLogin = (email: string, password: string, remember: boolean) => {
-    console.log('Login attempt:', { email, password, remember });
-    // You can add regular email/password login here if needed
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -54,7 +49,7 @@ const Login = () => {
 
       <div className="relative z-20 w-full max-w-md animate-fadeIn">
         <LoginPage.LoginForm 
-          onSubmit={handleLogin}
+          onSubmit={() => {}} // Empty function since we only use Google SSO
           onGoogleLogin={signInWithGoogle}
         />
       </div>
