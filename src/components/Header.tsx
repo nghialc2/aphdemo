@@ -15,9 +15,14 @@ const Header = ({ toggleSidebar, isSidebarOpen }: HeaderProps) => {
         {/* FSB Logo */}
         <div className="flex-shrink-0">
           <img 
-            src="/public/logo_FSB_new.png" 
+            src="/logo_FSB_new.png" 
             alt="FPT School of Business & Technology" 
             className="h-10 w-auto"
+            onError={(e) => {
+              console.error('Logo failed to load:', e);
+              // Fallback: hide the image if it fails to load
+              e.currentTarget.style.display = 'none';
+            }}
           />
         </div>
         <h1 className="text-xl font-bold text-fpt-orange">AI-Powered HRM Training Lab</h1>
