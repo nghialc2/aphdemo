@@ -10,6 +10,13 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
 
+   // Temporarily bypass authentication for development
+  // TODO: Remove this bypass when ready for production
+  const BYPASS_AUTH = true;
+
+  if (BYPASS_AUTH) {
+    return <>{children}</>;
+  }
 
   if (loading) {
     return (
