@@ -115,7 +115,7 @@ const PDFUpload = ({ sessionId, onUploadComplete }: PDFUploadProps) => {
 
   const triggerN8nWorkflow = async (uploadId: string, fileUrl: string, filename: string) => {
     try {
-      const response = await fetch('https://n8n.srv798777.hstgr.cloud/webhook/pdf-processing', {
+      const response = await fetch('https://n8n.srv798777.hstgr.cloud/webhook-test/pdf-processing', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
