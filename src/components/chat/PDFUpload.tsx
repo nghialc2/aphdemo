@@ -1,10 +1,10 @@
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Upload, FileText, X } from "lucide-react";
+import { Upload, FileText, X, File } from "lucide-react";
 
 interface PDFUploadProps {
   sessionId: string;
@@ -14,31 +14,65 @@ interface PDFUploadProps {
 const PDFUpload = ({ sessionId, onUploadComplete }: PDFUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const validateFile = (file: File) => {
+    if (file.type !== 'application/pdf') {
+      toast({
+        title: "Invalid file type",
+        description: "Please select a PDF file.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+      toast({
+        title: "File too large",
+        description: "Please select a PDF file smaller than 10MB.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    return true;
+  };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      if (file.type !== 'application/pdf') {
-        toast({
-          title: "Invalid file type",
-          description: "Please select a PDF file.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      if (file.size > 10 * 1024 * 1024) { // 10MB limit
-        toast({
-          title: "File too large",
-          description: "Please select a PDF file smaller than 10MB.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
+    if (file && validateFile(file)) {
       setSelectedFile(file);
     }
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragOver(false);
+    
+    const files = Array.from(event.dataTransfer.files);
+    const pdfFile = files.find(file => file.type === 'application/pdf');
+    
+    if (pdfFile && validateFile(pdfFile)) {
+      setSelectedFile(pdfFile);
+    } else if (files.length > 0 && !pdfFile) {
+      toast({
+        title: "Invalid file type",
+        description: "Please drop a PDF file.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragOver(false);
   };
 
   const uploadPDF = async () => {
@@ -147,50 +181,83 @@ const PDFUpload = ({ sessionId, onUploadComplete }: PDFUploadProps) => {
 
   const clearSelection = () => {
     setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const openFileDialog = () => {
+    fileInputRef.current?.click();
   };
 
   return (
-    <div className="flex items-center gap-2 p-2 border rounded-lg bg-gray-50">
-      {!selectedFile ? (
-        <>
-          <Input
-            type="file"
-            accept=".pdf"
-            onChange={handleFileSelect}
-            className="hidden"
-            id="pdf-upload"
-          />
-          <label htmlFor="pdf-upload" className="cursor-pointer">
-            <Button variant="outline" size="sm" asChild>
-              <span>
-                <Upload className="h-4 w-4 mr-2" />
-                Upload PDF
-              </span>
-            </Button>
-          </label>
-        </>
-      ) : (
-        <>
-          <div className="flex items-center gap-2 flex-1">
-            <FileText className="h-4 w-4 text-blue-600" />
-            <span className="text-sm truncate">{selectedFile.name}</span>
+    <div className="space-y-3">
+      {/* Drag & Drop Area */}
+      <div
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onClick={openFileDialog}
+        className={`
+          border-2 border-dashed rounded-lg p-6 cursor-pointer transition-colors
+          ${isDragOver 
+            ? 'border-blue-500 bg-blue-50' 
+            : 'border-gray-300 hover:border-gray-400 bg-gray-50'
+          }
+        `}
+      >
+        <div className="flex flex-col items-center space-y-2">
+          <File className="h-8 w-8 text-gray-400" />
+          <div className="text-center">
+            <p className="text-sm font-medium text-gray-700">
+              Drop your PDF here or click to browse
+            </p>
+            <p className="text-xs text-gray-500">
+              Maximum file size: 10MB
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Hidden File Input */}
+      <Input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf"
+        onChange={handleFileSelect}
+        className="hidden"
+      />
+
+      {/* Selected File Display */}
+      {selectedFile && (
+        <div className="flex items-center gap-3 p-3 border rounded-lg bg-white">
+          <FileText className="h-6 w-6 text-red-600 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-gray-900 truncate">
+              {selectedFile.name}
+            </p>
+            <p className="text-xs text-gray-500">
+              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={clearSelection}
-              className="h-6 w-6 p-0"
+              className="h-8 w-8 p-0"
             >
-              <X className="h-3 w-3" />
+              <X className="h-4 w-4" />
+            </Button>
+            <Button
+              onClick={uploadPDF}
+              disabled={uploading}
+              size="sm"
+            >
+              {uploading ? "Uploading..." : "Process"}
             </Button>
           </div>
-          <Button
-            onClick={uploadPDF}
-            disabled={uploading}
-            size="sm"
-          >
-            {uploading ? "Uploading..." : "Process"}
-          </Button>
-        </>
+        </div>
       )}
     </div>
   );

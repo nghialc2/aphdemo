@@ -12,16 +12,19 @@ import ComparisonModelSelectors from "./ComparisonModelSelectors";
 import ComparisonView from "./ComparisonView";
 import PDFUpload from "./PDFUpload";
 import PDFStatus from "./PDFStatus";
+import PDFMessage from "./PDFMessage";
 import { History, Send, GitCompareArrows, Settings, Paperclip } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ContextPrompt from './ContextPrompt';
 import ChatTopbar from './ChatTopbar';
+import { supabase } from "@/integrations/supabase/client";
 
 const ChatInterface = () => {
   const [inputValue, setInputValue] = useState("");
   const [showContextPrompt, setShowContextPrompt] = useState(false);
   const [showPDFUpload, setShowPDFUpload] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { 
@@ -57,10 +60,32 @@ const ChatInterface = () => {
   useEffect(() => {
     if (currentSession) {
       setContextPrompt(getContextPrompt(currentSession.id));
+      loadUploadedFiles(currentSession.id);
     } else {
       setContextPrompt("");
+      setUploadedFiles([]);
     }
   }, [currentSession, getContextPrompt]);
+
+  // Load uploaded files for the current session
+  const loadUploadedFiles = async (sessionId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('pdf_uploads')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error loading uploaded files:', error);
+        return;
+      }
+
+      setUploadedFiles(data || []);
+    } catch (error) {
+      console.error('Error loading uploaded files:', error);
+    }
+  };
   
   // Update context in the context store when it changes locally
   const handleContextChange = (value: string) => {
@@ -106,6 +131,12 @@ const ChatInterface = () => {
           `\n\nContent from ${pdf.filename}:\n${pdf.content}`
         ).join('\n');
         enhancedContextPrompt = contextPrompt + pdfContextAddition;
+        
+        console.log('Enhanced context with PDF content:', {
+          originalPrompt: contextPrompt,
+          pdfFiles: pdfContent.length,
+          enhancedLength: enhancedContextPrompt.length
+        });
       }
       
       if (isCompareMode) {
@@ -128,7 +159,20 @@ const ChatInterface = () => {
 
   const handlePDFUploadComplete = (fileData: { id: string; filename: string; fileUrl: string }) => {
     console.log("PDF upload completed:", fileData);
+    
+    // Add the file to the uploaded files list immediately
+    const newFile = {
+      id: fileData.id,
+      filename: fileData.filename,
+      file_url: fileData.fileUrl,
+      processing_status: 'pending',
+      created_at: new Date().toISOString(),
+      session_id: currentSession?.id
+    };
+    
+    setUploadedFiles(prev => [...prev, newFile]);
     setShowPDFUpload(false);
+    
     toast({
       title: "PDF uploaded",
       description: `${fileData.filename} is being processed. You can now ask questions about it.`,
@@ -167,14 +211,28 @@ const ChatInterface = () => {
         )}
         
         <ScrollArea className="flex-1">
-          {isCompareMode ? (
-            <ComparisonView 
-              leftMessages={comparisonMessages.leftMessages}
-              rightMessages={comparisonMessages.rightMessages}
-            />
-          ) : (
-            <ChatMessageList />
-          )}
+          <div className="py-4 px-2">
+            {/* Show uploaded files in chat */}
+            {uploadedFiles.map((file) => (
+              <PDFMessage
+                key={file.id}
+                filename={file.filename}
+                fileUrl={file.file_url}
+                status={file.processing_status}
+                uploadedAt={file.created_at}
+              />
+            ))}
+            
+            {/* Show regular chat messages */}
+            {isCompareMode ? (
+              <ComparisonView 
+                leftMessages={comparisonMessages.leftMessages}
+                rightMessages={comparisonMessages.rightMessages}
+              />
+            ) : (
+              <ChatMessageList />
+            )}
+          </div>
         </ScrollArea>
         
         <div className="border-t border-gray-200 p-4 bg-white space-y-2">

@@ -17,6 +17,38 @@ export const usePDFProcessing = (sessionId: string) => {
   useEffect(() => {
     if (!sessionId) return;
 
+    // Load existing processed PDFs for this session
+    const loadProcessedPDFs = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('pdf_uploads')
+          .select('id, filename, processed_content, processed_at')
+          .eq('session_id', sessionId)
+          .eq('processing_status', 'completed')
+          .not('processed_content', 'is', null);
+
+        if (error) {
+          console.error('Error loading processed PDFs:', error);
+          return;
+        }
+
+        if (data) {
+          const results = data.map(item => ({
+            id: item.id,
+            filename: item.filename,
+            processed_content: item.processed_content || '',
+            processed_at: item.processed_at || ''
+          }));
+          setProcessingResults(results);
+          console.log('Loaded existing processed PDFs:', results.length);
+        }
+      } catch (error) {
+        console.error('Error loading processed PDFs:', error);
+      }
+    };
+
+    loadProcessedPDFs();
+
     // Set up real-time subscription for processing completions
     const channel = supabase
       .channel('pdf-processing-updates')
@@ -30,6 +62,7 @@ export const usePDFProcessing = (sessionId: string) => {
         },
         (payload) => {
           const newData = payload.new as any;
+          console.log('PDF processing update received:', newData);
           
           if (newData.processing_status === 'completed' && newData.processed_content) {
             const result: PDFProcessingResult = {
@@ -41,7 +74,12 @@ export const usePDFProcessing = (sessionId: string) => {
             
             setProcessingResults(prev => {
               const exists = prev.find(r => r.id === result.id);
-              if (exists) return prev;
+              if (exists) {
+                // Update existing result
+                return prev.map(r => r.id === result.id ? result : r);
+              }
+              // Add new result
+              console.log('Adding new processed PDF to results:', result.filename);
               return [...prev, result];
             });
 
@@ -66,10 +104,19 @@ export const usePDFProcessing = (sessionId: string) => {
   }, [sessionId, toast]);
 
   const getProcessedContent = () => {
-    return processingResults.map(result => ({
+    const content = processingResults.map(result => ({
       filename: result.filename,
       content: result.processed_content
     }));
+    
+    console.log('Getting processed content:', {
+      sessionId,
+      resultsCount: processingResults.length,
+      contentItems: content.length,
+      totalContentLength: content.reduce((sum, item) => sum + item.content.length, 0)
+    });
+    
+    return content;
   };
 
   return {

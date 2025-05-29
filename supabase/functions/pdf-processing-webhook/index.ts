@@ -25,14 +25,14 @@ serve(async (req) => {
     const url = new URL(req.url)
     let uploadId = url.searchParams.get('uploadId')
     
-    // Improved text content extraction from the complex n8n payload structure
+    // Enhanced text content extraction from the complex n8n payload structure
     let processedContent = ''
     
     const findTextContent = (obj: any, path: string = ''): string => {
       if (typeof obj === 'string') {
         // Filter out very short strings that are likely keys/IDs
-        if (obj.length > 20) {
-          console.log(`Found text content at path ${path}: ${obj.substring(0, 100)}...`)
+        if (obj.length > 30) {
+          console.log(`Found text content at path ${path}: ${obj.substring(0, 200)}...`)
           return obj
         }
         return ''
@@ -44,46 +44,41 @@ serve(async (req) => {
       }
       
       if (typeof obj === 'object' && obj !== null) {
-        // Look for common text fields first
-        if (obj.text && typeof obj.text === 'string' && obj.text.length > 20) {
-          console.log(`Found text field at ${path}.text`)
-          return obj.text
-        }
-        if (obj.content && typeof obj.content === 'string' && obj.content.length > 20) {
-          console.log(`Found content field at ${path}.content`)
-          return obj.content
-        }
-        if (obj.data) {
-          const dataResult = findTextContent(obj.data, `${path}.data`)
-          if (dataResult) return dataResult
-        }
+        // Look for common text fields first with priority
+        const textFields = ['text', 'content', 'extracted_text', 'pdf_content', 'processed_text', 'body', 'message']
         
-        // Recursively search through all values, but prioritize certain keys
-        const priorityKeys = ['text', 'content', 'extracted_text', 'pdf_content', 'processed_text']
-        const allResults: string[] = []
-        
-        // First check priority keys
-        for (const key of priorityKeys) {
-          if (obj[key]) {
-            const result = findTextContent(obj[key], `${path}.${key}`)
-            if (result && result.length > 20) {
-              allResults.push(result)
-            }
+        for (const field of textFields) {
+          if (obj[field] && typeof obj[field] === 'string' && obj[field].length > 50) {
+            console.log(`Found substantial content in field '${field}' at path ${path}`)
+            return obj[field]
           }
         }
         
-        // If no priority keys found substantial content, check all other keys
-        if (allResults.length === 0) {
-          for (const [key, value] of Object.entries(obj)) {
-            // Skip IDs and very short values
-            if (key.toLowerCase().includes('id') || key.toLowerCase().includes('session')) {
-              continue
-            }
-            
-            const result = findTextContent(value, `${path}.${key}`)
-            if (result && result.length > 20) {
-              allResults.push(result)
-            }
+        // If it has a 'data' property, prioritize searching there
+        if (obj.data) {
+          const dataResult = findTextContent(obj.data, `${path}.data`)
+          if (dataResult && dataResult.length > 50) {
+            return dataResult
+          }
+        }
+        
+        // Recursively search through all values
+        const allResults: string[] = []
+        
+        for (const [key, value] of Object.entries(obj)) {
+          // Skip IDs, URLs, and metadata fields
+          if (key.toLowerCase().includes('id') || 
+              key.toLowerCase().includes('url') ||
+              key.toLowerCase().includes('session') ||
+              key.toLowerCase().includes('timestamp') ||
+              key.toLowerCase().includes('created') ||
+              key.toLowerCase().includes('status')) {
+            continue
+          }
+          
+          const result = findTextContent(value, `${path}.${key}`)
+          if (result && result.length > 50) {
+            allResults.push(result)
           }
         }
         
@@ -95,18 +90,22 @@ serve(async (req) => {
 
     processedContent = findTextContent(body, 'root')
     
-    // If still no content found, try to extract from the nested structure visible in logs
-    if (!processedContent || processedContent.length < 50) {
-      console.log('Trying alternative extraction method...')
+    // Alternative extraction method if the first one fails
+    if (!processedContent || processedContent.length < 100) {
+      console.log('Primary extraction failed, trying alternative methods...')
       
-      // From the logs, it looks like the structure might be deeply nested
-      // Try to get any string value that contains substantial text
+      // Look for any long strings in the payload
       const getAllStrings = (obj: any): string[] => {
         const strings: string[] = []
         
         const traverse = (item: any) => {
-          if (typeof item === 'string' && item.length > 50) {
-            strings.push(item)
+          if (typeof item === 'string' && item.length > 100) {
+            // Check if it looks like actual content (not just JSON or metadata)
+            if (!item.startsWith('{') && !item.startsWith('[') && 
+                !item.includes('http://') && !item.includes('https://') &&
+                item.split(' ').length > 10) {
+              strings.push(item)
+            }
           } else if (Array.isArray(item)) {
             item.forEach(traverse)
           } else if (typeof item === 'object' && item !== null) {
@@ -125,9 +124,12 @@ serve(async (req) => {
       }
     }
     
-    console.log('Extracted uploadId:', uploadId)
-    console.log('Extracted content length:', processedContent ? processedContent.length : 0)
-    console.log('Content preview:', processedContent ? processedContent.substring(0, 200) + '...' : 'No content')
+    console.log('Final extraction results:', {
+      uploadId,
+      contentLength: processedContent ? processedContent.length : 0,
+      contentPreview: processedContent ? processedContent.substring(0, 300) + '...' : 'No content',
+      hasContent: !!processedContent && processedContent.length > 50
+    })
 
     if (!uploadId) {
       console.error('No uploadId found in query parameters')
@@ -152,6 +154,7 @@ serve(async (req) => {
     } else {
       console.log('No substantial processed content found, marking as failed')
       updateData.processing_status = 'failed'
+      updateData.processed_content = null
     }
 
     const { data, error: updateError } = await supabaseClient
@@ -163,7 +166,7 @@ serve(async (req) => {
     if (updateError) {
       console.error('Error updating PDF upload:', updateError)
       return new Response(
-        JSON.stringify({ error: 'Failed to update PDF upload' }),
+        JSON.stringify({ error: 'Failed to update PDF upload', details: updateError }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -174,7 +177,12 @@ serve(async (req) => {
     console.log('PDF upload updated successfully:', data)
 
     return new Response(
-      JSON.stringify({ success: true, data }),
+      JSON.stringify({ 
+        success: true, 
+        data,
+        contentExtracted: !!processedContent && processedContent.length > 50,
+        contentLength: processedContent ? processedContent.length : 0
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
@@ -183,7 +191,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in PDF processing webhook:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: 'Internal server error', details: error.message }),
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
