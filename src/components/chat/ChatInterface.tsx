@@ -5,13 +5,14 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useSession } from "@/context/SessionContext";
 import { useCompare } from "@/context/CompareContext";
-import { useFileUpload } from "@/hooks/useFileUpload";
+import { usePDFProcessing } from "@/hooks/usePDFProcessing";
 import ChatMessageList from "./ChatMessageList";
 import ModelSelector from "./ModelSelector";
 import ComparisonModelSelectors from "./ComparisonModelSelectors";
 import ComparisonView from "./ComparisonView";
-import FileUpload from "./FileUpload";
-import { History, Send, GitCompareArrows, Settings } from "lucide-react";
+import PDFUpload from "./PDFUpload";
+import PDFStatus from "./PDFStatus";
+import { History, Send, GitCompareArrows, Settings, Paperclip } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ContextPrompt from './ContextPrompt';
@@ -20,11 +21,9 @@ import ChatTopbar from './ChatTopbar';
 const ChatInterface = () => {
   const [inputValue, setInputValue] = useState("");
   const [showContextPrompt, setShowContextPrompt] = useState(false);
-  const [isDragOver, setIsDragOver] = useState(false);
+  const [showPDFUpload, setShowPDFUpload] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const chatContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  
   const { 
     currentSession, 
     sendMessage, 
@@ -35,25 +34,18 @@ const ChatInterface = () => {
     getComparisonMessages,
     createNewSession
   } = useSession();
-  
   const {
     isCompareMode,
     toggleCompareMode,
     leftModelId,
     rightModelId
   } = useCompare();
-
-  const {
-    selectedFiles,
-    isUploading,
-    addFiles,
-    removeFile,
-    clearFiles,
-    uploadFiles,
-  } = useFileUpload();
   
   // Get the context prompt for the current session
   const [contextPrompt, setContextPrompt] = useState("");
+  
+  // Use PDF processing hook
+  const { getProcessedContent } = usePDFProcessing(currentSession?.id || '');
   
   useEffect(() => {
     if (inputRef.current) {
@@ -91,71 +83,56 @@ const ChatInterface = () => {
       createNewSession();
     }
   };
-
-  // Handle drag events for the entire chat container
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    // Only hide drag overlay if leaving the chat container
-    if (!chatContainerRef.current?.contains(e.relatedTarget as Node)) {
-      setIsDragOver(false);
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) {
-      addFiles(files);
-    }
-  };
   
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    if (inputValue.trim() === "" && selectedFiles.length === 0) {
+    if (inputValue.trim() === "") {
       toast({
-        title: "Lỗi",
-        description: "Vui lòng nhập tin nhắn hoặc chọn file",
+        title: "Error",
+        description: "Please enter a message",
         variant: "destructive",
       });
       return;
     }
     
     try {
-      let messageContent = inputValue;
+      // Get processed PDF content to include in context
+      const pdfContent = getProcessedContent();
+      let enhancedContextPrompt = contextPrompt;
       
-      // Upload files if any
-      if (selectedFiles.length > 0 && currentSession) {
-        const uploadedFiles = await uploadFiles(currentSession.id);
-        if (uploadedFiles.length > 0) {
-          const fileInfo = uploadedFiles.map(f => `[File: ${f.name}]`).join(', ');
-          messageContent = inputValue ? `${inputValue}\n\n${fileInfo}` : fileInfo;
-        }
+      if (pdfContent.length > 0) {
+        const pdfContextAddition = pdfContent.map(pdf => 
+          `\n\nContent from ${pdf.filename}:\n${pdf.content}`
+        ).join('\n');
+        enhancedContextPrompt = contextPrompt + pdfContextAddition;
       }
       
       if (isCompareMode) {
         // Send comparison message
-        await sendComparisonMessage(messageContent, leftModelId, rightModelId, contextPrompt);
+        await sendComparisonMessage(inputValue, leftModelId, rightModelId, enhancedContextPrompt);
       } else {
         // Send regular message
-        await sendMessage(messageContent, contextPrompt);
+        await sendMessage(inputValue, enhancedContextPrompt);
       }
       setInputValue("");
     } catch (error) {
       console.error("Error sending message:", error);
       toast({
-        title: "Lỗi",
-        description: "Không thể gửi tin nhắn. Vui lòng thử lại.",
+        title: "Error",
+        description: "Failed to send message. Please try again.",
         variant: "destructive",
       });
     }
+  };
+
+  const handlePDFUploadComplete = (fileData: { id: string; filename: string; fileUrl: string }) => {
+    console.log("PDF upload completed:", fileData);
+    setShowPDFUpload(false);
+    toast({
+      title: "PDF uploaded",
+      description: `${fileData.filename} is being processed. You can now ask questions about it.`,
+    });
   };
 
   // Get comparison messages if in compare mode
@@ -164,28 +141,7 @@ const ChatInterface = () => {
     : { leftMessages: [], rightMessages: [] };
 
   return (
-    <div 
-      ref={chatContainerRef}
-      className="flex flex-col h-full border-l border-gray-200 w-full relative"
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-    >
-      {/* Drag overlay */}
-      {isDragOver && (
-        <div className="absolute inset-0 bg-blue-500/10 border-2 border-dashed border-blue-500 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 shadow-lg text-center">
-            <div className="text-blue-500 mb-2">
-              <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
-            </div>
-            <p className="text-lg font-medium text-gray-700">Thả file vào đây</p>
-            <p className="text-sm text-gray-500">Hỗ trợ tất cả các loại file</p>
-          </div>
-        </div>
-      )}
-
+    <div className="flex flex-col h-full border-l border-gray-200 w-full">
       <ChatTopbar 
         showContextPrompt={showContextPrompt}
         setShowContextPrompt={setShowContextPrompt}
@@ -203,6 +159,13 @@ const ChatInterface = () => {
           </div>
         )}
         
+        {/* PDF Status Panel */}
+        {currentSession && (
+          <div className="p-4 border-b border-gray-200 bg-gray-50">
+            <PDFStatus sessionId={currentSession.id} />
+          </div>
+        )}
+        
         <ScrollArea className="flex-1">
           {isCompareMode ? (
             <ComparisonView 
@@ -214,34 +177,45 @@ const ChatInterface = () => {
           )}
         </ScrollArea>
         
-        <div className="border-t border-gray-200 p-4 bg-white">
-          <FileUpload
-            onFileSelect={addFiles}
-            selectedFiles={selectedFiles}
-            onRemoveFile={removeFile}
-            disabled={isProcessing || isUploading}
-          />
+        <div className="border-t border-gray-200 p-4 bg-white space-y-2">
+          {/* PDF Upload Section */}
+          {showPDFUpload && currentSession && (
+            <PDFUpload 
+              sessionId={currentSession.id}
+              onUploadComplete={handlePDFUploadComplete}
+            />
+          )}
           
-          <form onSubmit={handleSubmit} className="flex space-x-2 mt-2">
+          {/* Chat Input */}
+          <form onSubmit={handleSubmit} className="flex space-x-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowPDFUpload(!showPDFUpload)}
+              className="flex-shrink-0"
+            >
+              <Paperclip className="h-4 w-4" />
+            </Button>
             <Input
               ref={inputRef}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Nhập tin nhắn của bạn..."
-              disabled={isProcessing || isUploading}
+              placeholder="Type your prompt here..."
+              disabled={isProcessing}
               className="flex-1"
             />
             <Button 
               type="submit" 
-              disabled={isProcessing || isUploading || (inputValue.trim() === "" && selectedFiles.length === 0)}
+              disabled={isProcessing || inputValue.trim() === ""}
             >
               <Send className="h-4 w-4 mr-2" />
-              Gửi
+              Send
             </Button>
           </form>
-          {(isProcessing || isUploading) && (
+          {isProcessing && (
             <div className="text-xs text-center mt-2 text-gray-500 animate-pulse">
-              {isUploading ? "Đang upload file..." : "Đang xử lý yêu cầu..."}
+              Processing your request...
             </div>
           )}
         </div>
