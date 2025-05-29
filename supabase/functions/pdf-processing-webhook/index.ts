@@ -21,49 +21,53 @@ serve(async (req) => {
     const body = await req.json()
     console.log('Received webhook payload:', JSON.stringify(body, null, 2))
 
-    // Handle different payload formats from n8n
-    let uploadId, processedContent, status = 'completed'
+    // Extract uploadId from URL query parameters first
+    const url = new URL(req.url)
+    let uploadId = url.searchParams.get('uploadId')
     
-    // Check if this is the format from your n8n workflow
-    if (body.success && body.data) {
-      // Extract uploadId and processed content from the n8n format
-      // Assuming the uploadId was passed in the initial request to n8n
-      // We'll need to extract it from the data or URL
-      
-      if (Array.isArray(body.data) && body.data.length > 0) {
-        // If data is an array, take the first item as processed content
-        processedContent = typeof body.data[0] === 'string' ? body.data[0] : JSON.stringify(body.data[0])
-      } else if (typeof body.data === 'string') {
-        processedContent = body.data
-      } else {
-        processedContent = JSON.stringify(body.data)
+    // Try to extract processed content from the complex n8n payload structure
+    let processedContent = ''
+    
+    // The payload appears to have a deeply nested structure
+    // Let's try to find the text content in the nested object
+    const findTextContent = (obj: any): string => {
+      if (typeof obj === 'string') {
+        return obj
       }
-
-      // Try to get uploadId from query parameters or headers
-      const url = new URL(req.url)
-      uploadId = url.searchParams.get('uploadId')
       
-      if (!uploadId) {
-        console.error('No uploadId found in request')
-        return new Response(
-          JSON.stringify({ error: 'uploadId is required' }),
-          { 
-            status: 400, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      if (Array.isArray(obj)) {
+        return obj.map(item => findTextContent(item)).join('\n')
+      }
+      
+      if (typeof obj === 'object' && obj !== null) {
+        // Look for common text fields
+        if (obj.text) return obj.text
+        if (obj.content) return obj.content
+        if (obj.data) return findTextContent(obj.data)
+        
+        // Recursively search through all values
+        for (const key in obj) {
+          if (key !== 'uploadId' && key !== 'sessionId') {
+            const result = findTextContent(obj[key])
+            if (result && result.length > 10) { // Only return substantial text content
+              return result
+            }
           }
-        )
+        }
       }
-    } else {
-      // Handle the expected format with uploadId, status, processedContent
-      ({ uploadId, status = 'completed', processedContent } = body)
+      
+      return ''
     }
 
-    console.log('Processing update:', { uploadId, status, processedContent: processedContent ? 'present' : 'none' })
+    processedContent = findTextContent(body)
+    
+    console.log('Extracted uploadId:', uploadId)
+    console.log('Extracted content length:', processedContent ? processedContent.length : 0)
 
     if (!uploadId) {
-      console.error('Missing uploadId in payload')
+      console.error('No uploadId found in query parameters')
       return new Response(
-        JSON.stringify({ error: 'uploadId is required' }),
+        JSON.stringify({ error: 'uploadId is required as query parameter' }),
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -73,12 +77,16 @@ serve(async (req) => {
 
     // Update the PDF upload record
     const updateData: any = {
-      processing_status: status,
+      processing_status: 'completed',
     }
 
-    if (status === 'completed' && processedContent) {
+    if (processedContent && processedContent.length > 0) {
       updateData.processed_content = processedContent
       updateData.processed_at = new Date().toISOString()
+      console.log('Updating with processed content')
+    } else {
+      console.log('No processed content found, marking as failed')
+      updateData.processing_status = 'failed'
     }
 
     const { data, error: updateError } = await supabaseClient
