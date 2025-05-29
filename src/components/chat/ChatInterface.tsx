@@ -5,14 +5,11 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useSession } from "@/context/SessionContext";
 import { useCompare } from "@/context/CompareContext";
-import { usePDFProcessing } from "@/hooks/usePDFProcessing";
 import ChatMessageList from "./ChatMessageList";
 import ModelSelector from "./ModelSelector";
 import ComparisonModelSelectors from "./ComparisonModelSelectors";
 import ComparisonView from "./ComparisonView";
-import PDFUpload from "./PDFUpload";
-import PDFStatus from "./PDFStatus";
-import { History, Send, GitCompareArrows, Settings, Paperclip } from "lucide-react";
+import { History, Send, GitCompareArrows, Settings } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ContextPrompt from './ContextPrompt';
@@ -21,7 +18,6 @@ import ChatTopbar from './ChatTopbar';
 const ChatInterface = () => {
   const [inputValue, setInputValue] = useState("");
   const [showContextPrompt, setShowContextPrompt] = useState(false);
-  const [showPDFUpload, setShowPDFUpload] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { 
@@ -43,9 +39,6 @@ const ChatInterface = () => {
   
   // Get the context prompt for the current session
   const [contextPrompt, setContextPrompt] = useState("");
-  
-  // Use PDF processing hook
-  const { getProcessedContent } = usePDFProcessing(currentSession?.id || '');
   
   useEffect(() => {
     if (inputRef.current) {
@@ -97,23 +90,12 @@ const ChatInterface = () => {
     }
     
     try {
-      // Get processed PDF content to include in context
-      const pdfContent = getProcessedContent();
-      let enhancedContextPrompt = contextPrompt;
-      
-      if (pdfContent.length > 0) {
-        const pdfContextAddition = pdfContent.map(pdf => 
-          `\n\nContent from ${pdf.filename}:\n${pdf.content}`
-        ).join('\n');
-        enhancedContextPrompt = contextPrompt + pdfContextAddition;
-      }
-      
       if (isCompareMode) {
         // Send comparison message
-        await sendComparisonMessage(inputValue, leftModelId, rightModelId, enhancedContextPrompt);
+        await sendComparisonMessage(inputValue, leftModelId, rightModelId, contextPrompt);
       } else {
         // Send regular message
-        await sendMessage(inputValue, enhancedContextPrompt);
+        await sendMessage(inputValue, contextPrompt);
       }
       setInputValue("");
     } catch (error) {
@@ -124,15 +106,6 @@ const ChatInterface = () => {
         variant: "destructive",
       });
     }
-  };
-
-  const handlePDFUploadComplete = (fileData: { id: string; filename: string; fileUrl: string }) => {
-    console.log("PDF upload completed:", fileData);
-    setShowPDFUpload(false);
-    toast({
-      title: "PDF uploaded",
-      description: `${fileData.filename} is being processed. You can now ask questions about it.`,
-    });
   };
 
   // Get comparison messages if in compare mode
@@ -159,13 +132,6 @@ const ChatInterface = () => {
           </div>
         )}
         
-        {/* PDF Status Panel */}
-        {currentSession && (
-          <div className="p-4 border-b border-gray-200 bg-gray-50">
-            <PDFStatus sessionId={currentSession.id} />
-          </div>
-        )}
-        
         <ScrollArea className="flex-1">
           {isCompareMode ? (
             <ComparisonView 
@@ -177,26 +143,8 @@ const ChatInterface = () => {
           )}
         </ScrollArea>
         
-        <div className="border-t border-gray-200 p-4 bg-white space-y-2">
-          {/* PDF Upload Section */}
-          {showPDFUpload && currentSession && (
-            <PDFUpload 
-              sessionId={currentSession.id}
-              onUploadComplete={handlePDFUploadComplete}
-            />
-          )}
-          
-          {/* Chat Input */}
+        <div className="border-t border-gray-200 p-4 bg-white">
           <form onSubmit={handleSubmit} className="flex space-x-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setShowPDFUpload(!showPDFUpload)}
-              className="flex-shrink-0"
-            >
-              <Paperclip className="h-4 w-4" />
-            </Button>
             <Input
               ref={inputRef}
               value={inputValue}
