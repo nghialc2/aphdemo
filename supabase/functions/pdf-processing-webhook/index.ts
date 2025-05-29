@@ -18,14 +18,62 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { uploadId, status, processedContent, workflowId, error } = await req.json()
+    const body = await req.json()
+    console.log('Received webhook payload:', JSON.stringify(body, null, 2))
 
-    console.log('Received webhook:', { uploadId, status, processedContent: processedContent ? 'present' : 'none', workflowId, error })
+    // Handle different payload formats from n8n
+    let uploadId, processedContent, status = 'completed'
+    
+    // Check if this is the format from your n8n workflow
+    if (body.success && body.data) {
+      // Extract uploadId and processed content from the n8n format
+      // Assuming the uploadId was passed in the initial request to n8n
+      // We'll need to extract it from the data or URL
+      
+      if (Array.isArray(body.data) && body.data.length > 0) {
+        // If data is an array, take the first item as processed content
+        processedContent = typeof body.data[0] === 'string' ? body.data[0] : JSON.stringify(body.data[0])
+      } else if (typeof body.data === 'string') {
+        processedContent = body.data
+      } else {
+        processedContent = JSON.stringify(body.data)
+      }
+
+      // Try to get uploadId from query parameters or headers
+      const url = new URL(req.url)
+      uploadId = url.searchParams.get('uploadId')
+      
+      if (!uploadId) {
+        console.error('No uploadId found in request')
+        return new Response(
+          JSON.stringify({ error: 'uploadId is required' }),
+          { 
+            status: 400, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        )
+      }
+    } else {
+      // Handle the expected format with uploadId, status, processedContent
+      ({ uploadId, status = 'completed', processedContent } = body)
+    }
+
+    console.log('Processing update:', { uploadId, status, processedContent: processedContent ? 'present' : 'none' })
+
+    if (!uploadId) {
+      console.error('Missing uploadId in payload')
+      return new Response(
+        JSON.stringify({ error: 'uploadId is required' }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
 
     // Update the PDF upload record
     const updateData: any = {
       processing_status: status,
-      n8n_workflow_id: workflowId,
     }
 
     if (status === 'completed' && processedContent) {

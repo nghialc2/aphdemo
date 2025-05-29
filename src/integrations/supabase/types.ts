@@ -9,6 +9,175 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      chat_sessions: {
+        Row: {
+          created_at: string | null
+          id: string
+          model_id: string
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          model_id: string
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          model_id?: string
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comparison_messages: {
+        Row: {
+          content: string
+          id: string
+          model_id: string
+          role: string | null
+          session_id: string | null
+          side: string | null
+          timestamp: string | null
+        }
+        Insert: {
+          content: string
+          id?: string
+          model_id: string
+          role?: string | null
+          session_id?: string | null
+          side?: string | null
+          timestamp?: string | null
+        }
+        Update: {
+          content?: string
+          id?: string
+          model_id?: string
+          role?: string | null
+          session_id?: string | null
+          side?: string | null
+          timestamp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comparison_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      context_prompts: {
+        Row: {
+          content: string
+          session_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          session_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          session_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "context_prompts_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: true
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      files: {
+        Row: {
+          content_type: string
+          created_at: string | null
+          id: string
+          message_id: string | null
+          name: string
+          size: number
+          storage_path: string
+          type: string
+        }
+        Insert: {
+          content_type: string
+          created_at?: string | null
+          id?: string
+          message_id?: string | null
+          name: string
+          size: number
+          storage_path: string
+          type: string
+        }
+        Update: {
+          content_type?: string
+          created_at?: string | null
+          id?: string
+          message_id?: string | null
+          name?: string
+          size?: number
+          storage_path?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "files_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          id: string
+          role: string | null
+          session_id: string | null
+          timestamp: string | null
+        }
+        Insert: {
+          content: string
+          id?: string
+          role?: string | null
+          session_id?: string | null
+          timestamp?: string | null
+        }
+        Update: {
+          content?: string
+          id?: string
+          role?: string | null
+          session_id?: string | null
+          timestamp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pdf_uploads: {
         Row: {
           file_size: number
@@ -45,6 +214,24 @@ export type Database = {
           processing_status?: string | null
           session_id?: string
           uploaded_at?: string
+        }
+        Relationships: []
+      }
+      users: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
         }
         Relationships: []
       }

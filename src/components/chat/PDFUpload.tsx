@@ -85,7 +85,7 @@ const PDFUpload = ({ sessionId, onUploadComplete }: PDFUploadProps) => {
 
       console.log("PDF uploaded successfully:", dbData);
       
-      // Trigger n8n workflow
+      // Trigger n8n workflow with uploadId
       await triggerN8nWorkflow(dbData.id, publicUrl, selectedFile.name);
       
       onUploadComplete({
@@ -115,7 +115,12 @@ const PDFUpload = ({ sessionId, onUploadComplete }: PDFUploadProps) => {
 
   const triggerN8nWorkflow = async (uploadId: string, fileUrl: string, filename: string) => {
     try {
-      const response = await fetch('https://n8n.srv798777.hstgr.cloud/webhook/pdf-processing', {
+      // Updated n8n webhook URL to include uploadId as query parameter
+      const webhookUrl = `https://n8n.srv798777.hstgr.cloud/webhook/pdf-processing?uploadId=${uploadId}`;
+      
+      console.log(`Triggering n8n workflow: ${webhookUrl}`);
+      
+      const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -124,7 +129,9 @@ const PDFUpload = ({ sessionId, onUploadComplete }: PDFUploadProps) => {
           uploadId,
           fileUrl,
           filename,
-          sessionId
+          sessionId,
+          // Also include the webhook URL for n8n to call back
+          callbackUrl: `https://klsjwhmybgjhlcjwjset.supabase.co/functions/v1/pdf-processing-webhook?uploadId=${uploadId}`
         }),
       });
 
