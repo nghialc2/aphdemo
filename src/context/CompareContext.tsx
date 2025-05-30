@@ -17,10 +17,10 @@ const CompareContext = createContext<CompareContextProps | undefined>(undefined)
 export const CompareProvider = ({ children }: { children: ReactNode }) => {
   const { availableModels, selectedModel } = useSession();
   const [isCompareMode, setIsCompareMode] = useState(false);
-  const [leftModelId, setLeftModelId] = useState(selectedModel.id);
+  const [leftModelId, setLeftModelId] = useState(selectedModel?.id || (availableModels.length > 0 ? availableModels[0].id : ''));
   // Set the right model to the second model in the list by default, or the first if there's only one
   const [rightModelId, setRightModelId] = useState(
-    availableModels.length > 1 ? availableModels[1].id : availableModels[0].id
+    availableModels.length > 1 ? availableModels[1].id : (availableModels.length > 0 ? availableModels[0].id : '')
   );
 
   const toggleCompareMode = () => {

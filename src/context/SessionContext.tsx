@@ -1,16 +1,7 @@
+
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import FileDisplay from '@/components/chat/FileDisplay';
-
-export interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-  modelId?: string;
-  hasFiles?: boolean;
-  fileNames?: string[];
-}
+import { Message, Model } from '@/types';
 
 export interface Session {
   id: string;
@@ -33,8 +24,11 @@ export interface ComparisonMessage {
 interface SessionContextType {
   sessions: Session[];
   currentSession: Session | null;
+  availableModels: Model[];
+  selectedModel: Model;
   createNewSession: () => void;
   selectSession: (sessionId: string) => void;
+  selectModel: (modelId: string) => void;
   sendMessage: (content: string, contextPrompt?: string) => Promise<void>;
   sendComparisonMessage: (content: string, leftModelId: string, rightModelId: string, contextPrompt?: string) => Promise<void>;
   isProcessing: boolean;
@@ -45,12 +39,28 @@ interface SessionContextType {
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
+// Default available models
+const defaultModels: Model[] = [
+  { id: 'gpt-4o-mini', name: 'GPT-4o Mini', description: 'Fast and efficient', tags: ['fast'] },
+  { id: 'gpt-4o', name: 'GPT-4o', description: 'Most capable', tags: ['advanced'] },
+  { id: 'claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', description: 'Anthropic model', tags: ['reasoning'] },
+];
+
 export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [contextPrompts, setContextPrompts] = useState<Record<string, string>>({});
   const [comparisonMessages, setComparisonMessages] = useState<Record<string, ComparisonMessage[]>>({});
+  const [availableModels] = useState<Model[]>(defaultModels);
+  const [selectedModel, setSelectedModel] = useState<Model>(defaultModels[0]);
+
+  const selectModel = useCallback((modelId: string) => {
+    const model = availableModels.find(m => m.id === modelId);
+    if (model) {
+      setSelectedModel(model);
+    }
+  }, [availableModels]);
 
   const createNewSession = useCallback(() => {
     const newSession: Session = {
@@ -212,7 +222,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         body: JSON.stringify({
           message: content,
           contextPrompt: contextPrompt || '',
-          modelId: 'gpt-4o-mini',
+          modelId: selectedModel.id,
           sessionId: currentSession.id,
         }),
       });
@@ -228,7 +238,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         role: 'assistant',
         content: data.output || 'Tôi xin lỗi, có lỗi xảy ra khi xử lý yêu cầu của bạn.',
         timestamp: new Date(),
-        modelId: 'gpt-4o-mini'
+        modelId: selectedModel.id
       };
 
       setSessions(prev => prev.map(session => 
@@ -264,13 +274,16 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     } finally {
       setIsProcessing(false);
     }
-  }, [currentSession]);
+  }, [currentSession, selectedModel]);
 
   const value = {
     sessions,
     currentSession,
+    availableModels,
+    selectedModel,
     createNewSession,
     selectSession,
+    selectModel,
     sendMessage,
     sendComparisonMessage,
     isProcessing,

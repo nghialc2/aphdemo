@@ -3,15 +3,18 @@ export interface Message {
   id: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
-  timestamp: number;
+  timestamp: Date;
+  modelId?: string;
+  hasFiles?: boolean;
+  fileNames?: string[];
 }
 
 export interface ChatSession {
   id: string;
-  title: string;
+  name: string;
   messages: Message[];
-  modelId: string;
-  createdAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Model {

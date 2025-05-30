@@ -31,7 +31,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelect }) => {
   };
   
   // Sort sessions by most recent first
-  const sortedSessions = [...sessions].sort((a, b) => b.createdAt - a.createdAt);
+  const sortedSessions = [...sessions].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   
   return (
     <div className="space-y-4">
@@ -87,7 +87,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelect }) => {
                       <MessageSquare className="h-4 w-4 mr-2 text-gray-500" />
                     )}
                     <span className="font-medium truncate max-w-[200px]">
-                      {session.title}
+                      {session.name}
                     </span>
                   </div>
                   <div className="flex items-center text-xs text-gray-500">
@@ -98,7 +98,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelect }) => {
                   </div>
                 </div>
                 <div className="mt-1 text-xs text-gray-500 truncate">
-                  {messageCount} message{messageCount !== 1 ? 's' : ''} • {isComparisonSession ? 'comparison' : session.modelId}
+                  {messageCount} message{messageCount !== 1 ? 's' : ''} • {isComparisonSession ? 'comparison' : 'chat'}
                 </div>
               </button>
             );
