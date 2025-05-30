@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -124,11 +123,13 @@ const ChatInterface = () => {
       const payload = {
         message,
         contextPrompt,
-        extractContent: extractedContent || ''
+        extractedContent: extractedContent || ''
       };
 
+      console.log('Sending to n8n:', payload);
+
       // Send to n8n webhook
-      await fetch('https://your-n8n-webhook-url.com/webhook', {
+      await fetch('https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -176,10 +177,8 @@ const ChatInterface = () => {
         }
       }
 
-      // Send to n8n with extracted content
-      if (extractedContent) {
-        await sendMessageToN8n(messageContent, extractedContent);
-      }
+      // Send to n8n with extracted content - do this BEFORE sending to session
+      await sendMessageToN8n(messageContent, extractedContent);
       
       if (isCompareMode) {
         // Send comparison message

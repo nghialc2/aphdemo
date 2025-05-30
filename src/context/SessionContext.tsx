@@ -1,476 +1,286 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { ChatSession, Message, Model } from "@/types";
-import { v4 as uuidv4 } from "uuid";
-import { useToast } from "@/hooks/use-toast";
+import React, { createContext, useContext, useState, useCallback } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+import FileDisplay from '@/components/chat/FileDisplay';
 
-// Map of model IDs to their corresponding n8n URLs
-const MODEL_N8N_URLS: Record<string, string> = {
-  "gpt-4o-mini": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba",
-  "gpt-4.1-mini": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba1",
-  "gpt-o3-mini": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba2",
-  "gemini-2.0-flash": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba3",
-  "gemini-2.5-flash": "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba4",
-};
+export interface Message {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+  modelId?: string;
+  hasFiles?: boolean;
+  fileNames?: string[];
+}
 
-// Fallback URL if a model doesn't have a specific URL defined
-const DEFAULT_N8N_URL = "https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba";
+export interface Session {
+  id: string;
+  name: string;
+  messages: Message[];
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-interface SessionContextProps {
-  currentSession: ChatSession | null;
-  sessions: ChatSession[];
-  availableModels: Model[];
-  selectedModel: Model;
+export interface ComparisonMessage {
+  id: string;
+  userMessage: string;
+  leftResponse: string;
+  rightResponse: string;
+  timestamp: Date;
+  leftModelId: string;
+  rightModelId: string;
+}
+
+interface SessionContextType {
+  sessions: Session[];
+  currentSession: Session | null;
   createNewSession: () => void;
   selectSession: (sessionId: string) => void;
   sendMessage: (content: string, contextPrompt?: string) => Promise<void>;
-  sendComparisonMessage: (content: string, leftModelId?: string | null, rightModelId?: string | null, contextPrompt?: string) => Promise<void>;
-  selectModel: (modelId: string) => void;
+  sendComparisonMessage: (content: string, leftModelId: string, rightModelId: string, contextPrompt?: string) => Promise<void>;
   isProcessing: boolean;
-  updateContextPrompt: (sessionId: string, contextPrompt: string) => void;
+  updateContextPrompt: (sessionId: string, prompt: string) => void;
   getContextPrompt: (sessionId: string) => string;
-  getComparisonMessages: (sessionId: string) => {
-    leftMessages: Message[];
-    rightMessages: Message[];
-  };
+  getComparisonMessages: (sessionId: string) => { leftMessages: Message[], rightMessages: Message[] };
 }
 
-const defaultModels: Model[] = [
-  { id: "gpt-4o-mini", name: "GPT 4o mini", tags: ["Default"] },
-  { id: "gpt-4.1-mini", name: "GPT 4.1 mini", tags: ["New"] },
-  { id: "gpt-o3-mini", name: "GPT o3 mini", tags: ["New"] },
-  { id: "gemini-2.0-flash", name: "Gemini 2.0 flash", tags: ["Google"] },
-  { id: "gemini-2.5-flash", name: "Gemini 2.5 flash", tags: ["Google"] },
-];
+const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
-const SessionContext = createContext<SessionContextProps | undefined>(undefined);
-
-export const SessionProvider = ({ children }: { children: ReactNode }) => {
-  const [sessions, setSessions] = useState<ChatSession[]>([]);
-  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
-  const [availableModels] = useState<Model[]>(defaultModels);
-  const [selectedModel, setSelectedModel] = useState<Model>(defaultModels[0]);
+export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [currentSession, setCurrentSession] = useState<Session | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [contextPrompts, setContextPrompts] = useState<Record<string, string>>({});
-  
-  // Store comparison session messages separately by sessionId
-  const [comparisonMessages, setComparisonMessages] = useState<Record<string, {
-    leftMessages: Message[];
-    rightMessages: Message[];
-  }>>({});
-  
-  const { toast } = useToast();
+  const [comparisonMessages, setComparisonMessages] = useState<Record<string, ComparisonMessage[]>>({});
 
-  const currentSession = currentSessionId 
-    ? sessions.find(session => session.id === currentSessionId) || null
-    : null;
-
-  // Storage key for persisting comparison messages
-  const COMPARISON_STORAGE_KEY = "aph_demo_comparison_messages";
-
-  // Load saved comparison messages from localStorage on initial load
-  useEffect(() => {
-    try {
-      const savedComparisonMessages = localStorage.getItem(COMPARISON_STORAGE_KEY);
-      if (savedComparisonMessages) {
-        const parsedMessages = JSON.parse(savedComparisonMessages);
-        if (parsedMessages && typeof parsedMessages === 'object') {
-          setComparisonMessages(parsedMessages);
-          console.log("Loaded saved comparison messages:", parsedMessages);
-        }
-      }
-    } catch (error) {
-      console.error("Error loading comparison messages from localStorage:", error);
-    }
+  const createNewSession = useCallback(() => {
+    const newSession: Session = {
+      id: uuidv4(),
+      name: `Phiên chat mới`,
+      messages: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    setSessions(prev => [...prev, newSession]);
+    setCurrentSession(newSession);
   }, []);
 
-  // Save comparison messages to localStorage whenever they change
-  useEffect(() => {
-    if (Object.keys(comparisonMessages).length > 0) {
-      try {
-        // Create a deep clone to avoid circular references 
-        const messagesForStorage = JSON.parse(JSON.stringify(comparisonMessages));
-        localStorage.setItem(COMPARISON_STORAGE_KEY, JSON.stringify(messagesForStorage));
-        console.log("Saved comparison messages to localStorage:", messagesForStorage);
-      } catch (error) {
-        console.error("Error saving comparison messages to localStorage:", error);
-      }
+  const selectSession = useCallback((sessionId: string) => {
+    const session = sessions.find(session => session.id === sessionId);
+    if (session) {
+      setCurrentSession(session);
     }
+  }, [sessions]);
+
+  const updateContextPrompt = useCallback((sessionId: string, prompt: string) => {
+    setContextPrompts(prev => ({
+      ...prev,
+      [sessionId]: prompt,
+    }));
+  }, []);
+
+  const getContextPrompt = useCallback((sessionId: string) => {
+    return contextPrompts[sessionId] || '';
+  }, [contextPrompts]);
+
+  const getComparisonMessages = useCallback((sessionId: string) => {
+    const msgs = comparisonMessages[sessionId] || [];
+    
+    // Group messages by role for left and right models
+    const leftMessages: Message[] = msgs.map(msg => ({
+      id: `${msg.id}-left`,
+      role: 'assistant',
+      content: msg.leftResponse,
+      timestamp: msg.timestamp,
+      modelId: msg.leftModelId,
+    }));
+    
+    const rightMessages: Message[] = msgs.map(msg => ({
+      id: `${msg.id}-right`,
+      role: 'assistant',
+      content: msg.rightResponse,
+      timestamp: msg.timestamp,
+      modelId: msg.rightModelId,
+    }));
+    
+    return { leftMessages, rightMessages };
   }, [comparisonMessages]);
 
-  useEffect(() => {
-    // On component mount, create a new session if none exists
-    if (sessions.length === 0) {
-      createNewSession();
-    }
-  }, []);
-  
-  const createNewSession = () => {
-    const newSession: ChatSession = {
-      id: uuidv4(),
-      title: `New Chat ${sessions.length + 1}`,
-      messages: [],
-      modelId: selectedModel.id,
-      createdAt: Date.now()
-    };
+  const sendComparisonMessage = useCallback(async (content: string, leftModelId: string, rightModelId: string, contextPrompt?: string) => {
+    if (!currentSession) return;
     
-    setSessions(prev => [...prev, newSession]);
-    setCurrentSessionId(newSession.id);
+    setIsProcessing(true);
     
-    // Initialize empty context for new session
-    setContextPrompts(prev => ({
-      ...prev,
-      [newSession.id]: ""
-    }));
-    
-    // Note: We're not initializing empty comparison messages here anymore
-    // since they're now persisted across sessions in localStorage
-  };
-  
-  const selectSession = (sessionId: string) => {
-    setCurrentSessionId(sessionId);
-  };
-  
-  const selectModel = (modelId: string) => {
-    const model = availableModels.find(m => m.id === modelId);
-    if (model) {
-      setSelectedModel(model);
-      
-      // Update current session model if it exists
-      if (currentSessionId) {
-        setSessions(prev => 
-          prev.map(session => 
-            session.id === currentSessionId 
-              ? { ...session, modelId } 
-              : session
-          )
-        );
-      }
-    }
-  };
-
-  const updateContextPrompt = (sessionId: string, contextPrompt: string) => {
-    setContextPrompts(prev => ({
-      ...prev,
-      [sessionId]: contextPrompt
-    }));
-  };
-
-  const getContextPrompt = (sessionId: string): string => {
-    return contextPrompts[sessionId] || "";
-  };
-  
-  const getComparisonMessages = (sessionId: string) => {
-    // Always return a valid object even if the session doesn't exist in the comparison messages
-    const defaultEmpty = { leftMessages: [], rightMessages: [] };
-    return comparisonMessages[sessionId] || defaultEmpty;
-  };
-
-  // Function to call n8n with a model ID and get a response
-  const callModelAPI = async (
-    content: string, 
-    modelId: string, 
-    contextPrompt: string, 
-    sessionId: string
-  ): Promise<string> => {
     try {
-      // Determine which n8n URL to use based on the model
-      const n8nUrl = MODEL_N8N_URLS[modelId] || DEFAULT_N8N_URL;
+      const comparisonMessageId = uuidv4();
       
-      console.log(`Sending request to n8n URL: ${n8nUrl} for model: ${modelId}`);
-      console.log(`Context prompt: ${contextPrompt}`);
-      
-      const response = await fetch(n8nUrl, {
+      // Simulate API call for left model
+      const leftResponse = await fetch('https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           message: content,
-          contextPrompt: contextPrompt.trim(),
-          modelId: modelId,
-          sessionId: sessionId
+          contextPrompt: contextPrompt || '',
+          modelId: leftModelId,
+          sessionId: currentSession.id,
         }),
       });
       
-      if (!response.ok) {
-        console.error(`n8n returned status: ${response.status}`);
-        throw new Error(`n8n returned an error: ${response.status}`);
-      }
+      const leftData = await leftResponse.json();
       
-      const data = await response.json();
-      console.log("Response from n8n:", data);
+      // Simulate API call for right model
+      const rightResponse = await fetch('https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: content,
+          contextPrompt: contextPrompt || '',
+          modelId: rightModelId,
+          sessionId: currentSession.id,
+        }),
+      });
       
-      // Improved response handling - check all possible response formats and structures
-      let assistantResponse;
+      const rightData = await rightResponse.json();
       
-      if (typeof data === 'string') {
-        // If the response is directly a string
-        assistantResponse = data;
-      } else if (typeof data === 'object' && data !== null) {
-        // Try to extract content from various possible fields in the object
-        assistantResponse = 
-          data.text || 
-          data.response || 
-          data.content || 
-          data.message ||
-          data.reply ||
-          data.answer ||
-          data.result ||
-          data.output ||
-          // Extract from deeply nested structures if needed
-          (data.data && (
-            data.data.text || 
-            data.data.content || 
-            data.data.message ||
-            data.data.response
-          )) ||
-          // Convert the entire object to string as a last resort
-          JSON.stringify(data);
-      } else {
-        throw new Error('Unexpected response format from n8n endpoint');
-      }
+      const newComparisonMessage: ComparisonMessage = {
+        id: comparisonMessageId,
+        userMessage: content,
+        leftResponse: leftData.output || 'Tôi xin lỗi, có lỗi xảy ra khi xử lý yêu cầu của bạn.',
+        rightResponse: rightData.output || 'Tôi xin lỗi, có lỗi xảy ra khi xử lý yêu cầu của bạn.',
+        timestamp: new Date(),
+        leftModelId: leftModelId,
+        rightModelId: rightModelId,
+      };
       
-      // Validate that we have a usable response
-      if (!assistantResponse || assistantResponse === '{}' || assistantResponse === 'null') {
-        throw new Error('Empty or invalid response from n8n');
-      }
-      
-      return assistantResponse;
+      setComparisonMessages(prev => ({
+        ...prev,
+        [currentSession.id]: [...(prev[currentSession.id] || []), newComparisonMessage],
+      }));
       
     } catch (error) {
-      console.error("Error calling n8n:", error);
-      return `There was an error processing your request: ${error instanceof Error ? error.message : 'Unknown error'}`;
-    }
-  };
-  
-  const sendMessage = async (content: string, contextPrompt: string = "") => {
-    if (!currentSessionId) return;
-    
-    setIsProcessing(true);
-    
-    try {
-      // Add user message
-      const userMessage: Message = {
-        id: uuidv4(),
-        role: 'user',
-        content,
-        timestamp: Date.now()
-      };
-      
-      // Update sessions with user message
-      setSessions(prev => 
-        prev.map(session => 
-          session.id === currentSessionId
-            ? { 
-                ...session, 
-                messages: [...session.messages, userMessage],
-                title: session.messages.length === 0 ? content.slice(0, 20) + (content.length > 20 ? '...' : '') : session.title
-              }
-            : session
-        )
-      );
-
-      // Save the context prompt for this session
-      if (currentSession) {
-        updateContextPrompt(currentSession.id, contextPrompt);
-      }
-      
-      // Get the current model ID for this session
-      const modelId = currentSession?.modelId || selectedModel.id;
-      
-      // Call API for the selected model
-      const assistantResponse = await callModelAPI(content, modelId, contextPrompt, currentSessionId);
-      
-      // Add assistant message
-      const assistantMessage: Message = {
-        id: uuidv4(),
-        role: 'assistant',
-        content: assistantResponse,
-        timestamp: Date.now()
-      };
-      
-      // Update sessions with assistant message
-      setSessions(prev => 
-        prev.map(session => 
-          session.id === currentSessionId
-            ? { ...session, messages: [...session.messages, assistantMessage] }
-            : session
-        )
-      );
+      console.error('Error sending comparison message:', error);
     } finally {
       setIsProcessing(false);
     }
-  };
-  
-  const sendComparisonMessage = async (
-    content: string, 
-    leftModelId: string | null = null, 
-    rightModelId: string | null = null, 
-    contextPrompt: string = ""
-  ) => {
-    if (!currentSessionId) return;
+  }, [currentSession]);
+
+  const sendMessage = useCallback(async (content: string, contextPrompt?: string) => {
+    if (!currentSession) return;
     
     setIsProcessing(true);
     
     try {
+      // Extract file information from content
+      const filePattern = /\[File: ([^\]]+)\]/g;
+      const fileMatches = [...content.matchAll(filePattern)];
+      const hasFiles = fileMatches.length > 0;
+      const fileNames = fileMatches.map(match => match[1]);
+      
+      // Remove file info from display content
+      const displayContent = content.replace(filePattern, '').trim();
+      
       // Create user message
       const userMessage: Message = {
         id: uuidv4(),
         role: 'user',
-        content,
-        timestamp: Date.now()
+        content: displayContent || (hasFiles ? '' : content),
+        timestamp: new Date(),
+        hasFiles,
+        fileNames
       };
-      
-      // Save the context prompt for this session
-      updateContextPrompt(currentSessionId, contextPrompt);
-      
-      // Update session title if it's first message
-      const currentSessionObj = sessions.find(s => s.id === currentSessionId);
-      if (currentSessionObj && (!currentSessionObj.title || currentSessionObj.title === `New Chat ${sessions.length}`)) {
-        setSessions(prev => 
-          prev.map(session => 
-            session.id === currentSessionId
-              ? { ...session, title: content.slice(0, 20) + (content.length > 20 ? '...' : '') }
-              : session
-          )
-        );
+
+      // Update session with user message
+      setSessions(prev => prev.map(session => 
+        session.id === currentSession.id
+          ? { 
+              ...session, 
+              messages: [...session.messages, userMessage],
+              updatedAt: new Date()
+            }
+          : session
+      ));
+
+      // Simulate API call
+      const response = await fetch('https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: content,
+          contextPrompt: contextPrompt || '',
+          modelId: 'gpt-4o-mini',
+          sessionId: currentSession.id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get response');
       }
 
-      // Handle single model or both models based on provided IDs
-      if (leftModelId && rightModelId) {
-        // Add user message to both sides
-        setComparisonMessages(prev => {
-          const current = prev[currentSessionId] || { leftMessages: [], rightMessages: [] };
-          return {
-            ...prev,
-            [currentSessionId]: {
-              leftMessages: [...current.leftMessages, {...userMessage}],
-              rightMessages: [...current.rightMessages, {...userMessage}]
-            }
-          };
-        });
-        
-        // Call APIs for both models in parallel
-        const [leftResponse, rightResponse] = await Promise.all([
-          callModelAPI(content, leftModelId, contextPrompt, currentSessionId),
-          callModelAPI(content, rightModelId, contextPrompt, currentSessionId)
-        ]);
-        
-        // Create assistant messages
-        const leftAssistantMessage: Message = {
-          id: uuidv4(),
-          role: 'assistant',
-          content: leftResponse,
-          timestamp: Date.now()
-        };
-        
-        const rightAssistantMessage: Message = {
-          id: uuidv4(),
-          role: 'assistant',
-          content: rightResponse,
-          timestamp: Date.now()
-        };
-        
-        // Add assistant messages to comparison
-        setComparisonMessages(prev => {
-          const current = prev[currentSessionId] || { leftMessages: [], rightMessages: [] };
-          return {
-            ...prev,
-            [currentSessionId]: {
-              leftMessages: [...current.leftMessages, leftAssistantMessage],
-              rightMessages: [...current.rightMessages, rightAssistantMessage]
-            }
-          };
-        });
-      } else if (leftModelId) {
-        // Left model only
-        setComparisonMessages(prev => {
-          const current = prev[currentSessionId] || { leftMessages: [], rightMessages: [] };
-          return {
-            ...prev,
-            [currentSessionId]: {
-              leftMessages: [...current.leftMessages, {...userMessage}],
-              rightMessages: [...current.rightMessages]
-            }
-          };
-        });
-        
-        const leftResponse = await callModelAPI(content, leftModelId, contextPrompt, currentSessionId);
-        
-        const leftAssistantMessage: Message = {
-          id: uuidv4(),
-          role: 'assistant',
-          content: leftResponse,
-          timestamp: Date.now()
-        };
-        
-        setComparisonMessages(prev => {
-          const current = prev[currentSessionId] || { leftMessages: [], rightMessages: [] };
-          return {
-            ...prev,
-            [currentSessionId]: {
-              leftMessages: [...current.leftMessages, leftAssistantMessage],
-              rightMessages: [...current.rightMessages]
-            }
-          };
-        });
-      } else if (rightModelId) {
-        // Right model only
-        setComparisonMessages(prev => {
-          const current = prev[currentSessionId] || { leftMessages: [], rightMessages: [] };
-          return {
-            ...prev,
-            [currentSessionId]: {
-              leftMessages: [...current.leftMessages],
-              rightMessages: [...current.rightMessages, {...userMessage}]
-            }
-          };
-        });
-        
-        const rightResponse = await callModelAPI(content, rightModelId, contextPrompt, currentSessionId);
-        
-        const rightAssistantMessage: Message = {
-          id: uuidv4(),
-          role: 'assistant',
-          content: rightResponse,
-          timestamp: Date.now()
-        };
-        
-        setComparisonMessages(prev => {
-          const current = prev[currentSessionId] || { leftMessages: [], rightMessages: [] };
-          return {
-            ...prev,
-            [currentSessionId]: {
-              leftMessages: [...current.leftMessages],
-              rightMessages: [...current.rightMessages, rightAssistantMessage]
-            }
-          };
-        });
-      }
+      const data = await response.json();
       
+      const assistantMessage: Message = {
+        id: uuidv4(),
+        role: 'assistant',
+        content: data.output || 'Tôi xin lỗi, có lỗi xảy ra khi xử lý yêu cầu của bạn.',
+        timestamp: new Date(),
+        modelId: 'gpt-4o-mini'
+      };
+
+      setSessions(prev => prev.map(session => 
+        session.id === currentSession.id
+          ? { 
+              ...session, 
+              messages: [...session.messages, assistantMessage],
+              updatedAt: new Date()
+            }
+          : session
+      ));
+
+    } catch (error) {
+      console.error('Error sending message:', error);
+      
+      const errorMessage: Message = {
+        id: uuidv4(),
+        role: 'assistant',
+        content: 'Xin lỗi, có lỗi xảy ra khi gửi tin nhắn. Vui lòng thử lại.',
+        timestamp: new Date(),
+        modelId: 'error'
+      };
+
+      setSessions(prev => prev.map(session => 
+        session.id === currentSession.id
+          ? { 
+              ...session, 
+              messages: [...session.messages, errorMessage],
+              updatedAt: new Date()
+            }
+          : session
+      ));
     } finally {
       setIsProcessing(false);
     }
+  }, [currentSession]);
+
+  const value = {
+    sessions,
+    currentSession,
+    createNewSession,
+    selectSession,
+    sendMessage,
+    sendComparisonMessage,
+    isProcessing,
+    updateContextPrompt,
+    getContextPrompt,
+    getComparisonMessages,
   };
-  
+
   return (
-    <SessionContext.Provider 
-      value={{
-        currentSession,
-        sessions,
-        availableModels,
-        selectedModel,
-        createNewSession,
-        selectSession,
-        sendMessage,
-        sendComparisonMessage,
-        selectModel,
-        isProcessing,
-        updateContextPrompt,
-        getContextPrompt,
-        getComparisonMessages
-      }}
-    >
+    <SessionContext.Provider value={value}>
       {children}
     </SessionContext.Provider>
   );

@@ -9,12 +9,12 @@ interface UploadedFilesDisplayProps {
 const UploadedFilesDisplay = ({ files }: UploadedFilesDisplayProps) => {
   const getFileIcon = (file: UploadedFile) => {
     if (file.type === 'application/pdf') {
-      return <FileText className="h-5 w-5 text-red-500" />;
+      return <FileText className="h-6 w-6 text-red-500" />;
     }
     if (file.type.startsWith('image/')) {
-      return <Image className="h-5 w-5 text-blue-500" />;
+      return <Image className="h-6 w-6 text-blue-500" />;
     }
-    return <File className="h-5 w-5 text-gray-500" />;
+    return <File className="h-6 w-6 text-gray-500" />;
   };
 
   const formatFileSize = (bytes: number) => {
@@ -28,26 +28,30 @@ const UploadedFilesDisplay = ({ files }: UploadedFilesDisplayProps) => {
   if (files.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-2 mb-3">
+    <div className="flex flex-wrap gap-3 mb-4">
       {files.map((file) => (
         <div
           key={file.id}
-          className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2 border"
+          className="flex items-center gap-3 bg-white rounded-lg px-4 py-3 border border-gray-200 shadow-sm hover:shadow-md transition-shadow min-w-0 max-w-sm"
         >
-          {getFileIcon(file)}
-          <div className="flex flex-col">
-            <span className="text-sm font-medium text-gray-700 truncate max-w-32">
+          <div className="flex-shrink-0">
+            {getFileIcon(file)}
+          </div>
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className="text-sm font-semibold text-gray-800 truncate">
               {file.name}
             </span>
-            <span className="text-xs text-gray-500">
-              {formatFileSize(file.size)}
-            </span>
-          </div>
-          {file.type === 'application/pdf' && file.extractedContent && (
-            <div className="ml-2 px-2 py-1 bg-green-100 text-green-700 text-xs rounded">
-              PDF đã xử lý
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500">
+                {formatFileSize(file.size)}
+              </span>
+              {file.type === 'application/pdf' && file.extractedContent && (
+                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">
+                  Đã xử lý
+                </span>
+              )}
             </div>
-          )}
+          </div>
         </div>
       ))}
     </div>
