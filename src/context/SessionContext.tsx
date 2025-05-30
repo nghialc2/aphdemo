@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Message, Model } from '@/types';
@@ -183,16 +182,19 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setIsProcessing(true);
     
     try {
-      // Extract file information from content
+      // Extract file information from content for display
       const filePattern = /\[File: ([^\]]+)\]/g;
       const fileMatches = [...content.matchAll(filePattern)];
       const hasFiles = fileMatches.length > 0;
       const fileNames = fileMatches.map(match => match[1]);
       
-      // Remove file info from display content
-      const displayContent = content.replace(filePattern, '').trim();
+      // Create display content (remove extracted content section for user message display)
+      let displayContent = content;
+      if (content.includes('[Nội dung được trích xuất từ file:]')) {
+        displayContent = content.split('[Nội dung được trích xuất từ file:]')[0].trim();
+      }
       
-      // Create user message
+      // Create user message for display
       const userMessage: Message = {
         id: uuidv4(),
         role: 'user',
@@ -213,7 +215,14 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
           : session
       ));
 
-      // Simulate API call
+      console.log('Sending to n8n webhook:', {
+        message: content,
+        contextPrompt: contextPrompt || '',
+        modelId: selectedModel.id,
+        sessionId: currentSession.id,
+      });
+
+      // Send full content (including extracted text) to API
       const response = await fetch('https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba', {
         method: 'POST',
         headers: {
@@ -228,10 +237,11 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get response');
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log('Response from n8n:', data);
       
       const assistantMessage: Message = {
         id: uuidv4(),

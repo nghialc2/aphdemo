@@ -41,28 +41,39 @@ export const useFileUpload = () => {
       console.log('Extracting PDF content from:', file.name);
       setIsProcessing(true);
       
-      // Using pdf-js to extract text content
+      // Create a more robust PDF content extraction
       const arrayBuffer = await file.arrayBuffer();
-      const uint8Array = new Uint8Array(arrayBuffer);
       
-      // Import pdfjs-dist
-      const pdfjsLib = await import('pdfjs-dist');
-      pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
-      
-      const pdf = await pdfjsLib.getDocument({ data: uint8Array }).promise;
-      let fullText = '';
-      
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items
-          .map((item: any) => item.str)
-          .join(' ');
-        fullText += pageText + '\n';
+      // Try to use a simpler approach first
+      try {
+        // Import pdfjs-dist dynamically
+        const pdfjsLib = await import('pdfjs-dist');
+        
+        // Set worker source to the correct path
+        pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+          'pdfjs-dist/build/pdf.worker.min.js',
+          import.meta.url
+        ).toString();
+        
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let fullText = '';
+        
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const textContent = await page.getTextContent();
+          const pageText = textContent.items
+            .map((item: any) => item.str)
+            .join(' ');
+          fullText += pageText + '\n';
+        }
+        
+        console.log('PDF extraction successful, content length:', fullText.length);
+        return fullText.trim();
+      } catch (pdfError) {
+        console.error('PDF extraction failed, using fallback:', pdfError);
+        // Fallback: return a placeholder text indicating file was uploaded
+        return `[PDF File: ${file.name} - Content extraction failed, but file was uploaded successfully]`;
       }
-      
-      console.log('PDF extraction successful, content length:', fullText.length);
-      return fullText.trim();
     } catch (error) {
       console.error('Error extracting PDF content:', error);
       toast({
@@ -70,27 +81,28 @@ export const useFileUpload = () => {
         description: `Không thể trích xuất nội dung từ ${file.name}`,
         variant: "destructive",
       });
-      return '';
+      return `[PDF File: ${file.name} - Content extraction failed]`;
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const uploadFiles = async (sessionId: string): Promise<UploadedFile[]> => {
+  const uploadFiles = async (sessionId: string): Promise<{ files: UploadedFile[], extractedContent: string }> => {
     if (selectedFiles.length === 0) {
       console.log('No files to upload');
-      return [];
+      return { files: [], extractedContent: '' };
     }
 
     console.log('Starting upload process for', selectedFiles.length, 'files');
     setIsUploading(true);
     const newUploadedFiles: UploadedFile[] = [];
+    let allExtractedContent = '';
 
     try {
       for (const file of selectedFiles) {
         console.log('Processing file:', file.name, 'Type:', file.type);
         
-        // Create uploaded file entry first for immediate display
+        // Create uploaded file entry
         const uploadedFile: UploadedFile = {
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
           name: file.name,
@@ -105,6 +117,7 @@ export const useFileUpload = () => {
             const extractedContent = await extractPdfContent(file);
             if (extractedContent) {
               uploadedFile.extractedContent = extractedContent;
+              allExtractedContent += extractedContent + '\n\n';
               console.log('PDF content extracted successfully for:', file.name);
               
               toast({
@@ -114,6 +127,8 @@ export const useFileUpload = () => {
             }
           } catch (error) {
             console.error('Error processing PDF:', error);
+            // Still add the file even if extraction fails
+            uploadedFile.extractedContent = `[PDF File: ${file.name} - Upload successful, content extraction failed]`;
           }
         }
 
@@ -129,7 +144,12 @@ export const useFileUpload = () => {
       });
 
       console.log('Upload process completed:', newUploadedFiles);
-      return newUploadedFiles;
+      console.log('Total extracted content length:', allExtractedContent.length);
+      
+      return { 
+        files: newUploadedFiles, 
+        extractedContent: allExtractedContent.trim() 
+      };
     } catch (error) {
       console.error('Upload error:', error);
       toast({
@@ -137,7 +157,7 @@ export const useFileUpload = () => {
         description: "Có lỗi xảy ra khi upload file. Vui lòng thử lại.",
         variant: "destructive",
       });
-      return [];
+      return { files: [], extractedContent: '' };
     } finally {
       setIsUploading(false);
     }

@@ -139,42 +139,42 @@ const ChatInterface = () => {
     
     try {
       let messageContent = inputValue;
-      let extractedContent = '';
+      let fullMessageForAPI = inputValue;
       
-      // Upload files if any
+      // Process files if any
       if (selectedFiles.length > 0) {
-        console.log('Processing files:', selectedFiles);
-        const newUploadedFiles = await uploadFiles(currentSession.id);
+        console.log('Processing files for submission:', selectedFiles);
+        const uploadResult = await uploadFiles(currentSession.id);
         
-        if (newUploadedFiles.length > 0) {
-          const fileInfo = newUploadedFiles.map(f => `[File: ${f.name}]`).join(', ');
+        if (uploadResult.files.length > 0) {
+          // Create file info for display in chat
+          const fileInfo = uploadResult.files.map(f => `[File: ${f.name}]`).join(', ');
+          
+          // Update message content for display
           messageContent = inputValue ? `${inputValue}\n\n${fileInfo}` : fileInfo;
           
-          // Collect extracted content from PDF files
-          const pdfContents = newUploadedFiles
-            .filter(f => f.extractedContent)
-            .map(f => f.extractedContent)
-            .join('\n\n');
-          
-          if (pdfContents) {
-            extractedContent = pdfContents;
-            console.log('Extracted PDF content:', extractedContent.substring(0, 200) + '...');
+          // Create full message for API (includes extracted content)
+          if (uploadResult.extractedContent) {
+            fullMessageForAPI = inputValue 
+              ? `${inputValue}\n\n${fileInfo}\n\n[Nội dung được trích xuất từ file:]\n${uploadResult.extractedContent}`
+              : `${fileInfo}\n\n[Nội dung được trích xuất từ file:]\n${uploadResult.extractedContent}`;
+            
+            console.log('Sending message with extracted content to API');
+            console.log('Extracted content preview:', uploadResult.extractedContent.substring(0, 200) + '...');
+          } else {
+            fullMessageForAPI = messageContent;
           }
         }
       }
-
-      // Prepare message with extracted content
-      let fullMessage = messageContent;
-      if (extractedContent) {
-        fullMessage = `${messageContent}\n\n[Nội dung PDF được trích xuất:]\n${extractedContent}`;
-      }
+      
+      console.log('Sending to API - Full message length:', fullMessageForAPI.length);
       
       if (isCompareMode) {
         // Send comparison message
-        await sendComparisonMessage(fullMessage, leftModelId, rightModelId, contextPrompt);
+        await sendComparisonMessage(fullMessageForAPI, leftModelId, rightModelId, contextPrompt);
       } else {
         // Send regular message
-        await sendMessage(fullMessage, contextPrompt);
+        await sendMessage(fullMessageForAPI, contextPrompt);
       }
       
       setInputValue("");
