@@ -19,7 +19,12 @@ export const useFileUpload = () => {
   const { toast } = useToast();
 
   const addFiles = (files: File[]) => {
+    console.log('Adding files:', files);
     setSelectedFiles(prev => [...prev, ...files]);
+    toast({
+      title: "Files đã được chọn",
+      description: `Đã chọn ${files.length} file`,
+    });
   };
 
   const removeFile = (index: number) => {
@@ -33,6 +38,9 @@ export const useFileUpload = () => {
 
   const extractPdfContent = async (file: File): Promise<string> => {
     try {
+      console.log('Extracting PDF content from:', file.name);
+      setIsProcessing(true);
+      
       // Using pdf-js to extract text content
       const arrayBuffer = await file.arrayBuffer();
       const uint8Array = new Uint8Array(arrayBuffer);
@@ -53,21 +61,35 @@ export const useFileUpload = () => {
         fullText += pageText + '\n';
       }
       
+      console.log('PDF extraction successful, content length:', fullText.length);
       return fullText.trim();
     } catch (error) {
       console.error('Error extracting PDF content:', error);
+      toast({
+        title: "Lỗi xử lý PDF",
+        description: `Không thể trích xuất nội dung từ ${file.name}`,
+        variant: "destructive",
+      });
       return '';
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const uploadFiles = async (sessionId: string): Promise<UploadedFile[]> => {
-    if (selectedFiles.length === 0) return [];
+    if (selectedFiles.length === 0) {
+      console.log('No files to upload');
+      return [];
+    }
 
+    console.log('Starting upload process for', selectedFiles.length, 'files');
     setIsUploading(true);
     const newUploadedFiles: UploadedFile[] = [];
 
     try {
       for (const file of selectedFiles) {
+        console.log('Processing file:', file.name, 'Type:', file.type);
+        
         // Create uploaded file entry first for immediate display
         const uploadedFile: UploadedFile = {
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
@@ -77,59 +99,36 @@ export const useFileUpload = () => {
           url: '', // Will be updated after actual upload
         };
 
-        newUploadedFiles.push(uploadedFile);
-
         // If it's a PDF, extract content
         if (file.type === 'application/pdf') {
-          setIsProcessing(true);
           try {
             const extractedContent = await extractPdfContent(file);
-            uploadedFile.extractedContent = extractedContent;
-            
-            toast({
-              title: "PDF đã được xử lý",
-              description: `Đã trích xuất nội dung từ ${file.name}`,
-            });
+            if (extractedContent) {
+              uploadedFile.extractedContent = extractedContent;
+              console.log('PDF content extracted successfully for:', file.name);
+              
+              toast({
+                title: "PDF đã được xử lý",
+                description: `Đã trích xuất nội dung từ ${file.name}`,
+              });
+            }
           } catch (error) {
             console.error('Error processing PDF:', error);
-            toast({
-              title: "Lỗi xử lý PDF",
-              description: `Không thể trích xuất nội dung từ ${file.name}`,
-              variant: "destructive",
-            });
-          } finally {
-            setIsProcessing(false);
           }
         }
 
-        // Simulate file upload to storage
-        try {
-          const formData = new FormData();
-          formData.append('file', file);
-          formData.append('sessionId', sessionId);
-
-          const response = await fetch('/api/upload', {
-            method: 'POST',
-            body: formData,
-          });
-
-          if (response.ok) {
-            const result = await response.json();
-            uploadedFile.url = result.url;
-          }
-        } catch (error) {
-          console.error('Error uploading file:', error);
-        }
+        newUploadedFiles.push(uploadedFile);
       }
 
       setUploadedFiles(prev => [...prev, ...newUploadedFiles]);
-      clearFiles();
+      setSelectedFiles([]); // Clear selected files after processing
 
       toast({
         title: "Thành công",
-        description: `Đã upload ${newUploadedFiles.length} file thành công.`,
+        description: `Đã xử lý ${newUploadedFiles.length} file thành công.`,
       });
 
+      console.log('Upload process completed:', newUploadedFiles);
       return newUploadedFiles;
     } catch (error) {
       console.error('Upload error:', error);

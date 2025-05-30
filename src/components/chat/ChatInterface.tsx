@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -117,29 +118,6 @@ const ChatInterface = () => {
       addFiles(files);
     }
   };
-
-  const sendMessageToN8n = async (message: string, extractedContent?: string) => {
-    try {
-      const payload = {
-        message,
-        contextPrompt,
-        extractedContent: extractedContent || ''
-      };
-
-      console.log('Sending to n8n:', payload);
-
-      // Send to n8n webhook
-      await fetch('https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-    } catch (error) {
-      console.error('Error sending to n8n:', error);
-    }
-  };
   
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -152,13 +130,20 @@ const ChatInterface = () => {
       });
       return;
     }
+
+    // Ensure we have a current session
+    if (!currentSession) {
+      createNewSession();
+      return;
+    }
     
     try {
       let messageContent = inputValue;
       let extractedContent = '';
       
       // Upload files if any
-      if (selectedFiles.length > 0 && currentSession) {
+      if (selectedFiles.length > 0) {
+        console.log('Processing files:', selectedFiles);
         const newUploadedFiles = await uploadFiles(currentSession.id);
         
         if (newUploadedFiles.length > 0) {
@@ -173,20 +158,25 @@ const ChatInterface = () => {
           
           if (pdfContents) {
             extractedContent = pdfContents;
+            console.log('Extracted PDF content:', extractedContent.substring(0, 200) + '...');
           }
         }
       }
 
-      // Send to n8n with extracted content - do this BEFORE sending to session
-      await sendMessageToN8n(messageContent, extractedContent);
+      // Prepare message with extracted content
+      let fullMessage = messageContent;
+      if (extractedContent) {
+        fullMessage = `${messageContent}\n\n[Nội dung PDF được trích xuất:]\n${extractedContent}`;
+      }
       
       if (isCompareMode) {
         // Send comparison message
-        await sendComparisonMessage(messageContent, leftModelId, rightModelId, contextPrompt);
+        await sendComparisonMessage(fullMessage, leftModelId, rightModelId, contextPrompt);
       } else {
         // Send regular message
-        await sendMessage(messageContent, contextPrompt);
+        await sendMessage(fullMessage, contextPrompt);
       }
+      
       setInputValue("");
     } catch (error) {
       console.error("Error sending message:", error);
