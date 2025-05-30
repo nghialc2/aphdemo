@@ -33,6 +33,8 @@ interface SessionContextType {
   isProcessing: boolean;
   updateContextPrompt: (sessionId: string, prompt: string) => void;
   getContextPrompt: (sessionId: string) => string;
+  updateExtractContent: (sessionId: string, content: string) => void;
+  getExtractContent: (sessionId: string) => string;
   getComparisonMessages: (sessionId: string) => { leftMessages: Message[], rightMessages: Message[] };
 }
 
@@ -50,6 +52,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [contextPrompts, setContextPrompts] = useState<Record<string, string>>({});
+  const [extractContents, setExtractContents] = useState<Record<string, string>>({});
   const [comparisonMessages, setComparisonMessages] = useState<Record<string, ComparisonMessage[]>>({});
   const [availableModels] = useState<Model[]>(defaultModels);
   const [selectedModel, setSelectedModel] = useState<Model>(defaultModels[0]);
@@ -91,6 +94,18 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return contextPrompts[sessionId] || '';
   }, [contextPrompts]);
 
+  const updateExtractContent = useCallback((sessionId: string, content: string) => {
+    console.log('Updating extract content for session:', sessionId, 'Content length:', content.length);
+    setExtractContents(prev => ({
+      ...prev,
+      [sessionId]: content,
+    }));
+  }, []);
+
+  const getExtractContent = useCallback((sessionId: string) => {
+    return extractContents[sessionId] || '';
+  }, [extractContents]);
+
   const getComparisonMessages = useCallback((sessionId: string) => {
     const msgs = comparisonMessages[sessionId] || [];
     
@@ -121,6 +136,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     
     try {
       const comparisonMessageId = uuidv4();
+      const extractContent = getExtractContent(currentSession.id);
       
       // Simulate API call for left model
       const leftResponse = await fetch('https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba', {
@@ -131,6 +147,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         body: JSON.stringify({
           message: content,
           contextPrompt: contextPrompt || '',
+          extractContent: extractContent,
           modelId: leftModelId,
           sessionId: currentSession.id,
         }),
@@ -147,6 +164,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         body: JSON.stringify({
           message: content,
           contextPrompt: contextPrompt || '',
+          extractContent: extractContent,
           modelId: rightModelId,
           sessionId: currentSession.id,
         }),
@@ -174,7 +192,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     } finally {
       setIsProcessing(false);
     }
-  }, [currentSession]);
+  }, [currentSession, getExtractContent]);
 
   const sendMessage = useCallback(async (content: string, contextPrompt?: string) => {
     if (!currentSession) return;
@@ -188,17 +206,11 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const hasFiles = fileMatches.length > 0;
       const fileNames = fileMatches.map(match => match[1]);
       
-      // Create display content (remove extracted content section for user message display)
-      let displayContent = content;
-      if (content.includes('[Nội dung được trích xuất từ file:]')) {
-        displayContent = content.split('[Nội dung được trích xuất từ file:]')[0].trim();
-      }
-      
-      // Create user message for display
+      // Create user message for display (keep file info but not extracted content)
       const userMessage: Message = {
         id: uuidv4(),
         role: 'user',
-        content: displayContent || (hasFiles ? '' : content),
+        content: content,
         timestamp: new Date(),
         hasFiles,
         fileNames
@@ -215,14 +227,17 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
           : session
       ));
 
+      const extractContent = getExtractContent(currentSession.id);
+
       console.log('Sending to n8n webhook:', {
         message: content,
         contextPrompt: contextPrompt || '',
+        extractContent: extractContent,
         modelId: selectedModel.id,
         sessionId: currentSession.id,
       });
 
-      // Send full content (including extracted text) to API
+      // Send message and extractContent as separate fields to API
       const response = await fetch('https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba', {
         method: 'POST',
         headers: {
@@ -231,6 +246,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         body: JSON.stringify({
           message: content,
           contextPrompt: contextPrompt || '',
+          extractContent: extractContent,
           modelId: selectedModel.id,
           sessionId: currentSession.id,
         }),
@@ -284,7 +300,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     } finally {
       setIsProcessing(false);
     }
-  }, [currentSession, selectedModel]);
+  }, [currentSession, selectedModel, getExtractContent]);
 
   const value = {
     sessions,
@@ -299,6 +315,8 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     isProcessing,
     updateContextPrompt,
     getContextPrompt,
+    updateExtractContent,
+    getExtractContent,
     getComparisonMessages,
   };
 

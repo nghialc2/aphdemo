@@ -33,6 +33,8 @@ const ChatInterface = () => {
     isProcessing,
     updateContextPrompt,
     getContextPrompt,
+    updateExtractContent,
+    getExtractContent,
     getComparisonMessages,
     createNewSession
   } = useSession();
@@ -139,7 +141,6 @@ const ChatInterface = () => {
     
     try {
       let messageContent = inputValue;
-      let fullMessageForAPI = inputValue;
       
       // Process files if any
       if (selectedFiles.length > 0) {
@@ -150,31 +151,25 @@ const ChatInterface = () => {
           // Create file info for display in chat
           const fileInfo = uploadResult.files.map(f => `[File: ${f.name}]`).join(', ');
           
-          // Update message content for display
+          // Update message content for display (include file info)
           messageContent = inputValue ? `${inputValue}\n\n${fileInfo}` : fileInfo;
           
-          // Create full message for API (includes extracted content)
+          // Store extracted content in session storage
           if (uploadResult.extractedContent) {
-            fullMessageForAPI = inputValue 
-              ? `${inputValue}\n\n${fileInfo}\n\n[Nội dung được trích xuất từ file:]\n${uploadResult.extractedContent}`
-              : `${fileInfo}\n\n[Nội dung được trích xuất từ file:]\n${uploadResult.extractedContent}`;
-            
-            console.log('Sending message with extracted content to API');
-            console.log('Extracted content preview:', uploadResult.extractedContent.substring(0, 200) + '...');
-          } else {
-            fullMessageForAPI = messageContent;
+            console.log('Storing extracted content in session:', uploadResult.extractedContent.substring(0, 200) + '...');
+            updateExtractContent(currentSession.id, uploadResult.extractedContent);
           }
         }
       }
       
-      console.log('Sending to API - Full message length:', fullMessageForAPI.length);
+      console.log('Current extract content for session:', getExtractContent(currentSession.id).substring(0, 200) + '...');
       
       if (isCompareMode) {
         // Send comparison message
-        await sendComparisonMessage(fullMessageForAPI, leftModelId, rightModelId, contextPrompt);
+        await sendComparisonMessage(messageContent, leftModelId, rightModelId, contextPrompt);
       } else {
         // Send regular message
-        await sendMessage(fullMessageForAPI, contextPrompt);
+        await sendMessage(messageContent, contextPrompt);
       }
       
       setInputValue("");
