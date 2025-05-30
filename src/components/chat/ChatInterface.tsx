@@ -11,6 +11,7 @@ import ModelSelector from "./ModelSelector";
 import ComparisonModelSelectors from "./ComparisonModelSelectors";
 import ComparisonView from "./ComparisonView";
 import FileUpload from "./FileUpload";
+import UploadedFilesDisplay from "./UploadedFilesDisplay";
 import { History, Send, GitCompareArrows, Settings } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -45,7 +46,9 @@ const ChatInterface = () => {
 
   const {
     selectedFiles,
+    uploadedFiles,
     isUploading,
+    isProcessing: isFileProcessing,
     addFiles,
     removeFile,
     clearFiles,
@@ -115,6 +118,27 @@ const ChatInterface = () => {
       addFiles(files);
     }
   };
+
+  const sendMessageToN8n = async (message: string, extractedContent?: string) => {
+    try {
+      const payload = {
+        message,
+        contextPrompt,
+        extractContent: extractedContent || ''
+      };
+
+      // Send to n8n webhook
+      await fetch('https://your-n8n-webhook-url.com/webhook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+    } catch (error) {
+      console.error('Error sending to n8n:', error);
+    }
+  };
   
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -130,14 +154,31 @@ const ChatInterface = () => {
     
     try {
       let messageContent = inputValue;
+      let extractedContent = '';
       
       // Upload files if any
       if (selectedFiles.length > 0 && currentSession) {
-        const uploadedFiles = await uploadFiles(currentSession.id);
-        if (uploadedFiles.length > 0) {
-          const fileInfo = uploadedFiles.map(f => `[File: ${f.name}]`).join(', ');
+        const newUploadedFiles = await uploadFiles(currentSession.id);
+        
+        if (newUploadedFiles.length > 0) {
+          const fileInfo = newUploadedFiles.map(f => `[File: ${f.name}]`).join(', ');
           messageContent = inputValue ? `${inputValue}\n\n${fileInfo}` : fileInfo;
+          
+          // Collect extracted content from PDF files
+          const pdfContents = newUploadedFiles
+            .filter(f => f.extractedContent)
+            .map(f => f.extractedContent)
+            .join('\n\n');
+          
+          if (pdfContents) {
+            extractedContent = pdfContents;
+          }
         }
+      }
+
+      // Send to n8n with extracted content
+      if (extractedContent) {
+        await sendMessageToN8n(messageContent, extractedContent);
       }
       
       if (isCompareMode) {
@@ -215,11 +256,13 @@ const ChatInterface = () => {
         </ScrollArea>
         
         <div className="border-t border-gray-200 p-4 bg-white">
+          <UploadedFilesDisplay files={uploadedFiles} />
+          
           <FileUpload
             onFileSelect={addFiles}
             selectedFiles={selectedFiles}
             onRemoveFile={removeFile}
-            disabled={isProcessing || isUploading}
+            disabled={isProcessing || isUploading || isFileProcessing}
           />
           
           <form onSubmit={handleSubmit} className="flex space-x-2 mt-2">
@@ -228,20 +271,20 @@ const ChatInterface = () => {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Nhập tin nhắn của bạn..."
-              disabled={isProcessing || isUploading}
+              disabled={isProcessing || isUploading || isFileProcessing}
               className="flex-1"
             />
             <Button 
               type="submit" 
-              disabled={isProcessing || isUploading || (inputValue.trim() === "" && selectedFiles.length === 0)}
+              disabled={isProcessing || isUploading || isFileProcessing || (inputValue.trim() === "" && selectedFiles.length === 0)}
             >
               <Send className="h-4 w-4 mr-2" />
               Gửi
             </Button>
           </form>
-          {(isProcessing || isUploading) && (
+          {(isProcessing || isUploading || isFileProcessing) && (
             <div className="text-xs text-center mt-2 text-gray-500 animate-pulse">
-              {isUploading ? "Đang upload file..." : "Đang xử lý yêu cầu..."}
+              {isFileProcessing ? "Đang xử lý PDF..." : isUploading ? "Đang upload file..." : "Đang xử lý yêu cầu..."}
             </div>
           )}
         </div>
