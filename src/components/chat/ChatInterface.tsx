@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +26,7 @@ const ChatInterface = () => {
   const { toast } = useToast();
   
   const { 
+    sessions,
     currentSession, 
     sendMessage, 
     sendComparisonMessage,
@@ -88,13 +88,11 @@ const ChatInterface = () => {
     const newCompareMode = !isCompareMode;
     toggleCompareMode();
     
-    // If exiting compare mode, create a new session
-    if (!newCompareMode) {
-      // Clear context prompt
-      setContextPrompt("");
-      // Create a new session (this will automatically be selected as current)
-      createNewSession();
-    }
+    // Create a new session either way - helps track comparison sessions separately
+    // Clear context prompt
+    setContextPrompt("");
+    // Create a new session (this will automatically be selected as current)
+    createNewSession();
   };
 
   // Handle drag events for the entire chat container
@@ -114,6 +112,15 @@ const ChatInterface = () => {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
+    
+    // Don't process files if in comparison mode, let ComparisonView handle it
+    if (isCompareMode) {
+      toast({
+        title: "Lưu ý",
+        description: "Vui lòng sử dụng chức năng upload file bên trong các khung chat",
+      });
+      return;
+    }
     
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
@@ -141,6 +148,7 @@ const ChatInterface = () => {
     
     try {
       let messageContent = inputValue;
+      let filesProcessed = false;
       
       // Process files if any
       if (selectedFiles.length > 0) {
@@ -148,28 +156,83 @@ const ChatInterface = () => {
         const uploadResult = await uploadFiles(currentSession.id);
         
         if (uploadResult.files.length > 0) {
+          filesProcessed = true;
           // Create file info for display in chat
-          const fileInfo = uploadResult.files.map(f => `[File: ${f.name}]`).join(', ');
+          const fileInfo = uploadResult.files.map(f => `[File: ${f.name}]`).join(' ');
           
           // Update message content for display (include file info)
-          messageContent = inputValue ? `${inputValue}\n\n${fileInfo}` : fileInfo;
+          messageContent = inputValue.trim() ? 
+            `${inputValue}\n\n${fileInfo}` : 
+            `${fileInfo}`;
           
           // Store extracted content in session storage
-          if (uploadResult.extractedContent) {
+          if (uploadResult.extractedContent && uploadResult.extractedContent.length > 0) {
+            console.log('Extracted content length:', uploadResult.extractedContent.length);
             console.log('Storing extracted content in session:', uploadResult.extractedContent.substring(0, 200) + '...');
-            updateExtractContent(currentSession.id, uploadResult.extractedContent);
+            
+            // Count PDF files
+            const pdfFiles = uploadResult.files.filter(f => f.type === 'application/pdf');
+            
+            try {
+              // Store extracted content
+              updateExtractContent(currentSession.id, uploadResult.extractedContent);
+              
+              // Force a small delay to ensure extract content is saved
+              await new Promise(resolve => setTimeout(resolve, 100));
+              
+              // Double check the extract content was saved correctly
+              const savedContent = getExtractContent(currentSession.id);
+              console.log('Verified saved content length:', savedContent.length);
+              
+              // Show success toast
+              toast({
+                title: `Đã xử lý ${uploadResult.files.length} file`,
+                description: `Đã trích xuất ${uploadResult.extractedContent.length.toLocaleString()} ký tự từ ${pdfFiles.length} file PDF`,
+              });
+            } catch (error) {
+              console.error('Error saving extracted content:', error);
+              toast({
+                title: "Lỗi lưu trữ",
+                description: "Không thể lưu trữ nội dung được trích xuất từ PDF",
+                variant: "destructive",
+              });
+            }
+          } else {
+            console.log('No extracted content available from upload result');
           }
         }
       }
       
-      console.log('Current extract content for session:', getExtractContent(currentSession.id).substring(0, 200) + '...');
+      // Small delay to ensure state updates have been processed
+      if (filesProcessed) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
       
-      if (isCompareMode) {
-        // Send comparison message
-        await sendComparisonMessage(messageContent, leftModelId, rightModelId, contextPrompt);
-      } else {
+      // Verify and log extract content before sending
+      const extractContent = getExtractContent(currentSession.id);
+      console.log('Extract content available:', Boolean(extractContent));
+      console.log('Extract content length:', extractContent ? extractContent.length : 0);
+      if (extractContent && extractContent.length > 0) {
+        console.log('First 200 chars of extract content:', extractContent.substring(0, 200) + '...');
+      }
+      
+      // Always trim the message content to avoid empty messages
+      messageContent = messageContent.trim();
+      
+      // Don't send empty messages
+      if (!messageContent) {
+        console.log('No message content to send after processing');
+        return;
+      }
+      
+      // Only send messages in normal mode
+      if (!isCompareMode) {
         // Send regular message
         await sendMessage(messageContent, contextPrompt);
+      } else {
+        // We shouldn't get here since the input is hidden in comparison mode
+        console.log('Message not sent: comparison mode active');
+        return;
       }
       
       setInputValue("");
@@ -228,7 +291,7 @@ const ChatInterface = () => {
           </div>
         )}
         
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1" type="always">
           {isCompareMode ? (
             <ComparisonView 
               leftMessages={comparisonMessages.leftMessages}
@@ -240,32 +303,34 @@ const ChatInterface = () => {
         </ScrollArea>
         
         <div className="border-t border-gray-200 p-4 bg-white">
-          <UploadedFilesDisplay files={uploadedFiles} />
-          
-          <FileUpload
-            onFileSelect={addFiles}
-            selectedFiles={selectedFiles}
-            onRemoveFile={removeFile}
-            disabled={isProcessing || isUploading || isFileProcessing}
-          />
-          
-          <form onSubmit={handleSubmit} className="flex space-x-2 mt-2">
-            <Input
-              ref={inputRef}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Nhập tin nhắn của bạn..."
+          {!isCompareMode && (
+            <FileUpload
+              onFileSelect={addFiles}
+              selectedFiles={selectedFiles}
+              onRemoveFile={removeFile}
               disabled={isProcessing || isUploading || isFileProcessing}
-              className="flex-1"
             />
-            <Button 
-              type="submit" 
-              disabled={isProcessing || isUploading || isFileProcessing || (inputValue.trim() === "" && selectedFiles.length === 0)}
-            >
-              <Send className="h-4 w-4 mr-2" />
-              Gửi
-            </Button>
-          </form>
+          )}
+          
+          {!isCompareMode && (
+            <form onSubmit={handleSubmit} className="flex space-x-2 mt-2">
+              <Input
+                ref={inputRef}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="Nhập tin nhắn của bạn..."
+                disabled={isProcessing || isUploading || isFileProcessing}
+                className="flex-1"
+              />
+              <Button 
+                type="submit" 
+                disabled={isProcessing || isUploading || isFileProcessing || (inputValue.trim() === "" && selectedFiles.length === 0)}
+              >
+                <Send className="h-4 w-4 mr-2" />
+                Gửi
+              </Button>
+            </form>
+          )}
           {(isProcessing || isUploading || isFileProcessing) && (
             <div className="text-xs text-center mt-2 text-gray-500 animate-pulse">
               {isFileProcessing ? "Đang xử lý PDF..." : isUploading ? "Đang upload file..." : "Đang xử lý yêu cầu..."}

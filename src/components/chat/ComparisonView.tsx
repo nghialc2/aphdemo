@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { useSession } from "@/context/SessionContext";
 import { useCompare } from "@/context/CompareContext";
@@ -7,6 +6,10 @@ import { Message, Model } from "@/types";
 import { GitCompareArrows, Send } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import FileUpload from "./FileUpload";
+import { useFileUpload } from "@/hooks/useFileUpload";
+import { useToast } from "@/hooks/use-toast";
+import FileDisplay from "./FileDisplay";
 
 interface ComparisonViewProps {
   leftMessages: Message[];
@@ -14,180 +17,768 @@ interface ComparisonViewProps {
 }
 
 const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) => {
-  const { availableModels } = useSession();
+  const { availableModels, updateExtractContent, getExtractContent, currentSession } = useSession();
   const { leftModelId, rightModelId } = useCompare();
   const { sendComparisonMessage, isProcessing } = useSession();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const leftColumnRef = useRef<HTMLDivElement>(null);
+  const rightColumnRef = useRef<HTMLDivElement>(null);
+  const commonAreaRef = useRef<HTMLDivElement>(null);
+  const leftMessagesEndRef = useRef<HTMLDivElement>(null);
+  const rightMessagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+  
+  // Track message counts for auto-scrolling
+  const [leftMessageCount, setLeftMessageCount] = useState(0);
+  const [prevLeftMessageCount, setPrevLeftMessageCount] = useState(0);
+  const [rightMessageCount, setRightMessageCount] = useState(0);
+  const [prevRightMessageCount, setPrevRightMessageCount] = useState(0);
+  
+  // Refs for drop zones
+  const leftColumnDivRef = useRef<HTMLDivElement>(null);
+  const rightColumnDivRef = useRef<HTMLDivElement>(null);
+  const commonAreaDivRef = useRef<HTMLDivElement>(null);
+  
+  // Drag states
+  const [leftDragOver, setLeftDragOver] = useState(false);
+  const [rightDragOver, setRightDragOver] = useState(false);
+  const [commonDragOver, setCommonDragOver] = useState(false);
   
   // State for separate input fields
   const [leftInput, setLeftInput] = useState("");
   const [rightInput, setRightInput] = useState("");
+  const [commonInput, setCommonInput] = useState("");
+  
+  // Update message counts
+  useEffect(() => {
+    if (leftMessages) {
+      const newCount = leftMessages.length;
+      if (newCount !== leftMessageCount) {
+        setPrevLeftMessageCount(leftMessageCount);
+        setLeftMessageCount(newCount);
+      }
+    }
+  }, [leftMessages, leftMessageCount]);
+  
+  useEffect(() => {
+    if (rightMessages) {
+      const newCount = rightMessages.length;
+      if (newCount !== rightMessageCount) {
+        setPrevRightMessageCount(rightMessageCount);
+        setRightMessageCount(newCount);
+      }
+    }
+  }, [rightMessages, rightMessageCount]);
+  
+  // Auto-scroll effects
+  useEffect(() => {
+    // Only scroll when new messages arrive
+    if (leftMessageCount > prevLeftMessageCount && leftMessagesEndRef.current) {
+      console.log("Scrolling left column to bottom due to new message");
+      leftMessagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [leftMessageCount, prevLeftMessageCount]);
+  
+  useEffect(() => {
+    // Only scroll when new messages arrive
+    if (rightMessageCount > prevRightMessageCount && rightMessagesEndRef.current) {
+      console.log("Scrolling right column to bottom due to new message");
+      rightMessagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [rightMessageCount, prevRightMessageCount]);
+  
+  // Ensure URL hash is set for comparison mode
+  useEffect(() => {
+    if (window.location.hash !== '#comparison') {
+      window.location.hash = 'comparison';
+    }
+  }, []);
+  
+  // File upload states
+  // Left model files
+  const {
+    selectedFiles: selectedLeftFiles,
+    uploadedFiles: uploadedLeftFiles,
+    isUploading: isUploadingLeft,
+    isProcessing: isProcessingLeft,
+    addFiles: addLeftFiles,
+    removeFile: removeLeftFile,
+    clearFiles: clearLeftFiles,
+    uploadFiles: uploadLeftFiles,
+  } = useFileUpload();
+  
+  // Right model files
+  const {
+    selectedFiles: selectedRightFiles,
+    uploadedFiles: uploadedRightFiles,
+    isUploading: isUploadingRight,
+    isProcessing: isProcessingRight,
+    addFiles: addRightFiles,
+    removeFile: removeRightFile,
+    clearFiles: clearRightFiles,
+    uploadFiles: uploadRightFiles,
+  } = useFileUpload();
+  
+  // Common files (for both models)
+  const {
+    selectedFiles: selectedCommonFiles,
+    uploadedFiles: uploadedCommonFiles,
+    isUploading: isUploadingCommon,
+    isProcessing: isProcessingCommon,
+    addFiles: addCommonFiles,
+    removeFile: removeCommonFile,
+    clearFiles: clearCommonFiles,
+    uploadFiles: uploadCommonFiles,
+  } = useFileUpload();
   
   // Find model names for display
   const leftModel = availableModels.find(m => m.id === leftModelId) || { name: "Model A" } as Model;
   const rightModel = availableModels.find(m => m.id === rightModelId) || { name: "Model B" } as Model;
   
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [leftMessages, rightMessages]);
+  // Handle drag over for left column
+  const handleLeftDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setLeftDragOver(true);
+  };
   
-  // Make sure we have valid arrays to work with
-  const safeLeftMessages = Array.isArray(leftMessages) ? leftMessages : [];
-  const safeRightMessages = Array.isArray(rightMessages) ? rightMessages : [];
+  const handleLeftDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (!leftColumnRef.current?.contains(e.relatedTarget as Node)) {
+      setLeftDragOver(false);
+    }
+  };
+  
+  const handleLeftDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setLeftDragOver(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      addLeftFiles(files);
+    }
+  };
+  
+  // Handle drag over for right column
+  const handleRightDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setRightDragOver(true);
+  };
+  
+  const handleRightDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (!rightColumnRef.current?.contains(e.relatedTarget as Node)) {
+      setRightDragOver(false);
+    }
+  };
+  
+  const handleRightDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setRightDragOver(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      addRightFiles(files);
+    }
+  };
+  
+  // Handle drag over for common area
+  const handleCommonDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setCommonDragOver(true);
+  };
+  
+  const handleCommonDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (!commonAreaRef.current?.contains(e.relatedTarget as Node)) {
+      setCommonDragOver(false);
+    }
+  };
+  
+  const handleCommonDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCommonDragOver(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      addCommonFiles(files);
+    }
+  };
   
   // Handle submitting messages for each side
   const handleLeftSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (leftInput.trim() === "") return;
+    if (leftInput.trim() === "" && selectedLeftFiles.length === 0) return;
     
-    await sendComparisonMessage(leftInput, leftModelId, null, "");
-    setLeftInput("");
+    if (!currentSession) return;
+    
+    try {
+      let messageContent = leftInput;
+      let filesProcessed = false;
+      
+      // Process files if any
+      if (selectedLeftFiles.length > 0) {
+        console.log('Processing files for left model:', selectedLeftFiles);
+        const uploadResult = await uploadLeftFiles(currentSession.id);
+        
+        if (uploadResult.files.length > 0) {
+          filesProcessed = true;
+          // Create file info for display in chat
+          const fileInfo = uploadResult.files.map(f => `[File: ${f.name}]`).join(' ');
+          
+          // Update message content for display (include file info)
+          messageContent = leftInput.trim() ? 
+            `${leftInput}\n\n${fileInfo}` : 
+            `${fileInfo}`;
+          
+          // Store extracted content in session storage
+          if (uploadResult.extractedContent && uploadResult.extractedContent.length > 0) {
+            try {
+              // Store extracted content
+              updateExtractContent(currentSession.id, uploadResult.extractedContent);
+              
+              // Force a small delay to ensure extract content is saved
+              await new Promise(resolve => setTimeout(resolve, 100));
+              
+              // Double check the extract content was saved correctly
+              const savedContent = getExtractContent(currentSession.id);
+              console.log('Verified saved content length:', savedContent.length);
+              
+              // Count PDF files
+              const pdfFiles = uploadResult.files.filter(f => f.type === 'application/pdf');
+              
+              toast({
+                title: `Đã xử lý ${uploadResult.files.length} file`,
+                description: `Đã trích xuất ${uploadResult.extractedContent.length.toLocaleString()} ký tự từ ${pdfFiles.length} file PDF`,
+              });
+            } catch (error) {
+              console.error('Error saving extracted content:', error);
+              toast({
+                title: "Lỗi lưu trữ",
+                description: "Không thể lưu trữ nội dung được trích xuất từ PDF",
+                variant: "destructive",
+              });
+            }
+          }
+        }
+      }
+      
+      // Small delay to ensure state updates have been processed
+      if (filesProcessed) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+      
+      // Verify extract content before sending
+      const extractContent = getExtractContent(currentSession.id);
+      console.log('Extract content available:', Boolean(extractContent));
+      console.log('Extract content length:', extractContent ? extractContent.length : 0);
+      
+      // Always trim the message content to avoid empty messages
+      messageContent = messageContent.trim();
+      
+      // Don't send empty messages
+      if (!messageContent) {
+        console.log('No message content to send after processing');
+        return;
+      }
+      
+      await sendComparisonMessage(messageContent, leftModelId, null, "");
+      setLeftInput("");
+      clearLeftFiles();
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast({
+        title: "Lỗi",
+        description: "Không thể gửi tin nhắn. Vui lòng thử lại.",
+        variant: "destructive",
+      });
+    }
   };
   
   const handleRightSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (rightInput.trim() === "") return;
+    if (rightInput.trim() === "" && selectedRightFiles.length === 0) return;
     
-    await sendComparisonMessage(rightInput, null, rightModelId, "");
-    setRightInput("");
+    if (!currentSession) return;
+    
+    try {
+      let messageContent = rightInput;
+      let filesProcessed = false;
+      
+      // Process files if any
+      if (selectedRightFiles.length > 0) {
+        console.log('Processing files for right model:', selectedRightFiles);
+        const uploadResult = await uploadRightFiles(currentSession.id);
+        
+        if (uploadResult.files.length > 0) {
+          filesProcessed = true;
+          // Create file info for display in chat
+          const fileInfo = uploadResult.files.map(f => `[File: ${f.name}]`).join(' ');
+          
+          // Update message content for display (include file info)
+          messageContent = rightInput.trim() ? 
+            `${rightInput}\n\n${fileInfo}` : 
+            `${fileInfo}`;
+          
+          // Store extracted content in session storage
+          if (uploadResult.extractedContent && uploadResult.extractedContent.length > 0) {
+            try {
+              // Store extracted content
+              updateExtractContent(currentSession.id, uploadResult.extractedContent);
+              
+              // Force a small delay to ensure extract content is saved
+              await new Promise(resolve => setTimeout(resolve, 100));
+              
+              // Double check the extract content was saved correctly
+              const savedContent = getExtractContent(currentSession.id);
+              console.log('Verified saved content length:', savedContent.length);
+              
+              // Count PDF files
+              const pdfFiles = uploadResult.files.filter(f => f.type === 'application/pdf');
+              
+              toast({
+                title: `Đã xử lý ${uploadResult.files.length} file`,
+                description: `Đã trích xuất ${uploadResult.extractedContent.length.toLocaleString()} ký tự từ ${pdfFiles.length} file PDF`,
+              });
+            } catch (error) {
+              console.error('Error saving extracted content:', error);
+              toast({
+                title: "Lỗi lưu trữ",
+                description: "Không thể lưu trữ nội dung được trích xuất từ PDF",
+                variant: "destructive",
+              });
+            }
+          }
+        }
+      }
+      
+      // Small delay to ensure state updates have been processed
+      if (filesProcessed) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+      
+      // Verify extract content before sending
+      const extractContent = getExtractContent(currentSession.id);
+      console.log('Extract content available:', Boolean(extractContent));
+      console.log('Extract content length:', extractContent ? extractContent.length : 0);
+      
+      // Always trim the message content to avoid empty messages
+      messageContent = messageContent.trim();
+      
+      // Don't send empty messages
+      if (!messageContent) {
+        console.log('No message content to send after processing');
+        return;
+      }
+      
+      await sendComparisonMessage(messageContent, null, rightModelId, "");
+      setRightInput("");
+      clearRightFiles();
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast({
+        title: "Lỗi",
+        description: "Không thể gửi tin nhắn. Vui lòng thử lại.",
+        variant: "destructive",
+      });
+    }
   };
   
+  // Handle submitting common message to both models
+  const handleCommonSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (commonInput.trim() === "" && selectedCommonFiles.length === 0) {
+      toast({
+        title: "Lỗi",
+        description: "Vui lòng nhập tin nhắn hoặc chọn file",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!currentSession) return;
+    
+    try {
+      let messageContent = commonInput;
+      let filesProcessed = false;
+      
+      // Process files if any
+      if (selectedCommonFiles.length > 0) {
+        console.log('Processing files for both models:', selectedCommonFiles);
+        const uploadResult = await uploadCommonFiles(currentSession.id);
+        
+        if (uploadResult.files.length > 0) {
+          filesProcessed = true;
+          // Create file info for display in chat
+          const fileInfo = uploadResult.files.map(f => `[File: ${f.name}]`).join(' ');
+          
+          // Update message content for display (include file info)
+          messageContent = commonInput.trim() ? 
+            `${commonInput}\n\n${fileInfo}` : 
+            `${fileInfo}`;
+          
+          // Store extracted content in session storage
+          if (uploadResult.extractedContent && uploadResult.extractedContent.length > 0) {
+            try {
+              console.log('Extracted content length:', uploadResult.extractedContent.length);
+              console.log('Storing extracted content in session:', uploadResult.extractedContent.substring(0, 200) + '...');
+              
+              // Store extracted content
+              updateExtractContent(currentSession.id, uploadResult.extractedContent);
+              
+              // Force a small delay to ensure extract content is saved
+              await new Promise(resolve => setTimeout(resolve, 100));
+              
+              // Double check the extract content was saved correctly
+              const savedContent = getExtractContent(currentSession.id);
+              console.log('Verified saved content length:', savedContent.length);
+              
+              // Count PDF files
+              const pdfFiles = uploadResult.files.filter(f => f.type === 'application/pdf');
+              
+              toast({
+                title: `Đã xử lý ${uploadResult.files.length} file`,
+                description: `Đã trích xuất ${uploadResult.extractedContent.length.toLocaleString()} ký tự từ ${pdfFiles.length} file PDF`,
+              });
+            } catch (error) {
+              console.error('Error saving extracted content:', error);
+              toast({
+                title: "Lỗi lưu trữ",
+                description: "Không thể lưu trữ nội dung được trích xuất từ PDF",
+                variant: "destructive",
+              });
+            }
+          } else {
+            console.log('No extracted content available from upload result');
+          }
+        }
+      }
+      
+      // Small delay to ensure state updates have been processed
+      if (filesProcessed) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+      
+      // Verify and log extract content before sending
+      const extractContent = getExtractContent(currentSession.id);
+      console.log('Extract content available:', Boolean(extractContent));
+      console.log('Extract content length:', extractContent ? extractContent.length : 0);
+      if (extractContent && extractContent.length > 0) {
+        console.log('First 200 chars of extract content:', extractContent.substring(0, 200) + '...');
+      }
+      
+      // Always trim the message content to avoid empty messages
+      messageContent = messageContent.trim();
+      
+      // Don't send empty messages
+      if (!messageContent) {
+        console.log('No message content to send after processing');
+        return;
+      }
+      
+      await sendComparisonMessage(messageContent, leftModelId, rightModelId, "");
+      setCommonInput("");
+      clearCommonFiles();
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast({
+        title: "Lỗi",
+        description: "Không thể gửi tin nhắn. Vui lòng thử lại.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
-    <div className="grid grid-cols-2 gap-2 h-full">
-      {/* Left Model Column */}
-      <div className="border-r pr-2 flex flex-col h-full">
-        <div className="sticky top-0 bg-white p-2 mb-2 z-10 flex items-center justify-center">
-          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-            {leftModel.name}
-          </span>
-        </div>
-        <div className="overflow-y-auto flex-1 py-4 px-2">
-          {safeLeftMessages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center p-4">
-              <div className="mb-2 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <GitCompareArrows className="h-6 w-6 text-blue-600" />
+    <div className="flex flex-col h-full">
+      <div className="grid grid-cols-2 gap-2 flex-1 overflow-hidden">
+        {/* Left Model Column */}
+        <div 
+          ref={leftColumnRef}
+          className={cn(
+            "border-r pr-2 flex flex-col h-full relative",
+            leftDragOver && "bg-blue-50"
+          )}
+          onDragOver={handleLeftDragOver}
+          onDragLeave={handleLeftDragLeave}
+          onDrop={handleLeftDrop}
+        >
+          {/* Drag overlay for left column */}
+          {leftDragOver && (
+            <div className="absolute inset-0 bg-blue-500/10 border-2 border-dashed border-blue-500 z-50 flex items-center justify-center">
+              <div className="bg-white rounded-lg p-4 shadow-lg text-center">
+                <p className="text-blue-600 font-medium">Thả file vào đây</p>
+                <p className="text-xs text-blue-500">Gửi đến {leftModel.name}</p>
               </div>
-              <p className="text-gray-500 text-sm mt-2">
-                Nhắn tin để bắt đầu trò chuyện với {leftModel.name}
-              </p>
             </div>
-          ) : (
-            safeLeftMessages.map((message) => (
-              <div 
-                key={message.id} 
-                className={cn(
-                  "chat-message mb-4",
-                  message.role === "user" ? "user-message" : "assistant-message"
-                )}
-              >
-                <div className="flex items-start">
-                  <div className={cn(
-                    "w-6 h-6 rounded-full mr-3 flex-shrink-0 flex items-center justify-center",
-                    message.role === "user" ? "bg-fpt-orange" : "bg-fpt-blue"
-                  )}>
-                    <span className="text-xs text-white font-bold">
-                      {message.role === "user" ? "U" : "L"}
-                    </span>
+          )}
+          
+          <div className="sticky top-0 bg-white p-2 mb-2 z-10 flex items-center justify-center">
+            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+              {leftModel.name}
+            </span>
+          </div>
+          <div 
+            className="overflow-y-auto flex-1 py-4 px-2"
+          >
+            <div className="h-full overflow-y-auto pr-1">
+              {leftMessages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                  <div className="mb-2 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                    <GitCompareArrows className="h-6 w-6 text-blue-600" />
                   </div>
-                  <div className="space-y-1 flex-1">
-                    <p className="text-xs font-medium text-gray-500">
-                      {message.role === "user" ? "Bạn" : leftModel.name}
-                    </p>
-                    <div className="message-content whitespace-pre-wrap">
-                      {message.content}
+                  <p className="text-gray-500 text-sm mt-2">
+                    Nhắn tin để bắt đầu trò chuyện với {leftModel.name}
+                  </p>
+                </div>
+              ) : (
+                leftMessages.map((message) => (
+                  <div 
+                    key={message.id} 
+                    className={cn(
+                      "chat-message mb-4",
+                      message.role === "user" ? "user-message" : "assistant-message"
+                    )}
+                  >
+                    <div className="flex items-start">
+                      <div className={cn(
+                        "w-6 h-6 rounded-full mr-3 flex-shrink-0 flex items-center justify-center",
+                        message.role === "user" ? "bg-fpt-orange" : "bg-fpt-blue"
+                      )}>
+                        <span className="text-xs text-white font-bold">
+                          {message.role === "user" ? "U" : "L"}
+                        </span>
+                      </div>
+                      <div className="space-y-1 flex-1">
+                        <p className="text-xs font-medium text-gray-500">
+                          {message.role === "user" ? "Bạn" : leftModel.name}
+                        </p>
+                        <div className="message-content whitespace-pre-wrap">
+                          {/* Display files if any */}
+                          {message.hasFiles && message.fileNames && message.fileNames.length > 0 && (
+                            <div className="mb-3 space-y-2">
+                              {message.fileNames.map((fileName, index) => (
+                                <FileDisplay 
+                                  key={`${message.id}-file-${index}`}
+                                  fileName={fileName}
+                                  isProcessed={fileName.toLowerCase().endsWith('.pdf')}
+                                />
+                              ))}
+                            </div>
+                          )}
+                          
+                          {/* Display message content (excluding file info) */}
+                          {message.content && (
+                            <div className="whitespace-pre-wrap">
+                              {/* Strip any [File: filename.pdf] text from displayed content */}
+                              {message.content.replace(/\[File: .*?\]/g, '').trim()}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-        <div className="border-t border-gray-200 p-4 bg-white mt-auto">
-          <form onSubmit={handleLeftSubmit} className="flex space-x-2">
-            <Input
-              value={leftInput}
-              onChange={(e) => setLeftInput(e.target.value)}
-              placeholder={`Nhắn tin với ${leftModel.name}...`}
-              disabled={isProcessing}
-              className="flex-1"
+                ))
+              )}
+              <div ref={leftMessagesEndRef} style={{ height: '1px', marginTop: '20px' }} />
+            </div>
+          </div>
+          <div className="border-t border-gray-200 p-4 bg-white mt-auto">
+            <FileUpload
+              onFileSelect={addLeftFiles}
+              selectedFiles={selectedLeftFiles}
+              onRemoveFile={removeLeftFile}
+              disabled={isProcessing || isUploadingLeft || isProcessingLeft}
             />
-            <Button 
-              type="submit" 
-              disabled={isProcessing || leftInput.trim() === ""}
-            >
-              <Send className="h-4 w-4 mr-2" />
-              Gửi
-            </Button>
-          </form>
+            <form onSubmit={handleLeftSubmit} className="flex space-x-2 mt-2">
+              <Input
+                value={leftInput}
+                onChange={(e) => setLeftInput(e.target.value)}
+                placeholder={`Nhắn tin với ${leftModel.name}...`}
+                disabled={isProcessing || isUploadingLeft || isProcessingLeft}
+                className="flex-1"
+              />
+              <Button 
+                type="submit" 
+                disabled={isProcessing || isUploadingLeft || isProcessingLeft || (leftInput.trim() === "" && selectedLeftFiles.length === 0)}
+              >
+                <Send className="h-4 w-4 mr-2" />
+                Gửi
+              </Button>
+            </form>
+          </div>
+        </div>
+        
+        {/* Right Model Column */}
+        <div 
+          ref={rightColumnRef}
+          className={cn(
+            "pl-2 flex flex-col h-full relative",
+            rightDragOver && "bg-green-50"
+          )}
+          onDragOver={handleRightDragOver}
+          onDragLeave={handleRightDragLeave}
+          onDrop={handleRightDrop}
+        >
+          {/* Drag overlay for right column */}
+          {rightDragOver && (
+            <div className="absolute inset-0 bg-green-500/10 border-2 border-dashed border-green-500 z-50 flex items-center justify-center">
+              <div className="bg-white rounded-lg p-4 shadow-lg text-center">
+                <p className="text-green-600 font-medium">Thả file vào đây</p>
+                <p className="text-xs text-green-500">Gửi đến {rightModel.name}</p>
+              </div>
+            </div>
+          )}
+          
+          <div className="sticky top-0 bg-white p-2 mb-2 z-10 flex items-center justify-center">
+            <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+              {rightModel.name}
+            </span>
+          </div>
+          <div 
+            className="overflow-y-auto flex-1 py-4 px-2"
+          >
+            <div className="h-full overflow-y-auto pr-1">
+              {rightMessages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                  <div className="mb-2 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                    <GitCompareArrows className="h-6 w-6 text-green-600" />
+                  </div>
+                  <p className="text-gray-500 text-sm mt-2">
+                    Nhắn tin để bắt đầu trò chuyện với {rightModel.name}
+                  </p>
+                </div>
+              ) : (
+                rightMessages.map((message) => (
+                  <div 
+                    key={message.id} 
+                    className={cn(
+                      "chat-message mb-4",
+                      message.role === "user" ? "user-message" : "assistant-message"
+                    )}
+                  >
+                    <div className="flex items-start">
+                      <div className={cn(
+                        "w-6 h-6 rounded-full mr-3 flex-shrink-0 flex items-center justify-center",
+                        message.role === "user" ? "bg-fpt-orange" : "bg-green-600"
+                      )}>
+                        <span className="text-xs text-white font-bold">
+                          {message.role === "user" ? "U" : "R"}
+                        </span>
+                      </div>
+                      <div className="space-y-1 flex-1">
+                        <p className="text-xs font-medium text-gray-500">
+                          {message.role === "user" ? "Bạn" : rightModel.name}
+                        </p>
+                        <div className="message-content whitespace-pre-wrap">
+                          {/* Display files if any */}
+                          {message.hasFiles && message.fileNames && message.fileNames.length > 0 && (
+                            <div className="mb-3 space-y-2">
+                              {message.fileNames.map((fileName, index) => (
+                                <FileDisplay 
+                                  key={`${message.id}-file-${index}`}
+                                  fileName={fileName}
+                                  isProcessed={fileName.toLowerCase().endsWith('.pdf')}
+                                />
+                              ))}
+                            </div>
+                          )}
+                          
+                          {/* Display message content (excluding file info) */}
+                          {message.content && (
+                            <div className="whitespace-pre-wrap">
+                              {/* Strip any [File: filename.pdf] text from displayed content */}
+                              {message.content.replace(/\[File: .*?\]/g, '').trim()}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+              <div ref={rightMessagesEndRef} style={{ height: '1px', marginTop: '20px' }} />
+            </div>
+          </div>
+          <div className="border-t border-gray-200 p-4 bg-white mt-auto">
+            <FileUpload
+              onFileSelect={addRightFiles}
+              selectedFiles={selectedRightFiles}
+              onRemoveFile={removeRightFile}
+              disabled={isProcessing || isUploadingRight || isProcessingRight}
+            />
+            <form onSubmit={handleRightSubmit} className="flex space-x-2 mt-2">
+              <Input
+                value={rightInput}
+                onChange={(e) => setRightInput(e.target.value)}
+                placeholder={`Nhắn tin với ${rightModel.name}...`}
+                disabled={isProcessing || isUploadingRight || isProcessingRight}
+                className="flex-1"
+              />
+              <Button 
+                type="submit" 
+                disabled={isProcessing || isUploadingRight || isProcessingRight || (rightInput.trim() === "" && selectedRightFiles.length === 0)}
+              >
+                <Send className="h-4 w-4 mr-2" />
+                Gửi
+              </Button>
+            </form>
+          </div>
         </div>
       </div>
       
-      {/* Right Model Column */}
-      <div className="pl-2 flex flex-col h-full">
-        <div className="sticky top-0 bg-white p-2 mb-2 z-10 flex items-center justify-center">
-          <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-            {rightModel.name}
+      {/* Common input for both models */}
+      <div 
+        ref={commonAreaRef}
+        className={cn(
+          "border-t border-gray-200 p-4 mt-4 bg-gray-50 relative",
+          commonDragOver && "bg-purple-50"
+        )}
+        onDragOver={handleCommonDragOver}
+        onDragLeave={handleCommonDragLeave}
+        onDrop={handleCommonDrop}
+      >
+        {/* Drag overlay for common area */}
+        {commonDragOver && (
+          <div className="absolute inset-0 bg-purple-500/10 border-2 border-dashed border-purple-500 z-50 flex items-center justify-center">
+            <div className="bg-white rounded-lg p-4 shadow-lg text-center">
+              <p className="text-purple-600 font-medium">Thả file vào đây</p>
+              <p className="text-xs text-purple-500">Gửi đến cả hai model</p>
+            </div>
+          </div>
+        )}
+        
+        <div className="text-center mb-2">
+          <span className="text-sm font-medium bg-purple-100 text-purple-800 px-3 py-1 rounded-full">
+            Nhắn tin đến cả hai model
           </span>
         </div>
-        <div className="overflow-y-auto flex-1 py-4 px-2">
-          {safeRightMessages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center p-4">
-              <div className="mb-2 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <GitCompareArrows className="h-6 w-6 text-green-600" />
-              </div>
-              <p className="text-gray-500 text-sm mt-2">
-                Nhắn tin để bắt đầu trò chuyện với {rightModel.name}
-              </p>
-            </div>
-          ) : (
-            safeRightMessages.map((message) => (
-              <div 
-                key={message.id} 
-                className={cn(
-                  "chat-message mb-4",
-                  message.role === "user" ? "user-message" : "assistant-message"
-                )}
-              >
-                <div className="flex items-start">
-                  <div className={cn(
-                    "w-6 h-6 rounded-full mr-3 flex-shrink-0 flex items-center justify-center",
-                    message.role === "user" ? "bg-fpt-orange" : "bg-green-600"
-                  )}>
-                    <span className="text-xs text-white font-bold">
-                      {message.role === "user" ? "U" : "R"}
-                    </span>
-                  </div>
-                  <div className="space-y-1 flex-1">
-                    <p className="text-xs font-medium text-gray-500">
-                      {message.role === "user" ? "Bạn" : rightModel.name}
-                    </p>
-                    <div className="message-content whitespace-pre-wrap">
-                      {message.content}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-        <div className="border-t border-gray-200 p-4 bg-white mt-auto">
-          <form onSubmit={handleRightSubmit} className="flex space-x-2">
-            <Input
-              value={rightInput}
-              onChange={(e) => setRightInput(e.target.value)}
-              placeholder={`Nhắn tin với ${rightModel.name}...`}
-              disabled={isProcessing}
-              className="flex-1"
-            />
-            <Button 
-              type="submit" 
-              disabled={isProcessing || rightInput.trim() === ""}
-            >
-              <Send className="h-4 w-4 mr-2" />
-              Gửi
-            </Button>
-          </form>
-        </div>
+        <FileUpload
+          onFileSelect={addCommonFiles}
+          selectedFiles={selectedCommonFiles}
+          onRemoveFile={removeCommonFile}
+          disabled={isProcessing || isUploadingCommon || isProcessingCommon}
+        />
+        <form onSubmit={handleCommonSubmit} className="flex space-x-2 mt-2">
+          <Input
+            value={commonInput}
+            onChange={(e) => setCommonInput(e.target.value)}
+            placeholder="Nhập tin nhắn gửi đến cả hai model..."
+            disabled={isProcessing || isUploadingCommon || isProcessingCommon}
+            className="flex-1"
+          />
+          <Button 
+            type="submit" 
+            variant="default"
+            disabled={isProcessing || isUploadingCommon || isProcessingCommon || (commonInput.trim() === "" && selectedCommonFiles.length === 0)}
+          >
+            <Send className="h-4 w-4 mr-2" />
+            Gửi
+          </Button>
+        </form>
       </div>
       <div ref={messagesEndRef} />
     </div>

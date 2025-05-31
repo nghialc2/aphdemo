@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/context/SessionContext";
 import { useCompare } from "@/context/CompareContext";
@@ -18,10 +17,16 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelect }) => {
     getComparisonMessages
   } = useSession();
   
-  const { isCompareMode } = useCompare();
+  const { isCompareMode, toggleCompareMode } = useCompare();
   
   const handleSelectSession = (sessionId: string) => {
+    // Get the session to check if it's a comparison session
+    const session = sessions.find(s => s.id === sessionId);
+    
+    // First select the session - this will update URL hash
     selectSession(sessionId);
+    
+    // Close the sidebar if needed
     onSelect?.();
   };
   
@@ -32,6 +37,24 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelect }) => {
   
   // Sort sessions by most recent first
   const sortedSessions = [...sessions].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  
+  // Filter sessions to only show those with messages or the current session
+  const filteredSessions = sortedSessions.filter(session => {
+    // Always show current session
+    if (currentSession && session.id === currentSession.id) return true;
+    
+    // For comparison sessions, check comparison messages
+    if (session.isComparisonMode) {
+      const comparisonData = getComparisonMessages(session.id);
+      const totalComparisonMessages = 
+        (comparisonData?.leftMessages?.length || 0) + 
+        (comparisonData?.rightMessages?.length || 0);
+      return totalComparisonMessages > 0;
+    }
+    
+    // For regular sessions, check messages array
+    return session.messages.length > 0;
+  });
   
   return (
     <div className="space-y-4">
@@ -48,21 +71,25 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelect }) => {
         </Button>
       </div>
       
-      {sortedSessions.length === 0 ? (
+      {filteredSessions.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
           No conversation history yet
         </div>
       ) : (
         <div className="space-y-2">
-          {sortedSessions.map((session) => {
+          {filteredSessions.map((session) => {
             // Get comparison messages for this session
             const comparisonData = getComparisonMessages(session.id);
             const totalComparisonMessages = 
               (comparisonData?.leftMessages?.length || 0) + 
               (comparisonData?.rightMessages?.length || 0);
             
-            // Determine if this is a comparison session
-            const isComparisonSession = totalComparisonMessages > 0;
+            // Determine if this is a comparison session by either:
+            // 1. Having comparison messages
+            // 2. Having the isComparisonMode flag set
+            const isComparisonSession = 
+              totalComparisonMessages > 0 || 
+              session.isComparisonMode === true;
             
             // Get the accurate message count
             const messageCount = isComparisonSession 

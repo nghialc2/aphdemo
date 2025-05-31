@@ -1,4 +1,3 @@
-
 import { useState, useRef, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -71,7 +70,7 @@ const FileUpload = ({ onFileSelect, selectedFiles, onRemoveFile, disabled }: Fil
       return <Image className="h-4 w-4" />;
     }
     if (file.type === 'application/pdf') {
-      return <FileText className="h-4 w-4" />;
+      return <FileText className="h-4 w-4 text-red-500" />;
     }
     return <File className="h-4 w-4" />;
   };
@@ -84,15 +83,53 @@ const FileUpload = ({ onFileSelect, selectedFiles, onRemoveFile, disabled }: Fil
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  // Count file types
+  const pdfFiles = selectedFiles.filter(file => file.type === 'application/pdf');
+  const imageFiles = selectedFiles.filter(file => file.type.startsWith('image/'));
+  const otherFiles = selectedFiles.filter(file => 
+    !file.type.startsWith('image/') && file.type !== 'application/pdf'
+  );
+
   return (
     <div className="space-y-2">
+      {/* File stats summary */}
+      {selectedFiles.length > 0 && (
+        <div className="flex items-center gap-2 mb-2">
+          {pdfFiles.length > 0 && (
+            <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded">
+              {pdfFiles.length} PDF {pdfFiles.length === 1 ? 'file' : 'files'}
+            </span>
+          )}
+          {imageFiles.length > 0 && (
+            <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded">
+              {imageFiles.length} {imageFiles.length === 1 ? 'hình ảnh' : 'hình ảnh'}
+            </span>
+          )}
+          {otherFiles.length > 0 && (
+            <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded">
+              {otherFiles.length} {otherFiles.length === 1 ? 'file khác' : 'file khác'}
+            </span>
+          )}
+          {pdfFiles.length > 0 && (
+            <span className="text-xs text-green-600 ml-auto">
+              Nội dung PDF sẽ được trích xuất
+            </span>
+          )}
+        </div>
+      )}
+
       {/* File list */}
       {selectedFiles.length > 0 && (
         <div className="flex flex-wrap gap-2 p-2 bg-gray-50 rounded-lg">
           {selectedFiles.map((file, index) => (
             <div
               key={index}
-              className="flex items-center gap-2 bg-white rounded-md px-3 py-2 border border-gray-200 text-sm"
+              className={cn(
+                "flex items-center gap-2 bg-white rounded-md px-3 py-2 border text-sm",
+                file.type === 'application/pdf' 
+                  ? "border-red-200" 
+                  : "border-gray-200"
+              )}
             >
               {getFileIcon(file)}
               <span className="flex-1 truncate max-w-32">{file.name}</span>
@@ -132,6 +169,11 @@ const FileUpload = ({ onFileSelect, selectedFiles, onRemoveFile, disabled }: Fil
         >
           <Paperclip className="h-4 w-4" />
         </Button>
+        {selectedFiles.length > 0 && (
+          <span className="text-xs text-gray-500">
+            {selectedFiles.length} {selectedFiles.length === 1 ? 'file' : 'files'} đã chọn
+          </span>
+        )}
       </div>
 
       {/* Drag overlay */}

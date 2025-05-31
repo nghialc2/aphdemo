@@ -1,5 +1,4 @@
-
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Model } from "@/types";
 import { useSession } from "./SessionContext";
 
@@ -22,9 +21,34 @@ export const CompareProvider = ({ children }: { children: ReactNode }) => {
   const [rightModelId, setRightModelId] = useState(
     availableModels.length > 1 ? availableModels[1].id : (availableModels.length > 0 ? availableModels[0].id : '')
   );
+  
+  // Check URL hash on startup to determine if we're in comparison mode
+  useEffect(() => {
+    const isInComparisonMode = window.location.hash === '#comparison';
+    setIsCompareMode(isInComparisonMode);
+    
+    // Listen for hash changes
+    const handleHashChange = () => {
+      setIsCompareMode(window.location.hash === '#comparison');
+    };
+    
+    window.addEventListener('hashchange', handleHashChange);
+    
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
 
   const toggleCompareMode = () => {
-    setIsCompareMode(prev => !prev);
+    const newMode = !isCompareMode;
+    setIsCompareMode(newMode);
+    
+    // Update URL hash to reflect comparison mode
+    if (newMode) {
+      window.location.hash = 'comparison';
+    } else {
+      window.location.hash = '';
+    }
   };
 
   const setLeftModel = (modelId: string) => {

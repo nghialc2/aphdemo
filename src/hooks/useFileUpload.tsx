@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 
@@ -38,11 +37,20 @@ export const useFileUpload = () => {
 
   const extractPdfContent = async (file: File): Promise<string> => {
     try {
-      console.log('Extracting PDF content from:', file.name);
+      console.log('Extracting PDF content from:', file.name, 'Size:', file.size);
       setIsProcessing(true);
       
       // Create a more robust PDF content extraction
       const arrayBuffer = await file.arrayBuffer();
+      console.log('PDF loaded as ArrayBuffer, size:', arrayBuffer.byteLength);
+      
+      // Set a processing timeout
+      let extractionTimeout: ReturnType<typeof setTimeout> | null = null;
+      const timeoutPromise = new Promise<string>((_, reject) => {
+        extractionTimeout = setTimeout(() => {
+          reject(new Error('PDF extraction timeout after 30 seconds'));
+        }, 30000); // 30 second timeout
+      });
       
       // Try to use a simpler approach first
       try {
@@ -55,21 +63,65 @@ export const useFileUpload = () => {
           import.meta.url
         ).toString();
         
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-        let fullText = '';
+        // Race between PDF extraction and timeout
+        const extractionPromise = (async () => {
+          try {
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            console.log(`PDF document loaded successfully. Pages: ${pdf.numPages}`);
+            
+            let fullText = '';
+            const extractionStart = Date.now();
+            
+            // Limit to maximum 50 pages for performance
+            const pagesToProcess = Math.min(pdf.numPages, 50);
+            if (pdf.numPages > 50) {
+              console.warn(`PDF has ${pdf.numPages} pages, limiting to first 50 pages`);
+            }
+            
+            for (let i = 1; i <= pagesToProcess; i++) {
+              try {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items
+                  .map((item: any) => item.str)
+                  .join(' ');
+                fullText += pageText + '\n';
+                
+                // Progress update every few pages
+                if (i % 5 === 0 || i === pagesToProcess) {
+                  console.log(`Processed ${i}/${pagesToProcess} pages. Current text length: ${fullText.length}`);
+                }
+              } catch (pageError) {
+                console.error(`Error processing page ${i}:`, pageError);
+                fullText += `[Page ${i} extraction error]\n`;
+              }
+              
+              // Add a small delay between pages to prevent UI freezing
+              if (i < pagesToProcess && i % 5 === 0) {
+                await new Promise(resolve => setTimeout(resolve, 0));
+              }
+            }
+            
+            const extractionTime = Date.now() - extractionStart;
+            console.log(`PDF extraction completed in ${extractionTime}ms. Content length: ${fullText.length}`);
+            
+            // Trim and clean up text
+            const cleanedText = fullText.trim()
+              .replace(/\s+/g, ' ')  // Normalize whitespace
+              .replace(/\n\s*\n/g, '\n\n');  // Normalize multiple line breaks
+            
+            return cleanedText;
+          } catch (err) {
+            throw err;
+          }
+        })();
         
-        for (let i = 1; i <= pdf.numPages; i++) {
-          const page = await pdf.getPage(i);
-          const textContent = await page.getTextContent();
-          const pageText = textContent.items
-            .map((item: any) => item.str)
-            .join(' ');
-          fullText += pageText + '\n';
-        }
-        
-        console.log('PDF extraction successful, content length:', fullText.length);
-        return fullText.trim();
+        // Race between processing and timeout
+        const result = await Promise.race([extractionPromise, timeoutPromise]);
+        if (extractionTimeout) clearTimeout(extractionTimeout);
+        return result;
       } catch (pdfError) {
+        if (extractionTimeout) clearTimeout(extractionTimeout);
         console.error('PDF extraction failed, using fallback:', pdfError);
         // Fallback: return a placeholder text indicating file was uploaded
         return `[PDF File: ${file.name} - Content extraction failed, but file was uploaded successfully]`;
@@ -99,10 +151,101 @@ export const useFileUpload = () => {
     let allExtractedContent = '';
 
     try {
-      for (const file of selectedFiles) {
-        console.log('Processing file:', file.name, 'Type:', file.type);
+      // First, process all PDF files - prioritize extracting their content
+      const pdfFiles = selectedFiles.filter(file => file.type === 'application/pdf');
+      const otherFiles = selectedFiles.filter(file => file.type !== 'application/pdf');
+      
+      console.log(`Processing ${pdfFiles.length} PDF files and ${otherFiles.length} other files`);
+      
+      // Limit to max 5 PDF files at once for performance
+      const maxPdfToProcess = 5;
+      const pdfFilesToProcess = pdfFiles.slice(0, maxPdfToProcess);
+      if (pdfFiles.length > maxPdfToProcess) {
+        console.warn(`Limiting PDF processing to ${maxPdfToProcess} files for performance`);
+        toast({
+          title: "Giới hạn xử lý",
+          description: `Đang xử lý ${maxPdfToProcess} file PDF đầu tiên (giới hạn để tăng hiệu suất)`,
+        });
+      }
+      
+      // Process PDFs first to extract content
+      let documentIndex = 0;
+      for (const file of pdfFilesToProcess) {
+        try {
+          console.log('Processing PDF file:', file.name, 'Size:', file.size);
+          documentIndex++;
+          
+          // Create uploaded file entry
+          const uploadedFile: UploadedFile = {
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            url: '', // Will be updated after actual upload
+          };
+  
+          try {
+            const extractedContent = await extractPdfContent(file);
+            if (extractedContent) {
+              uploadedFile.extractedContent = extractedContent;
+              
+              // Add a clear document separator if not the first document
+              if (allExtractedContent) {
+                allExtractedContent += '\n\n---NEW DOCUMENT---\n\n';
+              }
+              
+              // Add formatted document header with filename
+              allExtractedContent += `[PDF ${documentIndex}: ${file.name}]\n${extractedContent}`;
+              
+              console.log('PDF content extracted successfully for:', file.name, 'Length:', extractedContent.length);
+              console.log('Combined content length so far:', allExtractedContent.length);
+              
+              toast({
+                title: "PDF đã được xử lý",
+                description: `Đã trích xuất ${extractedContent.length.toLocaleString()} ký tự từ ${file.name}`,
+              });
+            }
+          } catch (error) {
+            console.error('Error processing PDF:', error);
+            // Still add the file even if extraction fails
+            uploadedFile.extractedContent = `[PDF File: ${file.name} - Upload successful, content extraction failed]`;
+            
+            // Also add a note in the combined content
+            if (allExtractedContent) {
+              allExtractedContent += '\n\n---NEW DOCUMENT---\n\n';
+            }
+            allExtractedContent += `[PDF ${documentIndex}: ${file.name} - Content extraction failed]`;
+          }
+  
+          newUploadedFiles.push(uploadedFile);
+          
+          // Add a small delay between files to prevent UI freezing
+          await new Promise(resolve => setTimeout(resolve, 100));
+        } catch (fileError) {
+          console.error('Error processing file:', fileError);
+        }
+      }
+      
+      // Add any remaining PDF files as regular files without extraction
+      if (pdfFiles.length > maxPdfToProcess) {
+        const remainingPdfs = pdfFiles.slice(maxPdfToProcess);
+        for (const file of remainingPdfs) {
+          const uploadedFile: UploadedFile = {
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            url: '',
+          };
+          newUploadedFiles.push(uploadedFile);
+        }
+      }
+      
+      // Process other non-PDF files
+      for (const file of otherFiles) {
+        console.log('Processing non-PDF file:', file.name, 'Type:', file.type);
         
-        // Create uploaded file entry
+        // Create uploaded file entry for non-PDF file
         const uploadedFile: UploadedFile = {
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
           name: file.name,
@@ -110,45 +253,56 @@ export const useFileUpload = () => {
           size: file.size,
           url: '', // Will be updated after actual upload
         };
-
-        // If it's a PDF, extract content
-        if (file.type === 'application/pdf') {
-          try {
-            const extractedContent = await extractPdfContent(file);
-            if (extractedContent) {
-              uploadedFile.extractedContent = extractedContent;
-              allExtractedContent += extractedContent + '\n\n';
-              console.log('PDF content extracted successfully for:', file.name);
-              
-              toast({
-                title: "PDF đã được xử lý",
-                description: `Đã trích xuất nội dung từ ${file.name}`,
-              });
-            }
-          } catch (error) {
-            console.error('Error processing PDF:', error);
-            // Still add the file even if extraction fails
-            uploadedFile.extractedContent = `[PDF File: ${file.name} - Upload successful, content extraction failed]`;
-          }
-        }
-
+        
         newUploadedFiles.push(uploadedFile);
       }
 
-      setUploadedFiles(prev => [...prev, ...newUploadedFiles]);
-      setSelectedFiles([]); // Clear selected files after processing
-
-      toast({
-        title: "Thành công",
-        description: `Đã xử lý ${newUploadedFiles.length} file thành công.`,
+      // Update uploaded files state BEFORE clearing selected files
+      setUploadedFiles(prev => {
+        const updated = [...prev, ...newUploadedFiles];
+        console.log(`Updated uploaded files state with ${newUploadedFiles.length} new files, total: ${updated.length}`);
+        return updated;
       });
-
-      console.log('Upload process completed:', newUploadedFiles);
-      console.log('Total extracted content length:', allExtractedContent.length);
       
+      // Clear selected files AFTER state update
+      setSelectedFiles([]);
+
+      // Log information about the combined content
+      console.log(`Upload process completed: ${newUploadedFiles.length} files processed`);
+      console.log(`Total extracted content length: ${allExtractedContent.length}`);
+      console.log(`Content from ${pdfFilesToProcess.length} PDF files included`);
+      
+      let finalExtractedContent = allExtractedContent.trim();
+      
+      // Only limit extract content if actually needed
+      if (finalExtractedContent.length > 0) {
+        // Limit content size if needed
+        const maxLength = 100000; // ~100KB limit for extracted content
+        
+        if (finalExtractedContent.length > maxLength) {
+          finalExtractedContent = finalExtractedContent.substring(0, maxLength);
+          console.warn(`Extracted content too large (${allExtractedContent.length} chars), truncated to ${maxLength} chars`);
+          toast({
+            title: "Nội dung quá lớn",
+            description: `Nội dung trích xuất đã vượt quá giới hạn và đã bị cắt ngắn`,
+          });
+        }
+        
+        toast({
+          title: "Thành công",
+          description: `Đã xử lý ${pdfFilesToProcess.length} file PDF và trích xuất ${finalExtractedContent.length.toLocaleString()} ký tự`,
+        });
+      } else {
+        toast({
+          title: "Thành công",
+          description: `Đã xử lý ${newUploadedFiles.length} file thành công.`,
+        });
+      }
+      
+      // Ensure we always return an object with files and extractedContent
       return { 
         files: newUploadedFiles, 
-        extractedContent: allExtractedContent.trim() 
+        extractedContent: finalExtractedContent
       };
     } catch (error) {
       console.error('Upload error:', error);
