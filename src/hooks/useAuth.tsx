@@ -50,9 +50,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             });
             
             // Handle redirect after successful login
-            const urlParams = new URLSearchParams(window.location.search);
-            const redirectTo = urlParams.get('redirect');
+            // Check if there's a redirect parameter in the current URL
+            const currentUrl = new URL(window.location.href);
+            const redirectTo = currentUrl.searchParams.get('redirect');
+            
             if (redirectTo === 'app') {
+              console.log('Redirecting to APH app');
               window.location.href = '/app';
             }
           }
@@ -72,12 +75,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signInWithGoogle = async () => {
     try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const redirectTo = urlParams.get('redirect');
+      // Check if we're on a login page with redirect parameter
+      const currentUrl = new URL(window.location.href);
+      const redirectTo = currentUrl.searchParams.get('redirect');
       
-      const redirectUrl = redirectTo === 'app' 
-        ? `${window.location.origin}/login?redirect=app`
-        : window.location.origin;
+      // Construct the redirect URL to preserve the redirect parameter
+      let redirectUrl = window.location.origin;
+      if (redirectTo === 'app') {
+        redirectUrl = `${window.location.origin}/login?redirect=app`;
+      }
+
+      console.log('Signing in with Google, redirect URL:', redirectUrl);
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
