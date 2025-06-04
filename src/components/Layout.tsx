@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import Header from './Header';
 import InstructionsPanel from './InstructionsPanel';
@@ -36,9 +35,9 @@ const Layout = () => {
       <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
       
       <SidebarProvider defaultOpen={false}>
-        <div className="flex-1 flex overflow-hidden w-full">
+        <div className="flex-1 flex overflow-hidden w-full pt-[60px]">
           {isInstructionsCollapsed ? (
-            <div className="w-12 border-r border-gray-200 flex items-start justify-center pt-4">
+            <div className="w-12 border-r border-gray-200 flex items-start justify-center pt-4 overflow-y-auto">
               <Button 
                 variant="ghost" 
                 size="icon" 
@@ -68,7 +67,7 @@ const Layout = () => {
               <ResizableHandle withHandle />
               
               <ResizablePanel className="h-full relative flex">
-                <div className="flex-1 h-full overflow-hidden">
+                <div className="flex-1 h-full overflow-y-auto">
                   <ChatInterface />
                 </div>
                 
