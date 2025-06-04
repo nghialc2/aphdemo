@@ -1,4 +1,3 @@
-
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -54,9 +53,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const currentUrl = new URL(window.location.href);
             const redirectTo = currentUrl.searchParams.get('redirect');
             
-            if (redirectTo === 'app') {
-              console.log('Redirecting to APH app');
-              window.location.href = '/app';
+            if (redirectTo === 'aph-lab') {
+              console.log('Redirecting to APH lab');
+              window.location.href = '/aph-lab';
             }
           }
         }
@@ -81,8 +80,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // Construct the redirect URL to preserve the redirect parameter
       let redirectUrl = window.location.origin;
-      if (redirectTo === 'app') {
-        redirectUrl = `${window.location.origin}/login?redirect=app`;
+      if (redirectTo === 'aph-lab') {
+        redirectUrl = `${window.location.origin}/login?redirect=aph-lab`;
       }
 
       console.log('Signing in with Google, redirect URL:', redirectUrl);

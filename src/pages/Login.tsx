@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,8 +15,8 @@ const Login = () => {
     // Redirect to appropriate page if already logged in
     if (user) {
       const redirectTo = searchParams.get('redirect');
-      if (redirectTo === 'app') {
-        navigate('/app');
+      if (redirectTo === 'aph-lab') {
+        navigate('/aph-lab');
       } else {
         navigate('/');
       }

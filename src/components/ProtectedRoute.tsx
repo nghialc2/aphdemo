@@ -10,7 +10,6 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
 
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -23,12 +22,12 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login?redirect=aph-lab" replace />;
   }
 
   // Additional check for domain (redundant but safe)
   if (!user.email?.endsWith('@fsb.edu.vn')) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login?redirect=aph-lab" replace />;
   }
 
   return <>{children}</>;
