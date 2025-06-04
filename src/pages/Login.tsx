@@ -1,27 +1,33 @@
 
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import LoginPage from '@/components/ui/gaming-login';
 
 const Login = () => {
   const { user, signInWithGoogle, loading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     // Add dark class to html element
     document.documentElement.classList.add('dark');
     
-    // Redirect to home if already logged in
+    // Redirect to appropriate page if already logged in
     if (user) {
-      navigate('/');
+      const redirectTo = searchParams.get('redirect');
+      if (redirectTo === 'app') {
+        navigate('/app');
+      } else {
+        navigate('/');
+      }
     }
 
     // Cleanup function to remove dark class when component unmounts
     return () => {
       document.documentElement.classList.remove('dark');
     };
-  }, [user, navigate]);
+  }, [user, navigate, searchParams]);
 
   if (loading) {
     return (
@@ -33,6 +39,10 @@ const Login = () => {
       </div>
     );
   }
+
+  const handleGoogleLogin = async () => {
+    await signInWithGoogle();
+  };
 
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center px-4 py-12">
@@ -50,7 +60,7 @@ const Login = () => {
       <div className="relative z-20 w-full max-w-md animate-fadeIn">
         <LoginPage.LoginForm 
           onSubmit={() => {}} // Empty function since we only use Google SSO
-          onGoogleLogin={signInWithGoogle}
+          onGoogleLogin={handleGoogleLogin}
         />
       </div>
 

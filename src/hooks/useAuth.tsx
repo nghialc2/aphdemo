@@ -48,6 +48,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               title: "Đăng nhập thành công",
               description: `Chào mừng ${email}!`,
             });
+            
+            // Handle redirect after successful login
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectTo = urlParams.get('redirect');
+            if (redirectTo === 'app') {
+              window.location.href = '/app';
+            }
           }
         }
       }
@@ -65,10 +72,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signInWithGoogle = async () => {
     try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirectTo = urlParams.get('redirect');
+      
+      const redirectUrl = redirectTo === 'app' 
+        ? `${window.location.origin}/login?redirect=app`
+        : window.location.origin;
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: redirectUrl,
         }
       });
 
