@@ -32,6 +32,7 @@ const Layout = () => {
   
   return (
     <div className="flex flex-col h-screen">
+      {/* Header should always be visible */}
       <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
       
       <SidebarProvider defaultOpen={false}>
