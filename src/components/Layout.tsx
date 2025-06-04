@@ -55,18 +55,22 @@ const Layout = () => {
                 defaultSize={33} 
                 minSize={20} 
                 maxSize={60}
-                className="h-full overflow-hidden"
+                className="h-full"
               >
-                <InstructionsPanel 
-                  collapsible={true}
-                  onCollapse={() => setIsInstructionsCollapsed(true)}
-                />
+                <div className="h-full overflow-y-auto">
+                  <InstructionsPanel 
+                    collapsible={true}
+                    onCollapse={() => setIsInstructionsCollapsed(true)}
+                  />
+                </div>
               </ResizablePanel>
               
               <ResizableHandle withHandle />
               
-              <ResizablePanel className="h-full overflow-hidden relative flex">
-                <ChatInterface />
+              <ResizablePanel className="h-full relative flex">
+                <div className="flex-1 h-full overflow-hidden">
+                  <ChatInterface />
+                </div>
                 
                 <Sidebar side="right">
                   <SidebarHeader>
