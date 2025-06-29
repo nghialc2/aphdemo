@@ -1,12 +1,71 @@
 
-import React from 'react';
+import React, { useState } from 'react';
+import { Textarea } from '@/components/ui/textarea';
 
-const ExamplesContent: React.FC = () => {
+interface ExamplesContentProps {
+  isInEditMode?: boolean;
+  contentEdits?: any;
+  onContentUpdate?: (updates: any) => void;
+}
+
+const ExamplesContent: React.FC<ExamplesContentProps> = ({ isInEditMode = false, contentEdits, onContentUpdate }) => {
+  const [title, setTitle] = useState(contentEdits?.title || "Ví Dụ Về Câu Lệnh");
+  const [content, setContent] = useState(contentEdits?.content || `Nội dung về các ví dụ prompt và hướng dẫn có thể được chỉnh sửa ở đây.
+  
+Bao gồm:
+- Instruction-based Prompting
+- Structured Prompting  
+- Context-Aware Iterative Prompting
+
+Nội dung chi tiết có thể được cập nhật thông qua chế độ chỉnh sửa này.`);
+
+  const handleTitleChange = (newTitle: string) => {
+    setTitle(newTitle);
+    onContentUpdate?.({ title: newTitle });
+  };
+
+  const handleContentChange = (newContent: string) => {
+    setContent(newContent);
+    onContentUpdate?.({ content: newContent });
+  };
+
+  if (isInEditMode) {
+    return (
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Tiêu đề:</label>
+          <Textarea
+            value={title}
+            onChange={(e) => handleTitleChange(e.target.value)}
+            className="text-lg font-bold text-fpt-blue"
+            rows={1}
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Nội dung ví dụ:</label>
+          <Textarea
+            value={content}
+            onChange={(e) => handleContentChange(e.target.value)}
+            rows={20}
+            className="font-mono text-sm"
+            placeholder="Nhập nội dung ví dụ về prompt..."
+          />
+        </div>
+        
+        <div className="text-xs text-gray-500">
+          Ghi chú: Trong chế độ chỉnh sửa, bạn có thể cập nhật toàn bộ nội dung ví dụ. 
+          Nội dung sẽ hiển thị dạng văn bản thô trong chế độ này.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
         <h3 className="text-lg font-bold text-fpt-blue">
-          Ví Dụ Về Câu Lệnh
+          {title}
         </h3>
         
         <div className="bg-gray-50 p-3 rounded-md border border-gray-200">

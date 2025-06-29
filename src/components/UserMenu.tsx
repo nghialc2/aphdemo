@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdmin } from '@/context/AdminContext';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,10 +12,15 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, Shield } from 'lucide-react';
 
 const UserMenu = () => {
   const { user, signOut } = useAuth();
+  const { isAdmin, adminModeActive, toggleAdminMode } = useAdmin();
+  
+  const handleToggleClick = () => {
+    toggleAdminMode();
+  };
 
   if (!user) return null;
 
@@ -46,6 +52,22 @@ const UserMenu = () => {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {isAdmin && (
+          <>
+            <DropdownMenuItem onClick={handleToggleClick} className="cursor-pointer">
+              <Shield className={`mr-2 h-4 w-4 ${adminModeActive ? 'text-green-600' : 'text-gray-400'}`} />
+              <div className="flex flex-col">
+                <span className="font-medium">
+                  {adminModeActive ? 'Edit Mode: ON' : 'Edit Mode: OFF'}
+                </span>
+                <span className="text-xs text-gray-500">
+                  {adminModeActive ? 'Click to disable editing' : 'Click to enable editing'}
+                </span>
+              </div>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem onClick={signOut} className="cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
           <span>Đăng xuất</span>

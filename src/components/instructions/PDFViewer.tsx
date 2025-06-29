@@ -4,9 +4,7 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import { FileText, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-// Enable text and annotation layers for selectable content
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
+// CSS imports removed for better performance
 
 // Point PDF.js to local worker
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
@@ -17,23 +15,47 @@ interface PDFViewerProps {
   fallbackUrls?: string[];  // Optional backup URLs
 }
 
-// Cache storage key prefix
-const CACHE_KEY_PREFIX = 'pdf-cache-';
 
 const PDFViewer: React.FC<PDFViewerProps> = ({
   pdfUrl,
   fileName = 'document.pdf',
   fallbackUrls = [],
 }) => {
-  const [urls] = useState<string[]>([pdfUrl, ...fallbackUrls]);
+  const [urls, setUrls] = useState<string[]>([pdfUrl, ...fallbackUrls].filter(url => url));
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentUrl = urls[currentIndex];
+
+  // Track previous primary URL to avoid unnecessary resets
+  const prevPrimaryUrlRef = useRef<string>('');
+  
+  // Update URLs when props change
+  useEffect(() => {
+    const newUrls = [pdfUrl, ...fallbackUrls].filter(url => url && url.trim() !== '');
+    const newPrimaryUrl = newUrls[0] || '';
+    
+    console.log('📄 PDFViewer updating URLs:', newUrls);
+    console.log('📄 Primary URL changed?', newPrimaryUrl !== prevPrimaryUrlRef.current, 'from:', prevPrimaryUrlRef.current, 'to:', newPrimaryUrl);
+    
+    // Check if the primary URL actually changed (not just a state update)
+    const primaryUrlChanged = newPrimaryUrl !== prevPrimaryUrlRef.current;
+    
+    setUrls(newUrls);
+    setCurrentIndex(0);
+    setHasError(false);
+    setPage(1);
+    
+    // Only reset numPages if the primary URL actually changed
+    if (primaryUrlChanged) {
+      console.log('📄 Resetting numPages due to URL change');
+      setNumPages(0);
+      prevPrimaryUrlRef.current = newPrimaryUrl;
+    }
+  }, [pdfUrl, fallbackUrls]);
 
   const [numPages, setNumPages] = useState<number>(0);
   const [page, setPage] = useState(1);
   const [hasError, setHasError] = useState(false);
   const [scale, setScale] = useState(1);
-  const [pdfData, setPdfData] = useState<ArrayBuffer | null>(null);
   
   // Refs for panning functionality
   const containerRef = useRef<HTMLDivElement>(null);
@@ -42,107 +64,46 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [startPanPosition, setStartPanPosition] = useState({ x: 0, y: 0 });
 
-  // Improved PDF caching with memory cache and localStorage
-  const pdfCache = useRef<Map<string, ArrayBuffer>>(new Map());
-
-  // Check cache and fetch PDF - optimized version
+  // Simple PDF loading - no heavy caching
   useEffect(() => {
-    const cacheKey = `${CACHE_KEY_PREFIX}${currentUrl}`;
-    
-    const fetchAndCachePDF = async () => {
-      try {
-        // First check memory cache (fastest)
-        if (pdfCache.current.has(currentUrl)) {
-          console.log('Loading PDF from memory cache:', currentUrl);
-          setPdfData(pdfCache.current.get(currentUrl) || null);
-          return;
-        }
-        
-        // Then check localStorage
-        const cachedPdf = localStorage.getItem(cacheKey);
-        if (cachedPdf) {
-          console.log('Loading PDF from cache:', currentUrl);
-          // Convert base64 string back to ArrayBuffer
-          const binaryString = atob(cachedPdf);
-          const len = binaryString.length;
-          const bytes = new Uint8Array(len);
-          for (let i = 0; i < len; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
-          }
-          const arrayBuffer = bytes.buffer;
-          
-          // Store in memory cache for faster subsequent access
-          pdfCache.current.set(currentUrl, arrayBuffer);
-          setPdfData(arrayBuffer);
-          return;
-        }
-        
-        // If not in cache, fetch it
-        console.log('Fetching PDF from server:', currentUrl);
-        const response = await fetch(currentUrl);
-        if (!response.ok) throw new Error('PDF fetch failed');
-        
-        const arrayBuffer = await response.arrayBuffer();
-        
-        // Store in memory cache
-        pdfCache.current.set(currentUrl, arrayBuffer);
-        setPdfData(arrayBuffer);
-        
-        // Store in localStorage (convert ArrayBuffer to base64 string)
-        const bytes = new Uint8Array(arrayBuffer);
-        let binary = '';
-        for (let i = 0; i < bytes.byteLength; i++) {
-          binary += String.fromCharCode(bytes[i]);
-        }
-        const base64 = btoa(binary);
-        
-        try {
-          localStorage.setItem(cacheKey, base64);
-          console.log('PDF cached successfully');
-        } catch (err) {
-          console.warn('Failed to cache PDF, possibly exceeding storage quota', err);
-          // Silently fail on storage errors - we can still display the PDF
-        }
-      } catch (error) {
-        console.error('Error loading PDF:', error);
-        tryNext();
-      }
-    };
-
-    // Start PDF loading
-    fetchAndCachePDF();
-    
-    // Preload with link tag as additional fallback
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.as = 'document';
-    link.href = currentUrl;
-    document.head.appendChild(link);
-    
-    return () => { document.head.removeChild(link); };
+    // Reset state for new URL
+    setHasError(false);
+    setPage(1);
   }, [currentUrl]);
   
   // Try next URL on error
   const tryNext = () => {
     if (currentIndex < urls.length - 1) {
+      console.log(`⏭️ Trying next URL (${currentIndex + 1}/${urls.length - 1})`);
       setCurrentIndex(i => i + 1);
       setHasError(false);
       setPage(1);
-      setPdfData(null);
     } else {
+      console.log('❌ All URLs failed, showing error state');
       setHasError(true);
     }
   };
 
   // PDF loaded successfully
   const onLoadSuccess = ({ numPages }: { numPages: number }) => {
+    console.log('✅ PDF loaded successfully:', currentUrl);
+    console.log('Pages:', numPages);
+    console.log('URL type:', currentUrl?.startsWith('blob:') ? 'blob' : 'remote');
     setNumPages(numPages);
     setHasError(false);
   };
 
   // Error loading PDF
   const onLoadError = (error: any) => {
-    console.error('PDF load error:', error);
+    console.error('PDF load error for URL:', currentUrl, 'Error:', error);
+    console.error('Error details:', {
+      name: error?.name,
+      message: error?.message,
+      stack: error?.stack,
+    });
+    console.error('All available URLs:', urls);
+    console.error('Current URL index:', currentIndex);
+    console.error('URL type:', currentUrl?.startsWith('blob:') ? 'blob' : 'remote');
     tryNext();
   };
 
@@ -197,6 +158,17 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     setPosition({ x: 0, y: 0 });
   }, [page, scale <= 1]);
 
+  // Show placeholder if no URL provided
+  if (!currentUrl || urls.length === 0 || currentUrl.trim() === '') {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center text-gray-400">
+        <FileText className="h-16 w-16 mb-4" />
+        <p>Chưa có file PDF để hiển thị</p>
+        <p className="text-sm">Vui lòng upload file PDF hoặc nhập URL</p>
+      </div>
+    );
+  }
+
   if (hasError) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center text-red-500">
@@ -205,7 +177,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         <Button
           variant="outline"
           className="mt-2"
-          onClick={() => { setCurrentIndex(0); setHasError(false); setPage(1); setPdfData(null); }}
+          onClick={() => { setCurrentIndex(0); setHasError(false); setPage(1); }}
         >
           Thử lại
         </Button>
@@ -271,22 +243,23 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
             onMouseLeave={handleMouseLeave}
           >
             <Document
-              file={pdfData || currentUrl}
+              file={currentUrl}
               onLoadSuccess={onLoadSuccess}
               onLoadError={onLoadError}
               loading={
                 <div className="flex flex-col items-center justify-center h-64">
                   <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-fpt-blue mb-2"></div>
                   <p>Đang tải tài liệu...</p>
+                  <p className="text-xs text-gray-500 mt-1">{currentUrl}</p>
                 </div>
               }
             >
               <Page
                 pageNumber={page}
-                width={550}
+                width={500}
                 scale={scale}
-                renderAnnotationLayer // enable annotation layer
-                renderTextLayer       // enable selectable text layer
+                renderAnnotationLayer={false} // disable for performance
+                renderTextLayer={false}       // disable for performance
               />
             </Document>
           </div>

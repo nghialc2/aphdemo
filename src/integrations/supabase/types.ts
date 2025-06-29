@@ -222,18 +222,62 @@ export type Database = {
           created_at: string | null
           email: string | null
           id: string
+          role: string | null
         }
         Insert: {
           created_at?: string | null
           email?: string | null
           id?: string
+          role?: string | null
         }
         Update: {
           created_at?: string | null
           email?: string | null
           id?: string
+          role?: string | null
         }
         Relationships: []
+      }
+      admin_content: {
+        Row: {
+          id: string
+          title: string
+          content: string
+          content_type: string
+          github_url: string | null
+          created_at: string
+          updated_at: string
+          created_by: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          content: string
+          content_type: string
+          github_url?: string | null
+          created_at?: string
+          updated_at?: string
+          created_by: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          content?: string
+          content_type?: string
+          github_url?: string | null
+          created_at?: string
+          updated_at?: string
+          created_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_content_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {

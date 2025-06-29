@@ -2,6 +2,7 @@ import { useState, useEffect, createContext, useContext, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
@@ -18,6 +19,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Set up auth state listener
@@ -55,7 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             
             if (redirectTo === 'aph-lab') {
               console.log('Redirecting to APH lab');
-              window.location.href = '/aph-lab';
+              navigate('/aph-lab');
             }
           }
         }
@@ -70,7 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate, toast]);
 
   const signInWithGoogle = async () => {
     try {
@@ -78,13 +80,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const currentUrl = new URL(window.location.href);
       const redirectTo = currentUrl.searchParams.get('redirect');
       
-      // Construct the redirect URL to preserve the redirect parameter
-      let redirectUrl = window.location.origin;
+      // Ensure we always use the current origin (localhost in development)
+      const origin = window.location.origin;
+      let redirectUrl = origin;
+      
       if (redirectTo === 'aph-lab') {
-        redirectUrl = `${window.location.origin}/login?redirect=aph-lab`;
+        redirectUrl = `${origin}/login?redirect=aph-lab`;
       }
 
       console.log('Signing in with Google, redirect URL:', redirectUrl);
+      console.log('Current origin:', origin);
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
