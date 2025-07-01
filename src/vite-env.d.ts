@@ -1,3 +1,4 @@
+
 /// <reference types="vite/client" />
 
 // Social media embed widgets
@@ -13,5 +14,6 @@ declare global {
         process: () => void;
       };
     };
+    onGitHubUploadComplete?: (fileName: string, githubUrl: string) => void;
   }
 }
