@@ -250,7 +250,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 <div className="flex flex-col items-center justify-center h-64">
                   <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-fpt-blue mb-2"></div>
                   <p>Đang tải tài liệu...</p>
-                  <p className="text-xs text-gray-500 mt-1">{currentUrl}</p>
                 </div>
               }
             >
