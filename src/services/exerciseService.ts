@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Exercise } from '@/components/instructions/ExerciseContent';
 
@@ -54,7 +53,7 @@ class ExerciseService {
   }
 
   // Convert Exercise to database format
-  private exerciseToDb(exercise: Exercise, userId?: string) {
+  private exerciseToDb(exercise: Exercise, userId?: string): Partial<DatabaseExercise> {
     return {
       id: exercise.id,
       title: exercise.title,
@@ -172,18 +171,9 @@ class ExerciseService {
       const userId = userData.user?.id;
 
       const dbExercises = defaultExercises.map((exercise, index) => ({
-        id: exercise.id,
-        title: exercise.title,
-        description: exercise.description || null,
-        exercise_type: exercise.exerciseType || 'basic',
-        pdf_url: exercise.pdfUrl || null,
-        file_name: exercise.fileName || null,
-        drive_link: exercise.driveLink || null,
-        custom_title: exercise.customTitle || null,
-        border_color: exercise.borderColor || '#3B82F6',
+        ...this.exerciseToDb(exercise, userId),
         display_order: index,
         created_by: userId,
-        updated_by: userId,
       }));
 
       const { error } = await supabase
