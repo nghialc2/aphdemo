@@ -67,7 +67,7 @@ const Layout = () => {
               <ResizableHandle withHandle />
               
               <ResizablePanel className="h-full relative flex">
-                <div className="flex-1 h-full overflow-y-auto">
+                <div className="flex-1 h-full overflow-hidden">
                   <ChatInterface />
                 </div>
                 

@@ -20,9 +20,22 @@ export const useFileUpload = () => {
   const addFiles = (files: File[]) => {
     console.log('Adding files:', files);
     setSelectedFiles(prev => [...prev, ...files]);
+    
+    const fileTypes = files.reduce((acc, file) => {
+      if (file.type === 'application/pdf') acc.pdf++;
+      else if (file.type.startsWith('image/')) acc.image++;
+      else acc.other++;
+      return acc;
+    }, { pdf: 0, image: 0, other: 0 });
+
+    const descriptions = [];
+    if (fileTypes.pdf > 0) descriptions.push(`${fileTypes.pdf} PDF`);
+    if (fileTypes.image > 0) descriptions.push(`${fileTypes.image} hình ảnh`);
+    if (fileTypes.other > 0) descriptions.push(`${fileTypes.other} file khác`);
+
     toast({
       title: "Files đã được chọn",
-      description: `Đã chọn ${files.length} file`,
+      description: `Đã chọn ${descriptions.join(', ')}`,
     });
   };
 
@@ -72,10 +85,10 @@ export const useFileUpload = () => {
             let fullText = '';
             const extractionStart = Date.now();
             
-            // Limit to maximum 50 pages for performance
-            const pagesToProcess = Math.min(pdf.numPages, 50);
-            if (pdf.numPages > 50) {
-              console.warn(`PDF has ${pdf.numPages} pages, limiting to first 50 pages`);
+            // Limit to maximum 25 pages for classroom performance
+            const pagesToProcess = Math.min(pdf.numPages, 25);
+            if (pdf.numPages > 25) {
+              console.warn(`PDF has ${pdf.numPages} pages, limiting to first 25 pages for classroom performance`);
             }
             
             for (let i = 1; i <= pagesToProcess; i++) {
@@ -90,6 +103,14 @@ export const useFileUpload = () => {
                 // Progress update every few pages
                 if (i % 5 === 0 || i === pagesToProcess) {
                   console.log(`Processed ${i}/${pagesToProcess} pages. Current text length: ${fullText.length}`);
+                  
+                  // Show progress toast for long extractions
+                  if (pagesToProcess > 10 && i % 10 === 0) {
+                    toast({
+                      title: "Đang xử lý PDF",
+                      description: `Đã xử lý ${i}/${pagesToProcess} trang (${Math.round(i/pagesToProcess*100)}%)`,
+                    });
+                  }
                 }
               } catch (pageError) {
                 console.error(`Error processing page ${i}:`, pageError);
@@ -157,14 +178,14 @@ export const useFileUpload = () => {
       
       console.log(`Processing ${pdfFiles.length} PDF files and ${otherFiles.length} other files`);
       
-      // Limit to max 5 PDF files at once for performance
-      const maxPdfToProcess = 5;
+      // Limit to max 3 PDF files at once for classroom performance
+      const maxPdfToProcess = 3;
       const pdfFilesToProcess = pdfFiles.slice(0, maxPdfToProcess);
       if (pdfFiles.length > maxPdfToProcess) {
-        console.warn(`Limiting PDF processing to ${maxPdfToProcess} files for performance`);
+        console.warn(`Limiting PDF processing to ${maxPdfToProcess} files for classroom performance`);
         toast({
           title: "Giới hạn xử lý",
-          description: `Đang xử lý ${maxPdfToProcess} file PDF đầu tiên (giới hạn để tăng hiệu suất)`,
+          description: `Đang xử lý ${maxPdfToProcess} file PDF đầu tiên (giới hạn để tăng hiệu suất lớp học)`,
         });
       }
       
@@ -200,9 +221,10 @@ export const useFileUpload = () => {
               console.log('PDF content extracted successfully for:', file.name, 'Length:', extractedContent.length);
               console.log('Combined content length so far:', allExtractedContent.length);
               
+              const pages = extractedContent.match(/\n/g)?.length || 1;
               toast({
-                title: "PDF đã được xử lý",
-                description: `Đã trích xuất ${extractedContent.length.toLocaleString()} ký tự từ ${file.name}`,
+                title: "✅ PDF đã được xử lý",
+                description: `${file.name} - ${extractedContent.length.toLocaleString()} ký tự từ ~${pages} trang`,
               });
             }
           } catch (error) {
@@ -276,15 +298,15 @@ export const useFileUpload = () => {
       
       // Only limit extract content if actually needed
       if (finalExtractedContent.length > 0) {
-        // Limit content size if needed
-        const maxLength = 100000; // ~100KB limit for extracted content
+        // Limit content size for classroom performance
+        const maxLength = 50000; // ~50KB limit for classroom performance
         
         if (finalExtractedContent.length > maxLength) {
           finalExtractedContent = finalExtractedContent.substring(0, maxLength);
-          console.warn(`Extracted content too large (${allExtractedContent.length} chars), truncated to ${maxLength} chars`);
+          console.warn(`Extracted content too large (${allExtractedContent.length} chars), truncated to ${maxLength} chars for classroom performance`);
           toast({
             title: "Nội dung quá lớn",
-            description: `Nội dung trích xuất đã vượt quá giới hạn và đã bị cắt ngắn`,
+            description: `Nội dung trích xuất đã vượt quá giới hạn và đã bị cắt ngắn để tăng hiệu suất lớp học`,
           });
         }
         

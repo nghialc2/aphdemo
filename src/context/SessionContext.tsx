@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Message, Model } from '@/types';
 
@@ -45,10 +45,27 @@ const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
 // Default available models
 const defaultModels: Model[] = [
-  { id: 'gpt-4o-mini', name: 'GPT-4o Mini', description: 'Fast and efficient', tags: ['fast'] },
-  { id: 'gpt-4o', name: 'GPT-4o', description: 'Most capable', tags: ['advanced'] },
-  { id: 'claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', description: 'Anthropic model', tags: ['reasoning'] },
+  { id: 'gpt-4o-mini', name: 'GPT-4o Mini', description: 'Fast and efficient', tags: ['OpenAI', 'fast'] },
+  { id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini', description: 'Enhanced version', tags: ['OpenAI', 'fast'] },
+  { id: 'gpt-o3-mini', name: 'GPT-o3 Mini', description: 'Latest OpenAI model', tags: ['OpenAI', 'advanced'] },
+  { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', description: 'Fast Google model', tags: ['Google', 'fast'] },
+  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', description: 'Enhanced Google model', tags: ['Google', 'fast'] },
+  { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', description: 'Most capable Google model', tags: ['Google', 'advanced'] },
+  { id: 'claude-sonnet-4', name: 'Claude Sonnet 4', description: 'Latest Anthropic model', tags: ['Anthropic', 'reasoning'] },
+  { id: 'deepseek-reasoner', name: 'Deepseek Reasoner', description: 'Advanced reasoning model', tags: ['Deepseek', 'reasoning'] },
 ];
+
+// Model webhook URL mapping
+const modelWebhookUrls: Record<string, string> = {
+  'gpt-4o-mini': 'https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba',
+  'gpt-4.1-mini': 'https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba1',
+  'gpt-o3-mini': 'https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba2',
+  'gemini-2.0-flash': 'https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba3',
+  'gemini-2.5-flash': 'https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba4',
+  'gemini-2.5-pro': 'https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba5',
+  'claude-sonnet-4': 'https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba6',
+  'deepseek-reasoner': 'https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba7',
+};
 
 const LOCAL_STORAGE_KEY = {
   SESSIONS: 'chat-sessions',
@@ -66,51 +83,140 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [comparisonMessages, setComparisonMessages] = useState<Record<string, ComparisonMessage[]>>({});
   const [availableModels] = useState<Model[]>(defaultModels);
   const [selectedModel, setSelectedModel] = useState<Model>(defaultModels[0]);
-  const extractContentsCache: Record<string, string> = {};
-
-  // Setup page refresh detection and clear history on refresh
+  
+  // Use useRef for cache to prevent memory leaks and enable cleanup
+  const extractContentsCache = useRef<Record<string, string>>({});
+  
+  // Cleanup cache periodically to prevent memory leaks
   useEffect(() => {
-    // Clear all history when component mounts - effectively clearing on refresh
-    console.log('Clearing chat history on page load');
-    localStorage.removeItem(LOCAL_STORAGE_KEY.SESSIONS);
-    localStorage.removeItem(LOCAL_STORAGE_KEY.CONTEXT_PROMPTS);
-    localStorage.removeItem(LOCAL_STORAGE_KEY.EXTRACT_CONTENTS);
-    localStorage.removeItem(LOCAL_STORAGE_KEY.COMPARISON_MESSAGES);
-    
-    // Create a new session with proper comparison mode detection
-    const isInComparisonMode = window.location.hash === '#comparison';
-    const newSession: Session = {
-      id: uuidv4(),
-      name: isInComparisonMode ? `So sánh giữa ${new Date().toLocaleTimeString()}` : `Phiên chat mới`,
-      messages: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      isComparisonMode: isInComparisonMode
+    const cleanup = () => {
+      const cacheKeys = Object.keys(extractContentsCache.current);
+      if (cacheKeys.length > 50) { // Keep only recent 50 items
+        console.log('Cleaning up extract contents cache, had', cacheKeys.length, 'items');
+        const sortedKeys = cacheKeys.sort();
+        const toRemove = sortedKeys.slice(0, cacheKeys.length - 50);
+        toRemove.forEach(key => delete extractContentsCache.current[key]);
+        console.log('Cache cleaned, now has', Object.keys(extractContentsCache.current).length, 'items');
+      }
     };
     
-    setSessions([newSession]);
-    setCurrentSession(newSession);
-    
-  }, []); // Empty dependency array means this runs once on mount
+    const interval = setInterval(cleanup, 5 * 60 * 1000); // Cleanup every 5 minutes
+    return () => clearInterval(interval);
+  }, []);
 
-  // Load data from localStorage on initial mount
+  // Cleanup old chat sessions and files (older than 7 days)
   useEffect(() => {
-    // Clear localStorage on page refresh (F5)
-    if (performance.navigation && performance.navigation.type === 1) {
-      // This is a page refresh
-      console.log('Page was refreshed, clearing chat history');
-      localStorage.removeItem(LOCAL_STORAGE_KEY.SESSIONS);
-      localStorage.removeItem(LOCAL_STORAGE_KEY.CONTEXT_PROMPTS);
-      localStorage.removeItem(LOCAL_STORAGE_KEY.EXTRACT_CONTENTS);
-      localStorage.removeItem(LOCAL_STORAGE_KEY.COMPARISON_MESSAGES);
-      return;
-    }
+    const cleanupOldSessions = async () => {
+      const now = new Date();
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      
+      setSessions(prevSessions => {
+        const filteredSessions = prevSessions.filter(session => {
+          const sessionDate = new Date(session.updatedAt);
+          return sessionDate > sevenDaysAgo;
+        });
+        
+        if (filteredSessions.length !== prevSessions.length) {
+          const deletedCount = prevSessions.length - filteredSessions.length;
+          console.log(`Cleaned up ${deletedCount} old chat sessions (older than 7 days)`);
+          
+          // Also clean up related data for deleted sessions
+          const remainingSessionIds = new Set(filteredSessions.map(s => s.id));
+          
+          setContextPrompts(prev => {
+            const cleaned = Object.keys(prev).reduce((acc, sessionId) => {
+              if (remainingSessionIds.has(sessionId)) {
+                acc[sessionId] = prev[sessionId];
+              }
+              return acc;
+            }, {} as Record<string, string>);
+            return cleaned;
+          });
+          
+          setExtractContents(prev => {
+            const cleaned = Object.keys(prev).reduce((acc, sessionId) => {
+              if (remainingSessionIds.has(sessionId)) {
+                acc[sessionId] = prev[sessionId];
+              }
+              return acc;
+            }, {} as Record<string, string>);
+            
+            // Also clean cache
+            Object.keys(extractContentsCache.current).forEach(sessionId => {
+              if (!remainingSessionIds.has(sessionId)) {
+                delete extractContentsCache.current[sessionId];
+              }
+            });
+            
+            return cleaned;
+          });
+          
+          setComparisonMessages(prev => {
+            const cleaned = Object.keys(prev).reduce((acc, sessionId) => {
+              if (remainingSessionIds.has(sessionId)) {
+                acc[sessionId] = prev[sessionId];
+              }
+              return acc;
+            }, {} as Record<string, ComparisonMessage[]>);
+            return cleaned;
+          });
+          
+          // If current session was deleted, create a new one
+          if (currentSession && !remainingSessionIds.has(currentSession.id)) {
+            console.log('Current session was deleted, creating new session');
+            const isInComparisonMode = window.location.hash === '#comparison';
+            const newSession: Session = {
+              id: uuidv4(),
+              name: isInComparisonMode ? 'So sánh giữa các mô hình' : 'Cuộc trò chuyện mới',
+              messages: [],
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              isComparisonMode: isInComparisonMode
+            };
+            filteredSessions.push(newSession);
+            setCurrentSession(newSession);
+          }
+        }
+        
+        return filteredSessions;
+      });
+
+      // Also cleanup old uploaded files
+      try {
+        const { githubUploadService } = await import('@/services/githubUpload');
+        const result = await githubUploadService.cleanupOldFiles();
+        if (result.deleted > 0) {
+          console.log(`Cleaned up ${result.deleted} old uploaded files`);
+        }
+        if (result.errors.length > 0) {
+          console.warn('File cleanup errors:', result.errors);
+        }
+      } catch (error) {
+        console.error('Failed to cleanup old files:', error);
+      }
+    };
     
-    try {
-      // Load sessions
-      const savedSessions = localStorage.getItem(LOCAL_STORAGE_KEY.SESSIONS);
-      if (savedSessions) {
-        const parsedSessions = JSON.parse(savedSessions).map((session: any) => ({
+    // Run cleanup on mount and then every hour
+    cleanupOldSessions();
+    const interval = setInterval(cleanupOldSessions, 60 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [currentSession]);
+
+  // Load existing data from localStorage on mount (preserve chat history)
+  useEffect(() => {
+    console.log('Loading chat history from localStorage');
+    
+    // Load existing sessions
+    const savedSessions = localStorage.getItem(LOCAL_STORAGE_KEY.SESSIONS);
+    const savedContextPrompts = localStorage.getItem(LOCAL_STORAGE_KEY.CONTEXT_PROMPTS);
+    const savedExtractContents = localStorage.getItem(LOCAL_STORAGE_KEY.EXTRACT_CONTENTS);
+    const savedComparisonMessages = localStorage.getItem(LOCAL_STORAGE_KEY.COMPARISON_MESSAGES);
+    
+    if (savedSessions) {
+      try {
+        const parsedSessions = JSON.parse(savedSessions);
+        // Convert date strings back to Date objects
+        const sessionsWithDates = parsedSessions.map((session: any) => ({
           ...session,
           createdAt: new Date(session.createdAt),
           updatedAt: new Date(session.updatedAt),
@@ -119,49 +225,76 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
             timestamp: new Date(msg.timestamp)
           }))
         }));
-        setSessions(parsedSessions);
         
-        // Set current session to the most recently updated one
-        if (parsedSessions.length > 0) {
-          const mostRecent = parsedSessions.reduce((latest, session) => 
-            new Date(session.updatedAt) > new Date(latest.updatedAt) ? session : latest
-          );
+        setSessions(sessionsWithDates);
+        
+        // Set the most recent session as current
+        if (sessionsWithDates.length > 0) {
+          const mostRecent = sessionsWithDates.sort((a: Session, b: Session) => 
+            b.updatedAt.getTime() - a.updatedAt.getTime()
+          )[0];
           setCurrentSession(mostRecent);
         }
+        
+        console.log('Loaded', sessionsWithDates.length, 'sessions from localStorage');
+      } catch (error) {
+        console.error('Error parsing saved sessions:', error);
       }
-      
-      // Load context prompts
-      const savedPrompts = localStorage.getItem(LOCAL_STORAGE_KEY.CONTEXT_PROMPTS);
-      if (savedPrompts) {
-        setContextPrompts(JSON.parse(savedPrompts));
+    }
+    
+    // Load other saved data
+    if (savedContextPrompts) {
+      try {
+        setContextPrompts(JSON.parse(savedContextPrompts));
+      } catch (error) {
+        console.error('Error parsing context prompts:', error);
       }
-      
-      // Load extract contents
-      const savedContents = localStorage.getItem(LOCAL_STORAGE_KEY.EXTRACT_CONTENTS);
-      if (savedContents) {
-        const parsedContents = JSON.parse(savedContents);
-        setExtractContents(parsedContents);
-        // Also update cache
-        Object.assign(extractContentsCache, parsedContents);
+    }
+    
+    if (savedExtractContents) {
+      try {
+        setExtractContents(JSON.parse(savedExtractContents));
+      } catch (error) {
+        console.error('Error parsing extract contents:', error);
       }
-      
-      // Load comparison messages
-      const savedComparisonMessages = localStorage.getItem(LOCAL_STORAGE_KEY.COMPARISON_MESSAGES);
-      if (savedComparisonMessages) {
-        const parsedMessages = JSON.parse(savedComparisonMessages);
-        // Convert string dates back to Date objects
-        Object.keys(parsedMessages).forEach(sessionId => {
-          parsedMessages[sessionId] = parsedMessages[sessionId].map((msg: any) => ({
+    }
+    
+    if (savedComparisonMessages) {
+      try {
+        const parsed = JSON.parse(savedComparisonMessages);
+        // Convert timestamps back to Date objects
+        const withDates = Object.keys(parsed).reduce((acc, key) => {
+          acc[key] = parsed[key].map((msg: any) => ({
             ...msg,
             timestamp: new Date(msg.timestamp)
           }));
-        });
-        setComparisonMessages(parsedMessages);
+          return acc;
+        }, {} as Record<string, ComparisonMessage[]>);
+        setComparisonMessages(withDates);
+      } catch (error) {
+        console.error('Error parsing comparison messages:', error);
       }
-    } catch (error) {
-      console.error('Error loading data from localStorage:', error);
     }
-  }, []);
+    
+    // If no sessions exist, create a new one
+    if (!savedSessions || !JSON.parse(savedSessions).length) {
+      const isInComparisonMode = window.location.hash === '#comparison';
+      const newSession: Session = {
+        id: uuidv4(),
+        name: isInComparisonMode ? `So sánh giữa ${new Date().toLocaleTimeString()}` : `Phiên chat mới`,
+        messages: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isComparisonMode: isInComparisonMode
+      };
+      
+      setSessions([newSession]);
+      setCurrentSession(newSession);
+      console.log('Created new session since none existed');
+    }
+    
+  }, []); // Empty dependency array means this runs once on mount
+
 
   // Save data to localStorage whenever it changes
   useEffect(() => {
@@ -196,19 +329,78 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [availableModels]);
 
   const createNewSession = useCallback(() => {
-    // Check if we're currently in comparison mode
-    const isInComparisonMode = window.location.hash === '#comparison';
+    try {
+      // Check if we're currently in comparison mode
+      const isInComparisonMode = window.location.hash === '#comparison';
+      
+      // Generate a temporary session name (will be updated when first message is sent)
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('vi-VN', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: false 
+      });
+      
+      const sessionName = isInComparisonMode 
+        ? `Cuộc trò chuyện ${timeStr}` 
+        : `Cuộc trò chuyện ${timeStr}`;
+      
+      const newSession: Session = {
+        id: uuidv4(),
+        name: sessionName,
+        messages: [],
+        createdAt: now,
+        updatedAt: now,
+        isComparisonMode: isInComparisonMode
+      };
+      
+      console.log('Creating new session:', newSession.name);
+      
+      // Update sessions state safely
+      setSessions(prev => {
+        const newSessions = [...prev, newSession];
+        console.log('Updated sessions count:', newSessions.length);
+        return newSessions;
+      });
+      
+      // Set as current session
+      setCurrentSession(newSession);
+      
+    } catch (error) {
+      console.error('Error creating new session:', error);
+      // Fallback: create a simple session
+      const fallbackSession: Session = {
+        id: uuidv4(),
+        name: 'Cuộc trò chuyện mới',
+        messages: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isComparisonMode: false
+      };
+      setSessions(prev => [...prev, fallbackSession]);
+      setCurrentSession(fallbackSession);
+    }
+  }, []);
+
+  // Function to generate a session name from message content
+  const generateSessionName = useCallback((messageContent: string, isComparison: boolean = false) => {
+    if (!messageContent || messageContent.trim().length === 0) {
+      return isComparison ? 'Cuộc trò chuyện so sánh' : 'Cuộc trò chuyện mới';
+    }
     
-    const newSession: Session = {
-      id: uuidv4(),
-      name: isInComparisonMode ? `So sánh giữa ${new Date().toLocaleTimeString()}` : `Phiên chat mới`,
-      messages: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      isComparisonMode: isInComparisonMode
-    };
-    setSessions(prev => [...prev, newSession]);
-    setCurrentSession(newSession);
+    // Clean and truncate the message
+    const cleaned = messageContent
+      .trim()
+      .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+      .replace(/[^\w\sÀ-ỹ]/g, '') // Keep only letters, numbers, spaces, and Vietnamese characters
+      .slice(0, 40); // Limit to 40 characters
+    
+    // Add ellipsis if truncated
+    const finalName = cleaned.length === 40 && messageContent.length > 40 
+      ? cleaned + '...' 
+      : cleaned;
+    
+    return finalName || (isComparison ? 'Cuộc trò chuyện so sánh' : 'Cuộc trò chuyện mới');
   }, []);
 
   const selectSession = useCallback((sessionId: string) => {
@@ -252,8 +444,8 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       let existingContent = extractContents[sessionId] || '';
       
       // Also check cache as a backup
-      if (!existingContent && extractContentsCache[sessionId]) {
-        existingContent = extractContentsCache[sessionId];
+      if (!existingContent && extractContentsCache.current[sessionId]) {
+        existingContent = extractContentsCache.current[sessionId];
         console.log('Retrieved existing content from cache instead of state');
       }
       
@@ -270,7 +462,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const updatedContent = combinedContent;
       
       // Update cache immediately for fast access
-      extractContentsCache[sessionId] = updatedContent;
+      extractContentsCache.current[sessionId] = updatedContent;
       console.log('Cache updated with new content, length:', updatedContent.length);
       
       // Also update state for persistence
@@ -291,8 +483,8 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const getExtractContent = useCallback((sessionId: string) => {
     try {
       // First try to get from cache for immediate access
-      if (extractContentsCache[sessionId]) {
-        const cachedContent = extractContentsCache[sessionId];
+      if (extractContentsCache.current[sessionId]) {
+        const cachedContent = extractContentsCache.current[sessionId];
         console.log('Retrieved extract content from cache, length:', cachedContent.length);
         return cachedContent;
       }
@@ -302,8 +494,8 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       console.log('Retrieved extract content from state, length:', content.length);
       
       // Update cache if content found in state but not in cache
-      if (content && !extractContentsCache[sessionId]) {
-        extractContentsCache[sessionId] = content;
+      if (content && !extractContentsCache.current[sessionId]) {
+        extractContentsCache.current[sessionId] = content;
       }
       
       return content;
@@ -425,8 +617,8 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const userMessage = {
         id: comparisonMessageId,
         userMessage: content,
-        leftResponse: leftModelId ? '... processing ...' : '',
-        rightResponse: rightModelId ? '... processing ...' : '',
+        leftResponse: leftModelId ? 'Đang xử lý...' : '',
+        rightResponse: rightModelId ? 'Đang xử lý...' : '',
         timestamp: new Date(),
         leftModelId: leftModelId || '',
         rightModelId: rightModelId || '',
@@ -465,7 +657,8 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         console.log('Payload has extractContent:', leftPayload.extractContent ? 'Yes' : 'No');
         
         // API call for left model
-        const leftResponse = await fetch('https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba', {
+        const leftWebhookUrl = modelWebhookUrls[leftModelId] || modelWebhookUrls['gpt-4o-mini'];
+        const leftResponse = await fetch(leftWebhookUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -503,7 +696,8 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         console.log('Payload has extractContent:', rightPayload.extractContent ? 'Yes' : 'No');
         
         // API call for right model
-        const rightResponse = await fetch('https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba', {
+        const rightWebhookUrl = modelWebhookUrls[rightModelId] || modelWebhookUrls['gpt-4o-mini'];
+        const rightResponse = await fetch(rightWebhookUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -547,6 +741,35 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         };
         
         return newState;
+      });
+      
+      // Update session name if this is the first comparison message
+      setSessions(prevSessions => {
+        const sessionToUpdate = prevSessions.find(s => s.id === sessionId);
+        if (!sessionToUpdate) return prevSessions;
+        
+        const existingMessages = comparisonMessages[sessionId] || [];
+        const isFirstMessage = existingMessages.length === 0;
+        
+        if (isFirstMessage) {
+          const sessionName = generateSessionName(userMessageText || content, true);
+          const updatedSession = { 
+            ...sessionToUpdate,
+            name: sessionName,
+            updatedAt: new Date()
+          };
+          
+          // Also update the currentSession reference
+          if (currentSession && currentSession.id === sessionId) {
+            setCurrentSession(updatedSession);
+          }
+          
+          return prevSessions.map(session => 
+            session.id === sessionId ? updatedSession : session
+          );
+        }
+        
+        return prevSessions;
       });
       
     } catch (error) {
@@ -594,8 +817,15 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const sessionToUpdate = prevSessions.find(s => s.id === sessionId);
         if (!sessionToUpdate) return prevSessions;
         
+        // Update session name if this is the first message
+        const isFirstMessage = sessionToUpdate.messages.length === 0;
+        const sessionName = isFirstMessage 
+          ? generateSessionName(userMessageText || content, sessionToUpdate.isComparisonMode)
+          : sessionToUpdate.name;
+        
         const updatedSession = { 
           ...sessionToUpdate,
+          name: sessionName,
           messages: [...sessionToUpdate.messages, userMessage],
           updatedAt: new Date()
         };
@@ -656,7 +886,8 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       console.log('Payload has extractContent:', messageToSend.extractContent ? 'Yes' : 'No');
       
       // Send message and extractContent as separate fields to API
-      const response = await fetch('https://n8n.srv798777.hstgr.cloud/webhook/91d2a13d-40e7-4264-b06c-480e08e5b2ba', {
+      const webhookUrl = modelWebhookUrls[selectedModel.id] || modelWebhookUrls['gpt-4o-mini'];
+      const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,12 +1,12 @@
 import { useSession } from "@/context/SessionContext";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Bot, User } from "lucide-react";
+import { Bot, User, Loader2 } from "lucide-react";
 import FileDisplay from "./FileDisplay";
 import { useEffect, useRef, useState } from "react";
 
 const ChatMessageList = () => {
-  const { currentSession } = useSession();
+  const { currentSession, isProcessing } = useSession();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [messageCount, setMessageCount] = useState(0);
@@ -59,10 +59,9 @@ const ChatMessageList = () => {
 
   return (
     <div 
-      className="flex-1 p-4 space-y-4 h-full overflow-hidden" 
+      className="px-4 py-2 space-y-4" 
       ref={scrollAreaRef}
     >
-      <div className="h-full overflow-y-auto pr-2">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -125,8 +124,25 @@ const ChatMessageList = () => {
             )}
           </div>
         ))}
-        <div ref={messagesEndRef} style={{ height: '1px', marginTop: '20px' }} />
-      </div>
+        
+        {/* Processing indicator */}
+        {isProcessing && (
+          <div className="flex gap-3 justify-start">
+            <Avatar className="h-8 w-8 mt-1">
+              <AvatarFallback className="bg-blue-100">
+                <Bot className="h-4 w-4 text-blue-600" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="max-w-[70%] rounded-lg px-4 py-3 bg-gray-100 text-gray-900">
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Đang xử lý yêu cầu...</span>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <div ref={messagesEndRef} style={{ height: '1px' }} />
     </div>
   );
 };

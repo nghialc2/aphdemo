@@ -279,6 +279,62 @@ export type Database = {
           }
         ]
       }
+      blog_posts: {
+        Row: {
+          id: number
+          title: string
+          excerpt: string
+          content: string | null
+          category: string
+          author_name: string
+          author_avatar: string | null
+          author_initials: string | null
+          image_url: string | null
+          featured: boolean
+          created_at: string
+          updated_at: string
+          created_by: string | null
+        }
+        Insert: {
+          id?: number
+          title: string
+          excerpt: string
+          content?: string | null
+          category: string
+          author_name: string
+          author_avatar?: string | null
+          author_initials?: string | null
+          image_url?: string | null
+          featured?: boolean
+          created_at?: string
+          updated_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          id?: number
+          title?: string
+          excerpt?: string
+          content?: string | null
+          category?: string
+          author_name?: string
+          author_avatar?: string | null
+          author_initials?: string | null
+          image_url?: string | null
+          featured?: boolean
+          created_at?: string
+          updated_at?: string
+          created_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_posts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never

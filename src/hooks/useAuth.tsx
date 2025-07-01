@@ -126,6 +126,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           title: "Đăng xuất thành công",
           description: "Bạn đã đăng xuất khỏi ứng dụng.",
         });
+        
+        // Check current route and redirect if needed
+        if (window.location.pathname === '/aph-lab') {
+          navigate('/explore');
+        }
       }
     } catch (error) {
       console.error('Sign out error:', error);

@@ -305,6 +305,65 @@ export class GitHubUploadService {
 
     return { valid: true };
   }
+
+  // Cleanup old files (older than 7 days)
+  async cleanupOldFiles(): Promise<{ deleted: number; errors: string[] }> {
+    try {
+      const githubToken = import.meta.env.VITE_GITHUB_TOKEN;
+      if (!githubToken) {
+        return { deleted: 0, errors: ['GitHub token not found'] };
+      }
+
+      this.config.token = githubToken;
+      
+      // Get all files in public directory
+      const response = await fetch(`https://api.github.com/repos/${this.config.owner}/${this.config.repo}/contents/public`, {
+        headers: {
+          'Authorization': `Bearer ${this.config.token}`,
+          'Accept': 'application/vnd.github.v3+json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to list files: ${response.statusText}`);
+      }
+
+      const files = await response.json();
+      const now = new Date();
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      
+      let deleted = 0;
+      const errors: string[] = [];
+
+      for (const file of files) {
+        try {
+          // Extract timestamp from filename (format: timestamp_filename)
+          const match = file.name.match(/^(\d{13})_/);
+          if (match) {
+            const timestamp = parseInt(match[1]);
+            const fileDate = new Date(timestamp);
+            
+            if (fileDate < sevenDaysAgo) {
+              console.log(`Deleting old file: ${file.name} (${fileDate.toISOString()})`);
+              const result = await this.deleteFile(file.name);
+              if (result.success) {
+                deleted++;
+              } else {
+                errors.push(`Failed to delete ${file.name}: ${result.error}`);
+              }
+            }
+          }
+        } catch (error) {
+          errors.push(`Error processing ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      }
+
+      console.log(`File cleanup completed: ${deleted} files deleted, ${errors.length} errors`);
+      return { deleted, errors };
+    } catch (error) {
+      return { deleted: 0, errors: [error instanceof Error ? error.message : 'Unknown error'] };
+    }
+  }
 }
 
 // Export a default instance

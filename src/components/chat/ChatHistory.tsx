@@ -35,8 +35,15 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelect }) => {
     onSelect?.();
   };
   
-  // Sort sessions by most recent first
-  const sortedSessions = [...sessions].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  // Sort sessions by most recent first, using updatedAt for better ordering
+  const sortedSessions = [...sessions].sort((a, b) => {
+    // Prioritize current session
+    if (currentSession?.id === a.id) return -1;
+    if (currentSession?.id === b.id) return 1;
+    
+    // Then sort by most recently updated
+    return b.updatedAt.getTime() - a.updatedAt.getTime();
+  });
   
   // Filter sessions to only show those with messages or the current session
   const filteredSessions = sortedSessions.filter(session => {
@@ -57,8 +64,8 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelect }) => {
   });
   
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
+    <div className="flex flex-col h-full">
+      <div className="flex justify-between items-center p-4 border-b">
         <h3 className="font-medium text-gray-700">Your conversations</h3>
         <Button 
           variant="outline" 
@@ -71,13 +78,14 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelect }) => {
         </Button>
       </div>
       
-      {filteredSessions.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          No conversation history yet
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {filteredSessions.map((session) => {
+      <div className="flex-1 overflow-y-auto p-4">
+        {filteredSessions.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            No conversation history yet
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {filteredSessions.map((session) => {
             // Get comparison messages for this session
             const comparisonData = getComparisonMessages(session.id);
             const totalComparisonMessages = 
@@ -106,21 +114,21 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelect }) => {
                 }`}
                 onClick={() => handleSelectSession(session.id)}
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center">
+                <div className="mb-1">
+                  <div className="flex items-start mb-1">
                     {isComparisonSession ? (
-                      <GitCompareArrows className="h-4 w-4 mr-2 text-fpt-blue" />
+                      <GitCompareArrows className="h-4 w-4 mr-2 text-fpt-blue flex-shrink-0 mt-0.5" />
                     ) : (
-                      <MessageSquare className="h-4 w-4 mr-2 text-gray-500" />
+                      <MessageSquare className="h-4 w-4 mr-2 text-gray-500 flex-shrink-0 mt-0.5" />
                     )}
-                    <span className="font-medium truncate max-w-[200px]">
+                    <span className="font-medium text-sm leading-tight break-words flex-1">
                       {session.name}
                     </span>
                   </div>
-                  <div className="flex items-center text-xs text-gray-500">
+                  <div className="flex items-center text-xs text-gray-500 ml-6">
                     <Clock className="h-3 w-3 mr-1" />
                     <span>
-                      {formatDistanceToNow(session.createdAt, { addSuffix: true })}
+                      {formatDistanceToNow(session.createdAt, { addSuffix: false })}
                     </span>
                   </div>
                 </div>
@@ -129,9 +137,10 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelect }) => {
                 </div>
               </button>
             );
-          })}
-        </div>
-      )}
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

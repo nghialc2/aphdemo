@@ -21,6 +21,12 @@ const ChatInterface = () => {
   const [inputValue, setInputValue] = useState("");
   const [showContextPrompt, setShowContextPrompt] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+  
+  // Comparison mode input states
+  const [leftInput, setLeftInput] = useState("");
+  const [rightInput, setRightInput] = useState("");
+  const [commonInput, setCommonInput] = useState("");
+  
   const inputRef = useRef<HTMLInputElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -55,6 +61,40 @@ const ChatInterface = () => {
     removeFile,
     clearFiles,
     uploadFiles,
+  } = useFileUpload();
+  
+  // Comparison mode file upload hooks
+  const {
+    selectedFiles: selectedLeftFiles,
+    uploadedFiles: uploadedLeftFiles,
+    isUploading: isUploadingLeft,
+    isProcessing: isProcessingLeft,
+    addFiles: addLeftFiles,
+    removeFile: removeLeftFile,
+    clearFiles: clearLeftFiles,
+    uploadFiles: uploadLeftFiles,
+  } = useFileUpload();
+  
+  const {
+    selectedFiles: selectedRightFiles,
+    uploadedFiles: uploadedRightFiles,
+    isUploading: isUploadingRight,
+    isProcessing: isProcessingRight,
+    addFiles: addRightFiles,
+    removeFile: removeRightFile,
+    clearFiles: clearRightFiles,
+    uploadFiles: uploadRightFiles,
+  } = useFileUpload();
+  
+  const {
+    selectedFiles: selectedCommonFiles,
+    uploadedFiles: uploadedCommonFiles,
+    isUploading: isUploadingCommon,
+    isProcessing: isProcessingCommon,
+    addFiles: addCommonFiles,
+    removeFile: removeCommonFile,
+    clearFiles: clearCommonFiles,
+    uploadFiles: uploadCommonFiles,
   } = useFileUpload();
   
   // Get the context prompt for the current session
@@ -203,10 +243,8 @@ const ChatInterface = () => {
         }
       }
       
-      // Small delay to ensure state updates have been processed
-      if (filesProcessed) {
-        await new Promise(resolve => setTimeout(resolve, 300));
-      }
+      // State updates are now synchronous with the cache system
+      // No delay needed as we use cache for immediate access
       
       // Verify and log extract content before sending
       const extractContent = getExtractContent(currentSession.id);
@@ -238,6 +276,112 @@ const ChatInterface = () => {
       setInputValue("");
     } catch (error) {
       console.error("Error sending message:", error);
+      toast({
+        title: "Lỗi",
+        description: "Không thể gửi tin nhắn. Vui lòng thử lại.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Comparison mode submit handlers
+  const handleLeftSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!currentSession || (!leftInput.trim() && selectedLeftFiles.length === 0)) return;
+    
+    try {
+      let messageContent = leftInput;
+      
+      if (selectedLeftFiles.length > 0) {
+        const uploadResult = await uploadLeftFiles(currentSession.id);
+        if (uploadResult.files.length > 0) {
+          const fileInfo = uploadResult.files.map(f => `[File: ${f.name}]`).join(' ');
+          messageContent = leftInput.trim() ? `${leftInput}\n\n${fileInfo}` : fileInfo;
+          
+          if (uploadResult.extractedContent && uploadResult.extractedContent.length > 0) {
+            updateExtractContent(currentSession.id, uploadResult.extractedContent);
+          }
+        }
+      }
+      
+      messageContent = messageContent.trim();
+      if (!messageContent) return;
+      
+      await sendComparisonMessage(messageContent, leftModelId, null, contextPrompt);
+      setLeftInput("");
+      clearLeftFiles();
+    } catch (error) {
+      console.error("Error sending left message:", error);
+      toast({
+        title: "Lỗi",
+        description: "Không thể gửi tin nhắn. Vui lòng thử lại.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRightSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!currentSession || (!rightInput.trim() && selectedRightFiles.length === 0)) return;
+    
+    try {
+      let messageContent = rightInput;
+      
+      if (selectedRightFiles.length > 0) {
+        const uploadResult = await uploadRightFiles(currentSession.id);
+        if (uploadResult.files.length > 0) {
+          const fileInfo = uploadResult.files.map(f => `[File: ${f.name}]`).join(' ');
+          messageContent = rightInput.trim() ? `${rightInput}\n\n${fileInfo}` : fileInfo;
+          
+          if (uploadResult.extractedContent && uploadResult.extractedContent.length > 0) {
+            updateExtractContent(currentSession.id, uploadResult.extractedContent);
+          }
+        }
+      }
+      
+      messageContent = messageContent.trim();
+      if (!messageContent) return;
+      
+      await sendComparisonMessage(messageContent, null, rightModelId, contextPrompt);
+      setRightInput("");
+      clearRightFiles();
+    } catch (error) {
+      console.error("Error sending right message:", error);
+      toast({
+        title: "Lỗi",
+        description: "Không thể gửi tin nhắn. Vui lòng thử lại.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCommonSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!currentSession || (!commonInput.trim() && selectedCommonFiles.length === 0)) return;
+    
+    try {
+      let messageContent = commonInput;
+      
+      if (selectedCommonFiles.length > 0) {
+        const uploadResult = await uploadCommonFiles(currentSession.id);
+        if (uploadResult.files.length > 0) {
+          const fileInfo = uploadResult.files.map(f => `[File: ${f.name}]`).join(' ');
+          messageContent = commonInput.trim() ? `${commonInput}\n\n${fileInfo}` : fileInfo;
+          
+          if (uploadResult.extractedContent && uploadResult.extractedContent.length > 0) {
+            updateExtractContent(currentSession.id, uploadResult.extractedContent);
+          }
+        }
+      }
+      
+      messageContent = messageContent.trim();
+      if (!messageContent) return;
+      
+      await sendComparisonMessage(messageContent, leftModelId, rightModelId, contextPrompt);
+      setCommonInput("");
+      clearCommonFiles();
+    } catch (error) {
+      console.error("Error sending common message:", error);
       toast({
         title: "Lỗi",
         description: "Không thể gửi tin nhắn. Vui lòng thử lại.",
@@ -281,9 +425,9 @@ const ChatInterface = () => {
         handleToggleCompareMode={handleToggleCompareMode}
       />
       
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden h-full">
         {showContextPrompt && (
-          <div className="p-4 border-b border-gray-200 bg-gray-50">
+          <div className="p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0">
             <ContextPrompt 
               value={contextPrompt}
               onChange={handleContextChange}
@@ -291,49 +435,136 @@ const ChatInterface = () => {
           </div>
         )}
         
-        <ScrollArea className="flex-1" type="always">
+        <div className="flex-1 overflow-hidden">
           {isCompareMode ? (
-            <ComparisonView 
-              leftMessages={comparisonMessages.leftMessages}
-              rightMessages={comparisonMessages.rightMessages}
-            />
+            <div className="h-full flex flex-col">
+              <div className="flex-1 overflow-hidden">
+                <ComparisonView 
+                  leftMessages={comparisonMessages.leftMessages}
+                  rightMessages={comparisonMessages.rightMessages}
+                />
+              </div>
+              
+              {/* Fixed input areas for comparison mode */}
+              <div className="flex-shrink-0 bg-white border-t border-gray-200">
+                <div className="grid grid-cols-[1.2fr_1fr]">
+                  {/* Left model input */}
+                  <div className="border-r border-gray-200 pr-2 pl-4 py-2">
+                    <FileUpload
+                      onFileSelect={addLeftFiles}
+                      selectedFiles={selectedLeftFiles}
+                      onRemoveFile={removeLeftFile}
+                      disabled={isProcessing || isUploadingLeft || isProcessingLeft}
+                    />
+                    <form onSubmit={handleLeftSubmit} className="flex space-x-2 mt-1">
+                      <Input
+                        value={leftInput}
+                        onChange={(e) => setLeftInput(e.target.value)}
+                        placeholder="Nhắn tin với model trái..."
+                        disabled={isProcessing || isUploadingLeft || isProcessingLeft}
+                        className="flex-1"
+                      />
+                      <Button 
+                        type="submit" 
+                        disabled={isProcessing || isUploadingLeft || isProcessingLeft || (leftInput.trim() === "" && selectedLeftFiles.length === 0)}
+                      >
+                        <Send className="h-4 w-4 mr-2" />
+                        Gửi
+                      </Button>
+                    </form>
+                  </div>
+                  
+                  {/* Right model input */}
+                  <div className="pl-2 pr-4 py-2">
+                    <FileUpload
+                      onFileSelect={addRightFiles}
+                      selectedFiles={selectedRightFiles}
+                      onRemoveFile={removeRightFile}
+                      disabled={isProcessing || isUploadingRight || isProcessingRight}
+                    />
+                    <form onSubmit={handleRightSubmit} className="flex space-x-2 mt-1">
+                      <Input
+                        value={rightInput}
+                        onChange={(e) => setRightInput(e.target.value)}
+                        placeholder="Nhắn tin với model phải..."
+                        disabled={isProcessing || isUploadingRight || isProcessingRight}
+                        className="flex-1"
+                      />
+                      <Button 
+                        type="submit" 
+                        disabled={isProcessing || isUploadingRight || isProcessingRight || (rightInput.trim() === "" && selectedRightFiles.length === 0)}
+                      >
+                        <Send className="h-4 w-4 mr-2" />
+                        Gửi
+                      </Button>
+                    </form>
+                  </div>
+                </div>
+                
+                {/* Common input for both models */}
+                <div className="border-t border-gray-200 px-4 py-2 bg-gray-50">
+                  <div className="text-center mb-2">
+                    <span className="text-sm font-medium bg-purple-100 text-purple-800 px-3 py-1 rounded-full">
+                      Nhắn tin đến cả hai model
+                    </span>
+                  </div>
+                  <FileUpload
+                    onFileSelect={addCommonFiles}
+                    selectedFiles={selectedCommonFiles}
+                    onRemoveFile={removeCommonFile}
+                    disabled={isProcessing || isUploadingCommon || isProcessingCommon}
+                  />
+                  <form onSubmit={handleCommonSubmit} className="flex space-x-2 mt-1">
+                    <Input
+                      value={commonInput}
+                      onChange={(e) => setCommonInput(e.target.value)}
+                      placeholder="Nhập tin nhắn gửi đến cả hai model..."
+                      disabled={isProcessing || isUploadingCommon || isProcessingCommon}
+                      className="flex-1"
+                    />
+                    <Button 
+                      type="submit" 
+                      variant="default"
+                      disabled={isProcessing || isUploadingCommon || isProcessingCommon || (commonInput.trim() === "" && selectedCommonFiles.length === 0)}
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      Gửi
+                    </Button>
+                  </form>
+                </div>
+              </div>
+            </div>
           ) : (
-            <ChatMessageList />
-          )}
-        </ScrollArea>
-        
-        <div className="border-t border-gray-200 p-4 bg-white">
-          {!isCompareMode && (
-            <FileUpload
-              onFileSelect={addFiles}
-              selectedFiles={selectedFiles}
-              onRemoveFile={removeFile}
-              disabled={isProcessing || isUploading || isFileProcessing}
-            />
-          )}
-          
-          {!isCompareMode && (
-            <form onSubmit={handleSubmit} className="flex space-x-2 mt-2">
-              <Input
-                ref={inputRef}
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Nhập tin nhắn của bạn..."
-                disabled={isProcessing || isUploading || isFileProcessing}
-                className="flex-1"
-              />
-              <Button 
-                type="submit" 
-                disabled={isProcessing || isUploading || isFileProcessing || (inputValue.trim() === "" && selectedFiles.length === 0)}
-              >
-                <Send className="h-4 w-4 mr-2" />
-                Gửi
-              </Button>
-            </form>
-          )}
-          {(isProcessing || isUploading || isFileProcessing) && (
-            <div className="text-xs text-center mt-2 text-gray-500 animate-pulse">
-              {isFileProcessing ? "Đang xử lý PDF..." : isUploading ? "Đang upload file..." : "Đang xử lý yêu cầu..."}
+            <div className="h-full flex flex-col">
+              <div className="flex-1 overflow-hidden">
+                <ScrollArea className="h-full" type="always">
+                  <ChatMessageList />
+                </ScrollArea>
+              </div>
+              <div className="border-t border-gray-200 px-4 py-2 bg-white flex-shrink-0">
+                <FileUpload
+                  onFileSelect={addFiles}
+                  selectedFiles={selectedFiles}
+                  onRemoveFile={removeFile}
+                  disabled={isProcessing || isUploading || isFileProcessing}
+                />
+                <form onSubmit={handleSubmit} className="flex space-x-2 mt-2">
+                  <Input
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    placeholder="Nhập tin nhắn..."
+                    disabled={isProcessing || isUploading || isFileProcessing}
+                    className="flex-1"
+                  />
+                  <Button 
+                    type="submit" 
+                    disabled={isProcessing || isUploading || isFileProcessing || (inputValue.trim() === "" && selectedFiles.length === 0)}
+                  >
+                    <Send className="h-4 w-4 mr-2" />
+                    Gửi
+                  </Button>
+                </form>
+              </div>
             </div>
           )}
         </div>

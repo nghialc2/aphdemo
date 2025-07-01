@@ -3,7 +3,7 @@ import { useSession } from "@/context/SessionContext";
 import { useCompare } from "@/context/CompareContext";
 import { cn } from "@/lib/utils";
 import { Message, Model } from "@/types";
-import { GitCompareArrows, Send } from "lucide-react";
+import { GitCompareArrows, Send, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import FileUpload from "./FileUpload";
@@ -26,6 +26,8 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
   const commonAreaRef = useRef<HTMLDivElement>(null);
   const leftMessagesEndRef = useRef<HTMLDivElement>(null);
   const rightMessagesEndRef = useRef<HTMLDivElement>(null);
+  const leftScrollRef = useRef<HTMLDivElement>(null);
+  const rightScrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   
   // Track message counts for auto-scrolling
@@ -70,20 +72,63 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
     }
   }, [rightMessages, rightMessageCount]);
   
-  // Auto-scroll effects
+  // Synchronized scrolling function - only right column controls both
+  const handleRightScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const rightContainer = e.currentTarget;
+    const scrollPercent = rightContainer.scrollTop / (rightContainer.scrollHeight - rightContainer.clientHeight);
+    
+    if (leftScrollRef.current) {
+      const leftMaxScroll = leftScrollRef.current.scrollHeight - leftScrollRef.current.clientHeight;
+      leftScrollRef.current.scrollTop = scrollPercent * leftMaxScroll;
+    }
+  };
+
+  // Create invisible spacer in right column to match left column height
+  const [rightSpacerHeight, setRightSpacerHeight] = useState(0);
+  
+  useEffect(() => {
+    if (leftScrollRef.current && rightScrollRef.current) {
+      // Get actual content heights by measuring the containers
+      const leftContentHeight = leftScrollRef.current.scrollHeight;
+      const rightContentHeight = rightScrollRef.current.scrollHeight - rightSpacerHeight; // Subtract current spacer
+      
+      if (leftContentHeight > rightContentHeight) {
+        const spacerNeeded = leftContentHeight - rightContentHeight;
+        setRightSpacerHeight(spacerNeeded);
+      } else {
+        setRightSpacerHeight(0);
+      }
+      
+      console.log('Left content:', leftContentHeight, 'Right content:', rightContentHeight);
+    }
+  }, [leftMessages, rightMessages, rightSpacerHeight]);
+
+  // Auto-scroll effects - scroll to bottom when new messages arrive
   useEffect(() => {
     // Only scroll when new messages arrive
-    if (leftMessageCount > prevLeftMessageCount && leftMessagesEndRef.current) {
-      console.log("Scrolling left column to bottom due to new message");
-      leftMessagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    if (leftMessageCount > prevLeftMessageCount && leftScrollRef.current && rightScrollRef.current) {
+      console.log("Scrolling both columns to bottom due to new left message");
+      // Scroll both to their respective bottoms
+      setTimeout(() => {
+        if (rightScrollRef.current && leftScrollRef.current) {
+          rightScrollRef.current.scrollTop = rightScrollRef.current.scrollHeight;
+          leftScrollRef.current.scrollTop = leftScrollRef.current.scrollHeight;
+        }
+      }, 100);
     }
   }, [leftMessageCount, prevLeftMessageCount]);
   
   useEffect(() => {
     // Only scroll when new messages arrive
-    if (rightMessageCount > prevRightMessageCount && rightMessagesEndRef.current) {
-      console.log("Scrolling right column to bottom due to new message");
-      rightMessagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    if (rightMessageCount > prevRightMessageCount && leftScrollRef.current && rightScrollRef.current) {
+      console.log("Scrolling both columns to bottom due to new right message");
+      // Scroll both to their respective bottoms
+      setTimeout(() => {
+        if (rightScrollRef.current && leftScrollRef.current) {
+          rightScrollRef.current.scrollTop = rightScrollRef.current.scrollHeight;
+          leftScrollRef.current.scrollTop = leftScrollRef.current.scrollHeight;
+        }
+      }, 100);
     }
   }, [rightMessageCount, prevRightMessageCount]);
   
@@ -265,10 +310,8 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
         }
       }
       
-      // Small delay to ensure state updates have been processed
-      if (filesProcessed) {
-        await new Promise(resolve => setTimeout(resolve, 300));
-      }
+      // State updates are now synchronous with the cache system
+      // No delay needed as we use cache for immediate access
       
       // Verify extract content before sending
       const extractContent = getExtractContent(currentSession.id);
@@ -354,10 +397,8 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
         }
       }
       
-      // Small delay to ensure state updates have been processed
-      if (filesProcessed) {
-        await new Promise(resolve => setTimeout(resolve, 300));
-      }
+      // State updates are now synchronous with the cache system
+      // No delay needed as we use cache for immediate access
       
       // Verify extract content before sending
       const extractContent = getExtractContent(currentSession.id);
@@ -457,10 +498,8 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
         }
       }
       
-      // Small delay to ensure state updates have been processed
-      if (filesProcessed) {
-        await new Promise(resolve => setTimeout(resolve, 300));
-      }
+      // State updates are now synchronous with the cache system
+      // No delay needed as we use cache for immediate access
       
       // Verify and log extract content before sending
       const extractContent = getExtractContent(currentSession.id);
@@ -494,12 +533,12 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
 
   return (
     <div className="flex flex-col h-full">
-      <div className="grid grid-cols-2 gap-2 flex-1 overflow-hidden">
+      <div className="grid grid-cols-[1.2fr_1fr] flex-1 overflow-hidden min-h-0">
         {/* Left Model Column */}
         <div 
           ref={leftColumnRef}
           className={cn(
-            "border-r pr-2 flex flex-col h-full relative",
+            "border-r border-gray-200 relative flex flex-col min-h-0",
             leftDragOver && "bg-blue-50"
           )}
           onDragOver={handleLeftDragOver}
@@ -516,15 +555,15 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
             </div>
           )}
           
-          <div className="sticky top-0 bg-white p-2 mb-2 z-10 flex items-center justify-center">
+          <div className="sticky top-0 bg-white p-2 mb-2 z-10 flex items-center justify-center flex-shrink-0">
             <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
               {leftModel.name}
             </span>
           </div>
           <div 
-            className="overflow-y-auto flex-1 py-4 px-2"
+            ref={leftScrollRef}
+            className="h-full overflow-y-hidden py-6 px-4"
           >
-            <div className="h-full overflow-y-auto pr-1">
               {leftMessages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center p-4">
                   <div className="mb-2 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -583,32 +622,9 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
                   </div>
                 ))
               )}
-              <div ref={leftMessagesEndRef} style={{ height: '1px', marginTop: '20px' }} />
-            </div>
-          </div>
-          <div className="border-t border-gray-200 p-4 bg-white mt-auto">
-            <FileUpload
-              onFileSelect={addLeftFiles}
-              selectedFiles={selectedLeftFiles}
-              onRemoveFile={removeLeftFile}
-              disabled={isProcessing || isUploadingLeft || isProcessingLeft}
-            />
-            <form onSubmit={handleLeftSubmit} className="flex space-x-2 mt-2">
-              <Input
-                value={leftInput}
-                onChange={(e) => setLeftInput(e.target.value)}
-                placeholder={`Nhắn tin với ${leftModel.name}...`}
-                disabled={isProcessing || isUploadingLeft || isProcessingLeft}
-                className="flex-1"
-              />
-              <Button 
-                type="submit" 
-                disabled={isProcessing || isUploadingLeft || isProcessingLeft || (leftInput.trim() === "" && selectedLeftFiles.length === 0)}
-              >
-                <Send className="h-4 w-4 mr-2" />
-                Gửi
-              </Button>
-            </form>
+              
+              
+              <div ref={leftMessagesEndRef} style={{ height: '1px' }} />
           </div>
         </div>
         
@@ -616,7 +632,7 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
         <div 
           ref={rightColumnRef}
           className={cn(
-            "pl-2 flex flex-col h-full relative",
+            "relative flex flex-col min-h-0",
             rightDragOver && "bg-green-50"
           )}
           onDragOver={handleRightDragOver}
@@ -633,15 +649,17 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
             </div>
           )}
           
-          <div className="sticky top-0 bg-white p-2 mb-2 z-10 flex items-center justify-center">
+          <div className="sticky top-0 bg-white p-2 mb-2 z-10 flex items-center justify-center flex-shrink-0">
             <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
               {rightModel.name}
             </span>
           </div>
           <div 
-            className="overflow-y-auto flex-1 py-4 px-2"
+            ref={rightScrollRef}
+            className="h-full overflow-y-scroll py-6 px-4"
+            onScroll={handleRightScroll}
+            style={{ scrollbarWidth: 'thin' }}
           >
-            <div className="h-full overflow-y-auto pr-1">
               {rightMessages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center p-4">
                   <div className="mb-2 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -690,7 +708,6 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
                           {/* Display message content (excluding file info) */}
                           {message.content && (
                             <div className="whitespace-pre-wrap">
-                              {/* Strip any [File: filename.pdf] text from displayed content */}
                               {message.content.replace(/\[File: .*?\]/g, '').trim()}
                             </div>
                           )}
@@ -700,87 +717,17 @@ const ComparisonView = ({ leftMessages, rightMessages }: ComparisonViewProps) =>
                   </div>
                 ))
               )}
-              <div ref={rightMessagesEndRef} style={{ height: '1px', marginTop: '20px' }} />
-            </div>
-          </div>
-          <div className="border-t border-gray-200 p-4 bg-white mt-auto">
-            <FileUpload
-              onFileSelect={addRightFiles}
-              selectedFiles={selectedRightFiles}
-              onRemoveFile={removeRightFile}
-              disabled={isProcessing || isUploadingRight || isProcessingRight}
-            />
-            <form onSubmit={handleRightSubmit} className="flex space-x-2 mt-2">
-              <Input
-                value={rightInput}
-                onChange={(e) => setRightInput(e.target.value)}
-                placeholder={`Nhắn tin với ${rightModel.name}...`}
-                disabled={isProcessing || isUploadingRight || isProcessingRight}
-                className="flex-1"
-              />
-              <Button 
-                type="submit" 
-                disabled={isProcessing || isUploadingRight || isProcessingRight || (rightInput.trim() === "" && selectedRightFiles.length === 0)}
-              >
-                <Send className="h-4 w-4 mr-2" />
-                Gửi
-              </Button>
-            </form>
+              
+              
+              <div ref={rightMessagesEndRef} style={{ height: '1px' }} />
+              
+              {/* Invisible spacer to match left column height */}
+              {rightSpacerHeight > 0 && (
+                <div style={{ height: `${rightSpacerHeight}px` }} className="w-full" />
+              )}
           </div>
         </div>
       </div>
-      
-      {/* Common input for both models */}
-      <div 
-        ref={commonAreaRef}
-        className={cn(
-          "border-t border-gray-200 p-4 mt-4 bg-gray-50 relative",
-          commonDragOver && "bg-purple-50"
-        )}
-        onDragOver={handleCommonDragOver}
-        onDragLeave={handleCommonDragLeave}
-        onDrop={handleCommonDrop}
-      >
-        {/* Drag overlay for common area */}
-        {commonDragOver && (
-          <div className="absolute inset-0 bg-purple-500/10 border-2 border-dashed border-purple-500 z-50 flex items-center justify-center">
-            <div className="bg-white rounded-lg p-4 shadow-lg text-center">
-              <p className="text-purple-600 font-medium">Thả file vào đây</p>
-              <p className="text-xs text-purple-500">Gửi đến cả hai model</p>
-            </div>
-          </div>
-        )}
-        
-        <div className="text-center mb-2">
-          <span className="text-sm font-medium bg-purple-100 text-purple-800 px-3 py-1 rounded-full">
-            Nhắn tin đến cả hai model
-          </span>
-        </div>
-        <FileUpload
-          onFileSelect={addCommonFiles}
-          selectedFiles={selectedCommonFiles}
-          onRemoveFile={removeCommonFile}
-          disabled={isProcessing || isUploadingCommon || isProcessingCommon}
-        />
-        <form onSubmit={handleCommonSubmit} className="flex space-x-2 mt-2">
-          <Input
-            value={commonInput}
-            onChange={(e) => setCommonInput(e.target.value)}
-            placeholder="Nhập tin nhắn gửi đến cả hai model..."
-            disabled={isProcessing || isUploadingCommon || isProcessingCommon}
-            className="flex-1"
-          />
-          <Button 
-            type="submit" 
-            variant="default"
-            disabled={isProcessing || isUploadingCommon || isProcessingCommon || (commonInput.trim() === "" && selectedCommonFiles.length === 0)}
-          >
-            <Send className="h-4 w-4 mr-2" />
-            Gửi
-          </Button>
-        </form>
-      </div>
-      <div ref={messagesEndRef} />
     </div>
   );
 };

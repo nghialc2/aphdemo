@@ -11,6 +11,8 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
 import ExplorationPage from "./pages/ExplorationPage";
+import BlogPage from "./pages/BlogPage";
+import BlogPostPage from "./pages/BlogPostPage";
 
 // Create a QueryClient instance
 const queryClient = new QueryClient();
@@ -35,6 +37,8 @@ const App = () => (
             <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/explore" element={<ExplorationPage />} />
+            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/blog/:id" element={<BlogPostPage />} />
             <Route path="/login" element={<Login />} />
             <Route 
               path="/aph-lab" 

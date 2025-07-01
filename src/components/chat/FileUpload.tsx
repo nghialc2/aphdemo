@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Paperclip, Upload, X, FileText, Image, File } from "lucide-react";
+import { Paperclip, Upload, X, FileText, Image, File, Film, Music, Archive, Code } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FileUploadProps {
@@ -67,12 +67,24 @@ const FileUpload = ({ onFileSelect, selectedFiles, onRemoveFile, disabled }: Fil
 
   const getFileIcon = (file: File) => {
     if (file.type.startsWith('image/')) {
-      return <Image className="h-4 w-4" />;
+      return <Image className="h-4 w-4 text-blue-500" />;
     }
     if (file.type === 'application/pdf') {
       return <FileText className="h-4 w-4 text-red-500" />;
     }
-    return <File className="h-4 w-4" />;
+    if (file.type.startsWith('video/')) {
+      return <Film className="h-4 w-4 text-purple-500" />;
+    }
+    if (file.type.startsWith('audio/')) {
+      return <Music className="h-4 w-4 text-green-500" />;
+    }
+    if (file.type.includes('zip') || file.type.includes('rar') || file.type.includes('archive')) {
+      return <Archive className="h-4 w-4 text-orange-500" />;
+    }
+    if (file.type.includes('text/') || file.name.match(/\.(js|ts|tsx|jsx|html|css|json|xml|md)$/)) {
+      return <Code className="h-4 w-4 text-indigo-500" />;
+    }
+    return <File className="h-4 w-4 text-gray-500" />;
   };
 
   const formatFileSize = (bytes: number) => {
@@ -125,19 +137,39 @@ const FileUpload = ({ onFileSelect, selectedFiles, onRemoveFile, disabled }: Fil
             <div
               key={index}
               className={cn(
-                "flex items-center gap-2 bg-white rounded-md px-3 py-2 border text-sm",
+                "group flex items-center gap-2 bg-white rounded-md px-3 py-2 border text-sm transition-all hover:shadow-sm",
                 file.type === 'application/pdf' 
-                  ? "border-red-200" 
-                  : "border-gray-200"
+                  ? "border-red-200 hover:border-red-300" 
+                  : file.type.startsWith('image/') 
+                    ? "border-blue-200 hover:border-blue-300"
+                    : "border-gray-200 hover:border-gray-300"
               )}
             >
-              {getFileIcon(file)}
-              <span className="flex-1 truncate max-w-32">{file.name}</span>
-              <span className="text-gray-500 text-xs">{formatFileSize(file.size)}</span>
+              <div className="flex-shrink-0">
+                {getFileIcon(file)}
+              </div>
+              
+              {/* File preview for images */}
+              {file.type.startsWith('image/') && (
+                <div className="flex-shrink-0 w-8 h-8 rounded overflow-hidden bg-gray-100">
+                  <img 
+                    src={URL.createObjectURL(file)} 
+                    alt={file.name}
+                    className="w-full h-full object-cover"
+                    onLoad={(e) => URL.revokeObjectURL(e.currentTarget.src)}
+                  />
+                </div>
+              )}
+              
+              <div className="flex-1 min-w-0">
+                <span className="block truncate font-medium">{file.name}</span>
+                <span className="text-gray-500 text-xs">{formatFileSize(file.size)}</span>
+              </div>
+              
               <Button
                 size="icon"
                 variant="ghost"
-                className="h-4 w-4 p-0 hover:bg-red-100"
+                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-100"
                 onClick={() => onRemoveFile(index)}
                 disabled={disabled}
               >
