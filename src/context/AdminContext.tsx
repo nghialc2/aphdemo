@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,6 +12,12 @@ interface AdminContextType {
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
+
+// Define admin emails
+const ADMIN_EMAILS = [
+  'nghialc2@fsb.edu.vn',
+  'TungNT247@fsb.edu.vn'
+];
 
 export const AdminProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
@@ -32,8 +39,8 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      // Check if user is the hardcoded admin
-      if (user.email === 'nghialc2@fsb.edu.vn') {
+      // Check if user is one of the hardcoded admins
+      if (ADMIN_EMAILS.includes(user.email)) {
         setIsAdmin(true);
         
         // Update user role in database if not already set
