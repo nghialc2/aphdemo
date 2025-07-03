@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Exercise } from '@/components/instructions/ExerciseContent';
 
@@ -53,7 +54,7 @@ class ExerciseService {
   }
 
   // Convert Exercise to database format
-  private exerciseToDb(exercise: Exercise, userId?: string): Omit<DatabaseExercise, 'created_at' | 'updated_at'> {
+  private exerciseToDb(exercise: Exercise, userId?: string) {
     return {
       id: exercise.id,
       title: exercise.title,
@@ -64,8 +65,6 @@ class ExerciseService {
       drive_link: exercise.driveLink || null,
       custom_title: exercise.customTitle || null,
       border_color: exercise.borderColor || '#3B82F6',
-      display_order: 0,
-      created_by: userId || null,
       updated_by: userId || null,
     };
   }
@@ -100,10 +99,7 @@ class ExerciseService {
 
       const { data, error } = await supabase
         .from('exercises')
-        .upsert({
-          ...dbExercise,
-          updated_by: userId || null,
-        })
+        .upsert(dbExercise)
         .select()
         .single();
 
