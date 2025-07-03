@@ -17,3 +17,5 @@ declare global {
     onGitHubUploadComplete?: (data: any) => void;
   }
 }
+
+export {};
