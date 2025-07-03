@@ -9,6 +9,95 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_content: {
+        Row: {
+          content: string
+          content_type: string
+          created_at: string | null
+          created_by: string
+          github_url: string | null
+          id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          content_type: string
+          created_at?: string | null
+          created_by: string
+          github_url?: string | null
+          id?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          content_type?: string
+          created_at?: string | null
+          created_by?: string
+          github_url?: string | null
+          id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_content_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      blog_posts: {
+        Row: {
+          author_avatar: string | null
+          author_initials: string | null
+          author_name: string
+          category: string
+          content: string | null
+          created_at: string | null
+          created_by: string | null
+          excerpt: string
+          featured: boolean | null
+          id: number
+          image_url: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          author_avatar?: string | null
+          author_initials?: string | null
+          author_name: string
+          category: string
+          content?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          excerpt: string
+          featured?: boolean | null
+          id?: number
+          image_url?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          author_avatar?: string | null
+          author_initials?: string | null
+          author_name?: string
+          category?: string
+          content?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          excerpt?: string
+          featured?: boolean | null
+          id?: number
+          image_url?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       chat_sessions: {
         Row: {
           created_at: string | null
@@ -105,6 +194,107 @@ export type Database = {
           },
         ]
       }
+      exercise_content_edits: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          edit_data: Json
+          exercise_id: string
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          edit_data: Json
+          exercise_id: string
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          edit_data?: Json
+          exercise_id?: string
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_content_edits_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exercises: {
+        Row: {
+          border_color: string | null
+          created_at: string | null
+          created_by: string | null
+          custom_title: string | null
+          description: string | null
+          display_order: number | null
+          drive_link: string | null
+          exercise_type: string | null
+          file_name: string | null
+          id: string
+          pdf_url: string | null
+          title: string
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          border_color?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          custom_title?: string | null
+          description?: string | null
+          display_order?: number | null
+          drive_link?: string | null
+          exercise_type?: string | null
+          file_name?: string | null
+          id: string
+          pdf_url?: string | null
+          title: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          border_color?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          custom_title?: string | null
+          description?: string | null
+          display_order?: number | null
+          drive_link?: string | null
+          exercise_type?: string | null
+          file_name?: string | null
+          id?: string
+          pdf_url?: string | null
+          title?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercises_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercises_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       files: {
         Row: {
           content_type: string
@@ -142,6 +332,41 @@ export type Database = {
             columns: ["message_id"]
             isOneToOne: false
             referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instruction_content_edits: {
+        Row: {
+          component_id: string
+          created_at: string | null
+          created_by: string
+          edit_data: Json
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          component_id: string
+          created_at?: string | null
+          created_by: string
+          edit_data: Json
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          component_id?: string
+          created_at?: string | null
+          created_by?: string
+          edit_data?: Json
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instruction_content_edits_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -237,103 +462,6 @@ export type Database = {
           role?: string | null
         }
         Relationships: []
-      }
-      admin_content: {
-        Row: {
-          id: string
-          title: string
-          content: string
-          content_type: string
-          github_url: string | null
-          created_at: string
-          updated_at: string
-          created_by: string
-        }
-        Insert: {
-          id?: string
-          title: string
-          content: string
-          content_type: string
-          github_url?: string | null
-          created_at?: string
-          updated_at?: string
-          created_by: string
-        }
-        Update: {
-          id?: string
-          title?: string
-          content?: string
-          content_type?: string
-          github_url?: string | null
-          created_at?: string
-          updated_at?: string
-          created_by?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "admin_content_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      blog_posts: {
-        Row: {
-          id: number
-          title: string
-          excerpt: string
-          content: string | null
-          category: string
-          author_name: string
-          author_avatar: string | null
-          author_initials: string | null
-          image_url: string | null
-          featured: boolean
-          created_at: string
-          updated_at: string
-          created_by: string | null
-        }
-        Insert: {
-          id?: number
-          title: string
-          excerpt: string
-          content?: string | null
-          category: string
-          author_name: string
-          author_avatar?: string | null
-          author_initials?: string | null
-          image_url?: string | null
-          featured?: boolean
-          created_at?: string
-          updated_at?: string
-          created_by?: string | null
-        }
-        Update: {
-          id?: number
-          title?: string
-          excerpt?: string
-          content?: string | null
-          category?: string
-          author_name?: string
-          author_avatar?: string | null
-          author_initials?: string | null
-          image_url?: string | null
-          featured?: boolean
-          created_at?: string
-          updated_at?: string
-          created_by?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "blog_posts_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
       }
     }
     Views: {
