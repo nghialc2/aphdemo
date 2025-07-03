@@ -34,7 +34,8 @@
       "Bash(export PATH=\"$HOME/.claude/local:$PATH\")",
       "Bash(npm uninstall:*)",
       "Bash(git add:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }
