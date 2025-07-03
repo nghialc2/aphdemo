@@ -33,7 +33,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // Check if user is the hardcoded admin
-      if (user.email === 'nghialc2@fsb.edu.vn') {
+      if (user.email === 'nghialc2@fsb.edu.vn' || user.email === 'TungNT247@fsb.edu.vn') {
         setIsAdmin(true);
         
         // Update user role in database if not already set
