@@ -22,7 +22,19 @@
       "Bash(yarn install)",
       "Bash(cat:*)",
       "Bash(npx create-vite:*)",
-      "Bash(npx vite:*)"
+      "Bash(npx vite:*)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(claude --version)",
+      "Bash(claude update)",
+      "Bash(sudo:*)",
+      "Bash(claude migrate-installer:*)",
+      "Bash(~/.claude/local/bin/claude --version)",
+      "Bash(~/.claude/local/claude --version)",
+      "Bash(source ~/.bashrc)",
+      "Bash(export PATH=\"$HOME/.claude/local:$PATH\")",
+      "Bash(npm uninstall:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   }

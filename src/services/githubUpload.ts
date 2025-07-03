@@ -1,8 +1,6 @@
 // GitHub Upload Service
 // This service handles uploading files to GitHub repository
 
-/// <reference types="../vite-env.d.ts" />
-
 interface GitHubUploadConfig {
   owner: string;
   repo: string;
@@ -285,6 +283,7 @@ export class GitHubUploadService {
       reader.onerror = (error) => reject(error);
     });
   }
+
 
   // Utility method to validate file
   static validateFile(file: File): { valid: boolean; error?: string } {

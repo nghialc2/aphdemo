@@ -14,6 +14,6 @@ declare global {
         process: () => void;
       };
     };
-    onGitHubUploadComplete?: (fileName: string, githubUrl: string) => void;
+    onGitHubUploadComplete?: (data: any) => void;
   }
 }
