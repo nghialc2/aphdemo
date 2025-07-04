@@ -15,7 +15,8 @@ const AdminContext = createContext<AdminContextType | undefined>(undefined);
 // Define admin emails
 const ADMIN_EMAILS = [
   'nghialc2@fsb.edu.vn',
-  'TungNT247@fsb.edu.vn'
+  'tungnt247@fsb.edu.vn',
+  'thaonp70@fsb.edu.vn'
 ];
 
 export const AdminProvider = ({ children }: { children: ReactNode }) => {
