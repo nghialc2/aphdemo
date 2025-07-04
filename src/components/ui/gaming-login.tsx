@@ -45,21 +45,66 @@ const SocialButton: React.FC<SocialButtonProps> = ({ icon, onClick }) => {
 // VideoBackground Component
 export const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUrl }) => {
     const videoRef = React.useRef<HTMLVideoElement>(null);
+    const [isLoaded, setIsLoaded] = React.useState(false);
+    const [hasError, setHasError] = React.useState(false);
     
     React.useEffect(() => {
-        if (videoRef.current) {
+        // Preload the video
+        const video = document.createElement('video');
+        video.src = videoUrl;
+        video.preload = 'metadata';
+        video.muted = true;
+        video.playsInline = true;
+        
+        video.addEventListener('loadedmetadata', () => {
+            setIsLoaded(true);
+        });
+        
+        video.addEventListener('error', () => {
+            setHasError(true);
+        });
+        
+        video.load();
+        
+        return () => {
+            video.removeEventListener('loadedmetadata', () => {});
+            video.removeEventListener('error', () => {});
+        };
+    }, [videoUrl]);
+    
+    React.useEffect(() => {
+        if (videoRef.current && isLoaded) {
             videoRef.current.play().catch(error => {
                 console.error("Video autoplay failed:", error);
+                setHasError(true);
             });
         }
-    }, []);
+    }, [isLoaded]);
     
     return (
         <div className="absolute inset-0 w-full h-full overflow-hidden">
             <div className="absolute inset-0 bg-black/30 z-10" />
+            
+            {/* Loading state with gradient background */}
+            {!isLoaded && !hasError && (
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 animate-pulse">
+                    <div className="absolute inset-0 bg-black/20" />
+                </div>
+            )}
+            
+            {/* Error state with static gradient */}
+            {hasError && (
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+                    <div className="absolute inset-0 bg-black/30" />
+                </div>
+            )}
+            
+            {/* Video element */}
             <video
                 ref={videoRef}
-                className="absolute inset-0 min-w-full min-h-full object-cover w-auto h-auto"
+                className={`absolute inset-0 min-w-full min-h-full object-cover w-auto h-auto transition-opacity duration-500 ${
+                    isLoaded && !hasError ? 'opacity-100' : 'opacity-0'
+                }`}
                 style={{
                     objectPosition: 'center top',
                     transform: 'translateY(-10%)'
@@ -68,6 +113,7 @@ export const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUrl }) =>
                 loop
                 muted
                 playsInline
+                preload="metadata"
             >
                 <source src={videoUrl} type="video/mp4" />
                 Your browser does not support the video tag.
