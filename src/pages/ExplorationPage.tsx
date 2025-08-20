@@ -38,9 +38,14 @@ const items = [
 
 export default function ExplorationPage() {
   const [programDropdownOpen, setProgramDropdownOpen] = useState(false);
+  const [rndHubDropdownOpen, setRndHubDropdownOpen] = useState(false);
   
   const toggleProgramDropdown = () => {
     setProgramDropdownOpen(!programDropdownOpen);
+  };
+
+  const toggleRndHubDropdown = () => {
+    setRndHubDropdownOpen(!rndHubDropdownOpen);
   };
 
   return (
@@ -55,6 +60,70 @@ export default function ExplorationPage() {
           {/* Navigation Menu */}
           <nav className="flex items-center space-x-6">
             <Link to="/blog" className="text-gray-700 hover:text-fptBlue font-medium">Blog</Link>
+            
+            {/* R&D Hub dropdown */}
+            <div className="relative">
+              <button 
+                onClick={toggleRndHubDropdown}
+                className="text-gray-700 hover:text-fptBlue font-medium flex items-center"
+              >
+                R&D Hub
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="16" 
+                  height="16" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  className="ml-1"
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              
+              {rndHubDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg overflow-hidden z-20">
+                  <Link 
+                    to="/login?redirect=documentation" 
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setRndHubDropdownOpen(false)}
+                  >
+                    Documentation
+                  </Link>
+                  <Link 
+                    to="/login?redirect=task-tracking" 
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setRndHubDropdownOpen(false)}
+                  >
+                    Task & Tracking
+                  </Link>
+                  <Link 
+                    to="/login?redirect=international-relations" 
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setRndHubDropdownOpen(false)}
+                  >
+                    International Relations
+                  </Link>
+                  <Link 
+                    to="/login?redirect=iso" 
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setRndHubDropdownOpen(false)}
+                  >
+                    ISO
+                  </Link>
+                  <Link 
+                    to="/login?redirect=secret-note" 
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setRndHubDropdownOpen(false)}
+                  >
+                    Secret note
+                  </Link>
+                </div>
+              )}
+            </div>
             
             {/* Program dropdown */}
             <div className="relative">

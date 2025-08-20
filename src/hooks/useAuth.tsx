@@ -58,6 +58,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             if (redirectTo === 'aph-lab') {
               console.log('Redirecting to APH lab');
               navigate('/aph-lab');
+            } else if (redirectTo === 'documentation') {
+              console.log('Redirecting to Documentation');
+              navigate('/documentation');
             }
           }
         }
@@ -86,6 +89,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (redirectTo === 'aph-lab') {
         redirectUrl = `${origin}/login?redirect=aph-lab`;
+      } else if (redirectTo === 'documentation') {
+        redirectUrl = `${origin}/login?redirect=documentation`;
       }
 
       console.log('Signing in with Google, redirect URL:', redirectUrl);
@@ -128,7 +133,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         });
         
         // Check current route and redirect if needed
-        if (window.location.pathname === '/aph-lab') {
+        if (window.location.pathname === '/aph-lab' || window.location.pathname.startsWith('/documentation')) {
           navigate('/explore');
         }
       }

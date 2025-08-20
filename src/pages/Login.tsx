@@ -17,6 +17,8 @@ const Login = () => {
       const redirectTo = searchParams.get('redirect');
       if (redirectTo === 'aph-lab') {
         navigate('/aph-lab');
+      } else if (redirectTo === 'documentation') {
+        navigate('/documentation');
       } else {
         navigate('/');
       }

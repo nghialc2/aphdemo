@@ -13,6 +13,12 @@ import LandingPage from "./pages/LandingPage";
 import ExplorationPage from "./pages/ExplorationPage";
 import BlogPage from "./pages/BlogPage";
 import BlogPostPage from "./pages/BlogPostPage";
+import DocumentationDashboard from "./pages/DocumentationDashboard";
+import DocumentationNotebook from "./pages/DocumentationNotebook";
+import TaskTrackingDashboard from "./pages/TaskTrackingDashboard";
+import InternationalRelationsDashboard from "./pages/InternationalRelationsDashboard";
+import ISODashboard from "./pages/ISODashboard";
+import SecretNoteDashboard from "./pages/SecretNoteDashboard";
 
 // Create a QueryClient instance
 const queryClient = new QueryClient();
@@ -39,6 +45,54 @@ const App = () => (
             <Route path="/explore" element={<ExplorationPage />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/blog/:id" element={<BlogPostPage />} />
+            <Route 
+              path="/documentation" 
+              element={
+                <ProtectedRoute>
+                  <DocumentationDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/documentation/notebook/:id" 
+              element={
+                <ProtectedRoute>
+                  <DocumentationNotebook />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/task-tracking" 
+              element={
+                <ProtectedRoute>
+                  <TaskTrackingDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/international-relations" 
+              element={
+                <ProtectedRoute>
+                  <InternationalRelationsDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/iso" 
+              element={
+                <ProtectedRoute>
+                  <ISODashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/secret-note" 
+              element={
+                <ProtectedRoute>
+                  <SecretNoteDashboard />
+                </ProtectedRoute>
+              } 
+            />
             <Route path="/login" element={<Login />} />
             <Route 
               path="/aph-lab" 
