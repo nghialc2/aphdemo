@@ -7,7 +7,7 @@ import { Trash2, Save, X, Wand2 } from 'lucide-react';
 import { Note } from '@/hooks/insights/useNotes';
 import MarkdownRenderer from '@/components/insights/chat/MarkdownRenderer';
 import { Citation } from '@/types/insights/message';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/insights/client';
 
 interface NoteEditorProps {
   note?: Note;

@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useAuth } from '@/hooks/useAuth';
+import { useInsightsAuth } from '@/hooks/useInsightsAuth';
 import Logo from '@/components/ui/Logo';
 
 interface NotebookHeaderProps {
@@ -20,7 +20,7 @@ interface NotebookHeaderProps {
 
 const NotebookHeader = ({ title, notebookId }: NotebookHeaderProps) => {
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut } = useInsightsAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(title);
   const { updateNotebook, isUpdating } = useNotebookUpdate();

@@ -87,7 +87,7 @@ export default function ExplorationPage() {
               {rndHubDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg overflow-hidden z-20">
                   <Link 
-                    to="/login?redirect=documentation" 
+                    to="/documentation" 
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     onClick={() => setRndHubDropdownOpen(false)}
                   >
@@ -149,13 +149,20 @@ export default function ExplorationPage() {
               </button>
               
               {programDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg overflow-hidden z-20">
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden z-20">
                   <Link 
                     to="/login?redirect=aph-lab" 
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     onClick={() => setProgramDropdownOpen(false)}
                   >
-                    APH
+                    APH Lab
+                  </Link>
+                  <Link 
+                    to="/documentation" 
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setProgramDropdownOpen(false)}
+                  >
+                    InsightsLM (Documentation)
                   </Link>
                 </div>
               )}

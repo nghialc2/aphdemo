@@ -1,10 +1,10 @@
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useInsightsAuth } from '@/hooks/useInsightsAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
 export const useLogout = () => {
-  const { signOut } = useAuth();
+  const { signOut } = useInsightsAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -17,8 +17,8 @@ export const useLogout = () => {
         description: "You have been successfully signed out."
       });
       
-      // Redirect to auth page
-      navigate('/auth', { replace: true });
+      // Redirect to login page
+      navigate('/login', { replace: true });
       
     } catch (error: any) {
       console.error('Logout error:', error);

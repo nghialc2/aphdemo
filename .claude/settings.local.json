@@ -36,8 +36,20 @@
       "Bash(git add:*)",
       "Bash(git push:*)",
       "Bash(git commit:*)",
-      "WebFetch(domain:supabase.com)"
+      "WebFetch(domain:supabase.com)",
+      "Bash(cd:*)",
+      "Bash(pkill:*)",
+      "Bash(fuser:*)",
+      "Bash(mkdir:*)",
+      "Bash(true)",
+      "Bash(sed:*)",
+      "Bash(for:*)",
+      "Bash(do)",
+      "Bash(done)"
     ],
-    "deny": []
+    "deny": [],
+    "additionalDirectories": [
+      "/mnt/c/Nghia/FSB"
+    ]
   }
 }

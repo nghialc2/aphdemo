@@ -1,6 +1,6 @@
 
 import { ReactNode } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 
 interface ProtectedRouteProps {
@@ -9,7 +9,18 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
  
+  // Determine redirect parameter based on current path
+  const getRedirectParam = () => {
+    if (location.pathname.startsWith('/documentation')) {
+      return 'documentation';
+    } else if (location.pathname === '/aph-lab') {
+      return 'aph-lab';
+    }
+    // Default to aph-lab for other protected routes
+    return 'aph-lab';
+  };
 
   if (loading) {
     return (
@@ -23,12 +34,14 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   if (!user) {
-    return <Navigate to="/login?redirect=aph-lab" replace />;
+    const redirectParam = getRedirectParam();
+    return <Navigate to={`/login?redirect=${redirectParam}`} replace />;
   }
 
   // Additional check for domain (redundant but safe)
   if (!user.email?.endsWith('@fsb.edu.vn')) {
-    return <Navigate to="/login?redirect=aph-lab" replace />;
+    const redirectParam = getRedirectParam();
+    return <Navigate to={`/login?redirect=${redirectParam}`} replace />;
   }
 
   return <>{children}</>;

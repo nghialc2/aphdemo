@@ -4,14 +4,14 @@ import { useAuth } from '@/hooks/useAuth';
 import LoginPage from '@/components/ui/gaming-login';
 
 const Login = () => {
+  console.log('🏠 Login (APH) RENDERING at:', new Date().toISOString());
   const { user, signInWithGoogle, loading } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  
+  console.log('🔐 Login (APH) auth state:', { user, loading });
 
   useEffect(() => {
-    // Add dark class to html element
-    document.documentElement.classList.add('dark');
-    
     // Redirect to appropriate page if already logged in
     if (user) {
       const redirectTo = searchParams.get('redirect');
@@ -23,11 +23,6 @@ const Login = () => {
         navigate('/');
       }
     }
-
-    // Cleanup function to remove dark class when component unmounts
-    return () => {
-      document.documentElement.classList.remove('dark');
-    };
   }, [user, navigate, searchParams]);
 
   if (loading) {

@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { User, LogOut } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { useAuth } from '@/hooks/useAuth';
+import { useInsightsAuth } from '@/hooks/useInsightsAuth';
 import Logo from '@/components/ui/Logo';
 
 interface DashboardHeaderProps {
@@ -11,7 +11,7 @@ interface DashboardHeaderProps {
 }
 
 const DashboardHeader = ({ userEmail }: DashboardHeaderProps) => {
-  const { signOut, user } = useAuth();
+  const { signOut, user } = useInsightsAuth();
 
   return (
     <header className="bg-white px-6 py-4">

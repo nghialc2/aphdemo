@@ -9,7 +9,7 @@ import { useFileUpload } from '@/hooks/insights/useFileUpload';
 import { useDocumentProcessing } from '@/hooks/insights/useDocumentProcessing';
 import { useNotebookGeneration } from '@/hooks/insights/useNotebookGeneration';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/insights/client';
 
 interface AddSourcesDialogProps {
   open: boolean;

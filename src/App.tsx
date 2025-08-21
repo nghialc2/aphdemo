@@ -4,21 +4,26 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { InsightsAuthProvider } from "@/hooks/useInsightsAuth";
+import { AuthProvider as InsightsAuthContextProvider } from "@/contexts/AuthContext";
 import { AdminProvider } from "@/context/AdminContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import InsightsProtectedRoute from "@/components/auth/ProtectedRoute";
+import DarkModeManager from "@/components/DarkModeManager";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
 import ExplorationPage from "./pages/ExplorationPage";
 import BlogPage from "./pages/BlogPage";
 import BlogPostPage from "./pages/BlogPostPage";
-import DocumentationDashboard from "./pages/DocumentationDashboard";
-import DocumentationNotebook from "./pages/DocumentationNotebook";
 import TaskTrackingDashboard from "./pages/TaskTrackingDashboard";
 import InternationalRelationsDashboard from "./pages/InternationalRelationsDashboard";
 import ISODashboard from "./pages/ISODashboard";
 import SecretNoteDashboard from "./pages/SecretNoteDashboard";
+import Dashboard from "./pages/Dashboard";
+import Notebook from "./pages/Notebook";
 
 // Create a QueryClient instance
 const queryClient = new QueryClient();
@@ -39,28 +44,31 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <AdminProvider>
-            <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/explore" element={<ExplorationPage />} />
-            <Route path="/blog" element={<BlogPage />} />
-            <Route path="/blog/:id" element={<BlogPostPage />} />
-            <Route 
-              path="/documentation" 
-              element={
-                <ProtectedRoute>
-                  <DocumentationDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/documentation/notebook/:id" 
-              element={
-                <ProtectedRoute>
-                  <DocumentationNotebook />
-                </ProtectedRoute>
-              } 
-            />
+          <InsightsAuthProvider>
+            <InsightsAuthContextProvider>
+              <AdminProvider>
+              <DarkModeManager />
+              <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/explore" element={<ExplorationPage />} />
+              <Route path="/blog" element={<BlogPage />} />
+              <Route path="/blog/:id" element={<BlogPostPage />} />
+              <Route 
+                path="/documentation" 
+                element={
+                  <InsightsProtectedRoute fallback={<Auth />}>
+                    <Dashboard />
+                  </InsightsProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/documentation/notebook/:id" 
+                element={
+                  <InsightsProtectedRoute fallback={<Auth />}>
+                    <Notebook />
+                  </InsightsProtectedRoute>
+                } 
+              />
             <Route 
               path="/task-tracking" 
               element={
@@ -105,7 +113,9 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
             </Routes>
-          </AdminProvider>
+              </AdminProvider>
+            </InsightsAuthContextProvider>
+          </InsightsAuthProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
