@@ -11,31 +11,30 @@ export function SplineSceneBasic() {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // Preload the 3D scene URL
+    // Aggressive preloading for immediate 3D scene availability
     const link = document.createElement('link')
-    link.rel = 'prefetch'
+    link.rel = 'preload'
     link.href = 'https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode'
+    link.as = 'fetch'
+    link.crossOrigin = 'anonymous'
     document.head.appendChild(link)
 
-    // Use intersection observer for better performance
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setShouldLoad(true)
-        }
-      },
-      { threshold: 0.1 }
-    )
+    // Also prefetch the Spline runtime
+    const splineLink = document.createElement('link')
+    splineLink.rel = 'modulepreload'
+    splineLink.href = 'https://unpkg.com/@splinetool/runtime'
+    document.head.appendChild(splineLink)
 
-    if (containerRef.current) {
-      observer.observe(containerRef.current)
-    }
+    // Start loading immediately for landing page (no intersection observer delay)
+    setShouldLoad(true)
 
     return () => {
-      if (containerRef.current) {
-        observer.unobserve(containerRef.current)
+      try {
+        document.head.removeChild(link)
+        document.head.removeChild(splineLink)
+      } catch (e) {
+        // Elements might already be removed
       }
-      document.head.removeChild(link)
     }
   }, [])
 

@@ -2,68 +2,70 @@ import React from 'react';
 import AuthForm from '@/components/auth/AuthForm';
 import Logo from '@/components/ui/Logo';
 
-// VideoBackground Component
+// Professional static background matching FPT Tower aesthetic
+const FPTTowerBackground = () => (
+  <div className="absolute inset-0 w-full h-full overflow-hidden">
+    {/* Professional gradient background inspired by FPT Tower */}
+    <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-950 to-purple-900">
+      <div className="absolute inset-0 bg-black/40" />
+      
+      {/* Subtle architectural lines to mimic tower structure */}
+      <div className="absolute inset-0">
+        <div className="absolute right-1/4 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent"></div>
+        <div className="absolute right-1/3 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-blue-300/10 to-transparent"></div>
+        <div className="absolute left-1/4 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-purple-300/10 to-transparent"></div>
+      </div>
+      
+      {/* Ambient lighting effects */}
+      <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-purple-500/5 rounded-full blur-2xl"></div>
+      
+      {/* Subtle particles */}
+      <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-white/30 rounded-full animate-pulse"></div>
+      <div className="absolute bottom-1/3 left-1/3 w-1 h-1 bg-blue-300/40 rounded-full animate-pulse delay-1000"></div>
+    </div>
+  </div>
+)
+
+// VideoBackground Component - Optimized for seamless loading
 const VideoBackground = ({ videoUrl }: { videoUrl: string }) => {
   const videoRef = React.useRef<HTMLVideoElement>(null);
-  const [isLoaded, setIsLoaded] = React.useState(false);
-  const [hasError, setHasError] = React.useState(false);
+  const [isVideoVisible, setIsVideoVisible] = React.useState(false);
   
   React.useEffect(() => {
-    // Preload the video
-    const video = document.createElement('video');
-    video.src = videoUrl;
-    video.preload = 'metadata';
-    video.muted = true;
-    video.playsInline = true;
-    
-    video.addEventListener('loadedmetadata', () => {
-      setIsLoaded(true);
-    });
-    
-    video.addEventListener('error', () => {
-      setHasError(true);
-    });
-    
-    video.load();
-    
-    return () => {
-      video.removeEventListener('loadedmetadata', () => {});
-      video.removeEventListener('error', () => {});
-    };
-  }, [videoUrl]);
-  
-  React.useEffect(() => {
-    if (videoRef.current && isLoaded) {
-      videoRef.current.play().catch(error => {
-        console.error("Video autoplay failed:", error);
-        setHasError(true);
+    if (videoRef.current) {
+      const video = videoRef.current;
+      
+      const handleCanPlay = () => {
+        // Smooth fade-in when video is ready
+        setIsVideoVisible(true);
+      };
+      
+      video.addEventListener('canplay', handleCanPlay);
+      video.addEventListener('loadeddata', handleCanPlay);
+      
+      // Start playing silently in background
+      video.play().catch(() => {
+        // Video autoplay failed, but static background is already visible
       });
+      
+      return () => {
+        video.removeEventListener('canplay', handleCanPlay);
+        video.removeEventListener('loadeddata', handleCanPlay);
+      };
     }
-  }, [isLoaded]);
+  }, []);
   
   return (
     <div className="absolute inset-0 w-full h-full overflow-hidden">
-      <div className="absolute inset-0 bg-black/30 z-10" />
+      {/* Always show professional static background */}
+      <FPTTowerBackground />
       
-      {/* Loading state with gradient background */}
-      {!isLoaded && !hasError && (
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 animate-pulse">
-          <div className="absolute inset-0 bg-black/20" />
-        </div>
-      )}
-      
-      {/* Error state with static gradient */}
-      {hasError && (
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-          <div className="absolute inset-0 bg-black/30" />
-        </div>
-      )}
-      
-      {/* Video element */}
+      {/* Video overlay - fades in when ready */}
       <video
         ref={videoRef}
-        className={`absolute inset-0 min-w-full min-h-full object-cover w-auto h-auto transition-opacity duration-500 ${
-          isLoaded && !hasError ? 'opacity-100' : 'opacity-0'
+        className={`absolute inset-0 min-w-full min-h-full object-cover w-auto h-auto transition-opacity duration-2000 ${
+          isVideoVisible ? 'opacity-60' : 'opacity-0'
         }`}
         style={{
           objectPosition: 'center top',
@@ -73,16 +75,36 @@ const VideoBackground = ({ videoUrl }: { videoUrl: string }) => {
         loop
         muted
         playsInline
-        preload="metadata"
+        preload="auto"
       >
         <source src={videoUrl} type="video/mp4" />
-        Your browser does not support the video tag.
       </video>
+      
+      {/* Overlay for better text readability */}
+      <div className="absolute inset-0 bg-black/30 z-10" />
     </div>
   );
 };
 
 const Auth = () => {
+  // Preload video for faster loading
+  React.useEffect(() => {
+    const videoLink = document.createElement('link')
+    videoLink.rel = 'preload'
+    videoLink.href = '/FPT_Tower.mp4'
+    videoLink.as = 'video'
+    videoLink.type = 'video/mp4'
+    document.head.appendChild(videoLink)
+
+    return () => {
+      try {
+        document.head.removeChild(videoLink)
+      } catch (e) {
+        // Element might already be removed
+      }
+    }
+  }, [])
+
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center px-4 py-12">
       {/* FSB Logo - Top Left */}

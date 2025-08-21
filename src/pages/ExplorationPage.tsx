@@ -1,7 +1,7 @@
 
 import { CircularRevealHeading } from "@/components/ui/circular-reveal-heading";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 // Import the logo directly
 import logoFSB from "/logo_FSB_new.png";
@@ -39,13 +39,55 @@ const items = [
 export default function ExplorationPage() {
   const [programDropdownOpen, setProgramDropdownOpen] = useState(false);
   const [rndHubDropdownOpen, setRndHubDropdownOpen] = useState(false);
+  const rndHubRef = useRef<HTMLDivElement>(null);
+  const programRef = useRef<HTMLDivElement>(null);
+  
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (rndHubRef.current && !rndHubRef.current.contains(event.target as Node)) {
+        setRndHubDropdownOpen(false);
+      }
+      if (programRef.current && !programRef.current.contains(event.target as Node)) {
+        setProgramDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Close dropdowns when pressing escape
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setRndHubDropdownOpen(false);
+        setProgramDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, []);
   
   const toggleProgramDropdown = () => {
     setProgramDropdownOpen(!programDropdownOpen);
+    // Close the other dropdown when opening this one
+    if (!programDropdownOpen) {
+      setRndHubDropdownOpen(false);
+    }
   };
 
   const toggleRndHubDropdown = () => {
     setRndHubDropdownOpen(!rndHubDropdownOpen);
+    // Close the other dropdown when opening this one
+    if (!rndHubDropdownOpen) {
+      setProgramDropdownOpen(false);
+    }
   };
 
   return (
@@ -62,7 +104,7 @@ export default function ExplorationPage() {
             <Link to="/blog" className="text-gray-700 hover:text-fptBlue font-medium">Blog</Link>
             
             {/* R&D Hub dropdown */}
-            <div className="relative">
+            <div className="relative" ref={rndHubRef}>
               <button 
                 onClick={toggleRndHubDropdown}
                 className="text-gray-700 hover:text-fptBlue font-medium flex items-center"
@@ -91,7 +133,7 @@ export default function ExplorationPage() {
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     onClick={() => setRndHubDropdownOpen(false)}
                   >
-                    Documentation
+                    InsightsLM
                   </Link>
                   <Link 
                     to="/login?redirect=task-tracking" 
@@ -126,7 +168,7 @@ export default function ExplorationPage() {
             </div>
             
             {/* Program dropdown */}
-            <div className="relative">
+            <div className="relative" ref={programRef}>
               <button 
                 onClick={toggleProgramDropdown}
                 className="text-gray-700 hover:text-fptBlue font-medium flex items-center"
@@ -156,13 +198,6 @@ export default function ExplorationPage() {
                     onClick={() => setProgramDropdownOpen(false)}
                   >
                     APH Lab
-                  </Link>
-                  <Link 
-                    to="/documentation" 
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setProgramDropdownOpen(false)}
-                  >
-                    InsightsLM (Documentation)
                   </Link>
                 </div>
               )}
