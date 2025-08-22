@@ -55,7 +55,8 @@ const Login = () => {
         <img 
           src="/lovable-uploads/d0043d77-a2db-44b0-b64d-aa59b3ada6a7.png" 
           alt="FPT School of Business & Technology" 
-          className="h-16 w-auto"
+          className="h-16 w-auto cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={() => navigate('/explore')}
         />
       </div>
 

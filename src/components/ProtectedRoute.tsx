@@ -15,6 +15,8 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const getRedirectParam = () => {
     if (location.pathname.startsWith('/documentation')) {
       return 'documentation';
+    } else if (location.pathname.startsWith('/task-tracking')) {
+      return 'task-tracking';
     } else if (location.pathname === '/aph-lab') {
       return 'aph-lab';
     }
@@ -35,12 +37,20 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   if (!user) {
     const redirectParam = getRedirectParam();
+    // Special handling for task-tracking routes
+    if (location.pathname.startsWith('/task-tracking')) {
+      return <Navigate to="/task-tracking/login" replace />;
+    }
     return <Navigate to={`/login?redirect=${redirectParam}`} replace />;
   }
 
   // Additional check for domain (redundant but safe)
   if (!user.email?.endsWith('@fsb.edu.vn')) {
     const redirectParam = getRedirectParam();
+    // Special handling for task-tracking routes
+    if (location.pathname.startsWith('/task-tracking')) {
+      return <Navigate to="/task-tracking/login" replace />;
+    }
     return <Navigate to={`/login?redirect=${redirectParam}`} replace />;
   }
 

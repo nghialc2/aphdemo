@@ -421,10 +421,41 @@ export default function EnhancedWeeklyDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <RefreshCw className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-xl text-gray-700 font-medium">Loading weekly insights...</p>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        {/* Fast skeleton header */}
+        <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 px-6 py-4 sticky top-0 z-10">
+          <div className="flex items-center justify-between max-w-7xl mx-auto">
+            <div className="flex items-center space-x-4">
+              <div className="w-20 h-8 bg-gray-200 rounded animate-pulse" />
+              <div className="h-6 w-px bg-gray-300" />
+              <div className="w-16 h-8 bg-gray-200 rounded animate-pulse" />
+            </div>
+            <div className="w-24 h-8 bg-gray-200 rounded animate-pulse" />
+          </div>
+        </div>
+        
+        {/* Fast skeleton content */}
+        <div className="container mx-auto px-6 py-8">
+          <div className="text-center mb-10">
+            <div className="w-96 h-12 bg-gray-200 rounded mx-auto mb-4 animate-pulse" />
+            <div className="w-64 h-6 bg-gray-200 rounded mx-auto animate-pulse" />
+          </div>
+          
+          <div className="max-w-3xl mx-auto mb-8">
+            <div className="bg-white/90 p-4 rounded-xl border border-blue-200 shadow-lg">
+              <div className="w-full h-12 bg-gray-200 rounded animate-pulse" />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {[1,2,3,4].map(i => (
+              <div key={i} className="bg-white/90 p-6 rounded-xl border border-blue-200">
+                <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4 animate-pulse" />
+                <div className="w-full h-6 bg-gray-200 rounded mb-2 animate-pulse" />
+                <div className="w-3/4 h-4 bg-gray-200 rounded mx-auto animate-pulse" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );

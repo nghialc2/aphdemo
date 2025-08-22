@@ -8,7 +8,7 @@ interface SplineSceneProps {
   className?: string
 }
 
-// Professional static background - no loading indicators
+// Professional static background - optimized loading
 const StaticBackground = () => (
   <div className="w-full h-full bg-gradient-to-br from-slate-900 via-blue-900/20 to-purple-900/30 relative overflow-hidden">
     {/* Subtle animated particles/dots */}

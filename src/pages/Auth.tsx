@@ -1,6 +1,8 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import AuthForm from '@/components/auth/AuthForm';
 import Logo from '@/components/ui/Logo';
+import { perfOptimizer } from '@/utils/performanceOptimizer';
 
 // Professional static background matching FPT Tower aesthetic
 const FPTTowerBackground = () => (
@@ -87,22 +89,15 @@ const VideoBackground = ({ videoUrl }: { videoUrl: string }) => {
 };
 
 const Auth = () => {
-  // Preload video for faster loading
+  const navigate = useNavigate();
+  
+  // Smart preloading strategy for faster perceived loading
   React.useEffect(() => {
-    const videoLink = document.createElement('link')
-    videoLink.rel = 'preload'
-    videoLink.href = '/FPT_Tower.mp4'
-    videoLink.as = 'video'
-    videoLink.type = 'video/mp4'
-    document.head.appendChild(videoLink)
-
-    return () => {
-      try {
-        document.head.removeChild(videoLink)
-      } catch (e) {
-        // Element might already be removed
-      }
-    }
+    // Advanced video optimization
+    perfOptimizer.runWhenIdle(() => {
+      perfOptimizer.preloadResource('/FPT_Tower.mp4', 'video', 'high')
+        .catch(() => console.warn('Video preload failed, will load on demand'));
+    }, 100);
   }, [])
 
   return (
@@ -112,7 +107,8 @@ const Auth = () => {
         <img 
           src="/lovable-uploads/d0043d77-a2db-44b0-b64d-aa59b3ada6a7.png" 
           alt="FPT School of Business & Technology" 
-          className="h-16 w-auto"
+          className="h-16 w-auto cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={() => navigate('/explore')}
         />
       </div>
 

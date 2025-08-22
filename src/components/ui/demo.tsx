@@ -5,37 +5,40 @@ import { Card } from "@/components/ui/card"
 import { Spotlight } from "@/components/ui/spotlight"
 import { InteractiveSpotlight } from "@/components/ui/interactive-spotlight"
 import { useEffect, useRef, useState } from "react"
+import { perfOptimizer } from "@/utils/performanceOptimizer"
  
 export function SplineSceneBasic() {
   const [shouldLoad, setShouldLoad] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // Aggressive preloading for immediate 3D scene availability
-    const link = document.createElement('link')
-    link.rel = 'preload'
-    link.href = 'https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode'
-    link.as = 'fetch'
-    link.crossOrigin = 'anonymous'
-    document.head.appendChild(link)
-
-    // Also prefetch the Spline runtime
-    const splineLink = document.createElement('link')
-    splineLink.rel = 'modulepreload'
-    splineLink.href = 'https://unpkg.com/@splinetool/runtime'
-    document.head.appendChild(splineLink)
-
-    // Start loading immediately for landing page (no intersection observer delay)
-    setShouldLoad(true)
-
-    return () => {
+    // Advanced performance optimization strategy
+    const initializeScene = async () => {
       try {
-        document.head.removeChild(link)
-        document.head.removeChild(splineLink)
-      } catch (e) {
-        // Elements might already be removed
+        // Parallel preloading of critical resources
+        await Promise.all([
+          perfOptimizer.preloadResource(
+            'https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode', 
+            'fetch', 
+            'high'
+          ),
+          perfOptimizer.preloadResource(
+            'https://unpkg.com/@splinetool/runtime', 
+            'script', 
+            'high'
+          )
+        ]);
+        
+        // Start scene loading after resources are ready
+        setShouldLoad(true);
+      } catch (error) {
+        console.warn('Resource preloading failed, loading scene anyway:', error);
+        setShouldLoad(true);
       }
-    }
+    };
+
+    // Use intelligent idle time loading
+    perfOptimizer.runWhenIdle(initializeScene, 300);
   }, [])
 
   return (

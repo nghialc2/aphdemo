@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/insights/client';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
 const TaskTrackingAuthForm = () => {
   const [loading, setLoading] = useState(false);
@@ -94,13 +94,13 @@ const TaskTrackingAuthForm = () => {
               <span>Đang đăng nhập...</span>
             </div>
           ) : (
-            <span className="font-medium">Đăng nhập vào Team Tracker</span>
+            <span className="font-medium">Đăng nhập</span>
           )}
         </Button>
       </form>
       
       <p className="text-center text-sm text-white/60">
-        Sử dụng tài khoản team để truy cập weekly dashboard
+        Sử dụng tài khoản chung cho toàn bộ team
       </p>
     </div>
   );

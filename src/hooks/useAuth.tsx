@@ -1,6 +1,6 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/insights/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,6 +10,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
+  isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -61,6 +62,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             } else if (redirectTo === 'documentation') {
               console.log('Redirecting to Documentation');
               navigate('/documentation');
+            } else if (redirectTo === 'task-tracking') {
+              console.log('Redirecting to Task Tracking');
+              navigate('/task-tracking');
             }
           }
         }
@@ -91,6 +95,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         redirectUrl = `${origin}/login?redirect=aph-lab`;
       } else if (redirectTo === 'documentation') {
         redirectUrl = `${origin}/login?redirect=documentation`;
+      } else if (redirectTo === 'task-tracking') {
+        redirectUrl = `${origin}/task-tracking/login?redirect=task-tracking`;
       }
 
       console.log('Signing in with Google, redirect URL:', redirectUrl);
@@ -133,7 +139,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         });
         
         // Check current route and redirect if needed
-        if (window.location.pathname === '/aph-lab' || window.location.pathname.startsWith('/documentation')) {
+        if (window.location.pathname === '/aph-lab' || window.location.pathname.startsWith('/documentation') || window.location.pathname.startsWith('/task-tracking')) {
           navigate('/explore');
         }
       }
@@ -148,7 +154,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       session,
       signInWithGoogle,
       signOut,
-      loading
+      loading,
+      isAuthenticated: !!user && !!user.email?.endsWith('@fsb.edu.vn')
     }}>
       {children}
     </AuthContext.Provider>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import DashboardHeader from '@/components/insights/dashboard/DashboardHeader';
 import NotebookGrid from '@/components/insights/dashboard/NotebookGrid';
 import EmptyDashboard from '@/components/insights/dashboard/EmptyDashboard';
@@ -7,6 +8,7 @@ import { useInsightsAuth } from '@/hooks/useInsightsAuth';
 import LoginPage from '@/components/ui/gaming-login';
 
 const InsightsDashboard = () => {
+  const navigate = useNavigate();
   console.log('🚀 InsightsDashboard RENDERING at:', new Date().toISOString());
   const { user, loading: authLoading, signInWithGoogle } = useInsightsAuth();
   
@@ -52,7 +54,8 @@ const InsightsDashboard = () => {
           <img 
             src="/lovable-uploads/d0043d77-a2db-44b0-b64d-aa59b3ada6a7.png" 
             alt="FPT School of Business & Technology" 
-            className="h-16 w-auto"
+            className="h-16 w-auto cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => navigate('/explore')}
           />
         </div>
 

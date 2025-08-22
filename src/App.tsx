@@ -73,10 +73,14 @@ const App = () => (
             <Route 
               path="/task-tracking" 
               element={
-                <InsightsProtectedRoute fallback={<TaskTrackingAuth />}>
+                <ProtectedRoute>
                   <EnhancedWeeklyDashboard />
-                </InsightsProtectedRoute>
+                </ProtectedRoute>
               } 
+            />
+            <Route 
+              path="/task-tracking/login" 
+              element={<TaskTrackingAuth />} 
             />
             <Route 
               path="/international-relations" 
