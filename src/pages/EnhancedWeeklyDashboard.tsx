@@ -30,6 +30,7 @@ import {
   Activity
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import TaskTrackingUserMenu from '@/components/TaskTrackingUserMenu';
 
 interface WeeklyData {
   id: string;
@@ -55,6 +56,7 @@ interface ActionItem {
   status: string;
   due_date?: string;
   notes?: string;
+  class?: string;
 }
 
 interface Decision {
@@ -62,6 +64,7 @@ interface Decision {
   title: string;
   description?: string;
   impact_level: string;
+  class?: string;
 }
 
 interface Discussion {
@@ -72,7 +75,20 @@ interface Discussion {
   status?: string;
   notes?: string;
   due_date?: string;
+  class?: string;
 }
+
+// Project categories and their colors
+const PROJECT_CATEGORIES = [
+  { id: 'all', name: 'All Projects', color: 'bg-gradient-to-r from-gray-500 to-gray-600', borderColor: 'border-gray-300', bgLight: 'bg-gray-50' },
+  { id: 'MBA', name: 'MBA', color: 'bg-gradient-to-r from-blue-500 to-blue-600', borderColor: 'border-blue-300', bgLight: 'bg-blue-50' },
+  { id: 'MSE', name: 'MSE', color: 'bg-gradient-to-r from-green-500 to-green-600', borderColor: 'border-green-300', bgLight: 'bg-green-50' },
+  { id: 'LBM', name: 'LBM', color: 'bg-gradient-to-r from-purple-500 to-purple-600', borderColor: 'border-purple-300', bgLight: 'bg-purple-50' },
+  { id: 'CUD', name: 'CUD', color: 'bg-gradient-to-r from-orange-500 to-orange-600', borderColor: 'border-orange-300', bgLight: 'bg-orange-50' },
+  { id: 'FPUB', name: 'FPUB', color: 'bg-gradient-to-r from-pink-500 to-pink-600', borderColor: 'border-pink-300', bgLight: 'bg-pink-50' },
+  { id: 'IR', name: 'IR', color: 'bg-gradient-to-r from-indigo-500 to-indigo-600', borderColor: 'border-indigo-300', bgLight: 'bg-indigo-50' },
+  { id: 'Other', name: 'Other Projects', color: 'bg-gradient-to-r from-teal-500 to-teal-600', borderColor: 'border-teal-300', bgLight: 'bg-teal-50' },
+];
 
 export default function EnhancedWeeklyDashboard() {
   const [weeklyData, setWeeklyData] = useState<WeeklyData | null>(null);
@@ -80,6 +96,7 @@ export default function EnhancedWeeklyDashboard() {
   const [showImporter, setShowImporter] = useState(false);
   const [currentWeek, setCurrentWeek] = useState('');
   const [availableWeeks, setAvailableWeeks] = useState<{date: string, hasData: boolean}[]>([]);
+  const [selectedProject, setSelectedProject] = useState('all');
   const navigate = useNavigate();
 
   // Get current week's Monday
@@ -199,7 +216,8 @@ export default function EnhancedWeeklyDashboard() {
         priority: item.priority,
         status: item.status,
         notes: item.notes,
-        due_date: item.dueDate
+        due_date: item.dueDate,
+        class: item.class || 'Other'
       }));
 
       setWeeklyData({
@@ -236,6 +254,12 @@ export default function EnhancedWeeklyDashboard() {
       const actionItemsData = data.filter(item => item.type?.toLowerCase() === 'action item' && item.content?.trim());
       const decisionsData = data.filter(item => item.type?.toLowerCase() === 'decision' && item.content?.trim());
       const discussionsData = data.filter(item => item.type?.toLowerCase() === 'discussion' && item.content?.trim());
+      
+      console.log('Processed data with Class field:', {
+        actionItems: actionItemsData,
+        decisions: decisionsData,
+        discussions: discussionsData
+      });
 
       // Delete existing data for this week first
       await supabase.from('weekly_meetings').delete().eq('week_date', weekStartDate);
@@ -276,6 +300,7 @@ export default function EnhancedWeeklyDashboard() {
           priority: item.priority?.toLowerCase() || 'medium',
           status: item.status?.toLowerCase() || 'in_progress',
           notes: item.notes || null,
+          class: item.class || 'Other',
           week_date: weekStartDate,
           weekly_meeting_id: meetingData.id,
           created_by: 'anonymous'
@@ -291,6 +316,7 @@ export default function EnhancedWeeklyDashboard() {
           description: item.notes || null,
           impact_level: item.priority?.toLowerCase() || 'medium',
           status: 'decided',
+          class: item.class || 'Other',
           created_by: 'anonymous'
         }]);
       }
@@ -345,6 +371,41 @@ export default function EnhancedWeeklyDashboard() {
     }
   };
 
+  // Filter items by selected project
+  const filterByProject = (items: any[]) => {
+    if (selectedProject === 'all') return items;
+    return items.filter(item => item.class === selectedProject || (!item.class && selectedProject === 'Other'));
+  };
+
+  // Get project info by class
+  const getProjectInfo = (projectClass: string) => {
+    return PROJECT_CATEGORIES.find(p => p.id === (projectClass || 'Other')) || PROJECT_CATEGORIES[PROJECT_CATEGORIES.length - 1];
+  };
+
+  // Count items by project
+  const getProjectCounts = () => {
+    const counts: Record<string, number> = {};
+    PROJECT_CATEGORIES.forEach(project => {
+      if (project.id === 'all') {
+        counts['all'] = (weeklyData?.action_items?.length || 0) + 
+                       (weeklyData?.decisions?.length || 0) + 
+                       (weeklyData?.discussions?.length || 0);
+      } else {
+        const actionCount = weeklyData?.action_items?.filter(item => 
+          (item.class === project.id) || (!item.class && project.id === 'Other')
+        ).length || 0;
+        const decisionCount = weeklyData?.decisions?.filter(item => 
+          (item.class === project.id) || (!item.class && project.id === 'Other')
+        ).length || 0;
+        const discussionCount = weeklyData?.discussions?.filter(item => 
+          (item.class === project.id) || (!item.class && project.id === 'Other')
+        ).length || 0;
+        counts[project.id] = actionCount + decisionCount + discussionCount;
+      }
+    });
+    return counts;
+  };
+
   const getStatusIcon = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'done': return <CheckCircle className="h-5 w-5 text-green-600" />;
@@ -387,6 +448,7 @@ export default function EnhancedWeeklyDashboard() {
               <Activity className="h-3 w-3 mr-1" />
               Live Dashboard
             </Badge>
+            <TaskTrackingUserMenu />
           </div>
         </div>
       </div>
@@ -594,6 +656,47 @@ export default function EnhancedWeeklyDashboard() {
           </div>
         </div>
 
+        {/* Project Tabs - Only show when data exists */}
+        {weeklyData && (
+          <div className="max-w-7xl mx-auto mb-8">
+            <Card className="bg-white/90 backdrop-blur-sm border border-blue-200 shadow-lg">
+              <CardContent className="p-4">
+                <div className="flex flex-wrap gap-2 items-center">
+                  <span className="text-sm font-semibold text-gray-600 mr-3">Filter by Project:</span>
+                  {PROJECT_CATEGORIES.map(project => {
+                    const count = getProjectCounts()[project.id] || 0;
+                    const isActive = selectedProject === project.id;
+                    return (
+                      <Button
+                        key={project.id}
+                        onClick={() => setSelectedProject(project.id)}
+                        variant={isActive ? "default" : "outline"}
+                        className={`
+                          relative transition-all duration-200 transform hover:scale-105
+                          ${isActive 
+                            ? `${project.color} text-white border-0 shadow-lg` 
+                            : `bg-white hover:bg-gray-50 ${project.borderColor} border-2`
+                          }
+                        `}
+                      >
+                        <span className="font-semibold">{project.name}</span>
+                        {count > 0 && (
+                          <Badge 
+                            className={`ml-2 ${isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-700'}`}
+                            variant="secondary"
+                          >
+                            {count}
+                          </Badge>
+                        )}
+                      </Button>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {/* Content */}
         {!weeklyData ? (
           <div className="text-center py-16">
@@ -776,19 +879,24 @@ export default function EnhancedWeeklyDashboard() {
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        {weeklyData.action_items.map((item, idx) => (
-                          <div key={item.id} className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200 hover:shadow-md transition-all">
-                            <div className="flex items-start justify-between mb-3">
-                              <div className="flex items-center space-x-2">
-                                {getStatusIcon(item.status)}
-                                <Badge className={getPriorityColor(item.priority)} variant="secondary">
-                                  {item.priority}
+                        {filterByProject(weeklyData.action_items).map((item, idx) => {
+                          const projectInfo = getProjectInfo(item.class || 'Other');
+                          return (
+                            <div key={item.id} className={`p-4 rounded-xl border-2 ${projectInfo.borderColor} ${projectInfo.bgLight} hover:shadow-md transition-all`}>
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex items-center space-x-2">
+                                  {getStatusIcon(item.status)}
+                                  <Badge className={getPriorityColor(item.priority)} variant="secondary">
+                                    {item.priority}
+                                  </Badge>
+                                  <Badge className={`${projectInfo.color} text-white text-xs px-2 py-1`}>
+                                    {projectInfo.name}
+                                  </Badge>
+                                </div>
+                                <Badge variant="outline" className="text-xs">
+                                  #{idx + 1}
                                 </Badge>
                               </div>
-                              <Badge variant="outline" className="text-xs">
-                                #{idx + 1}
-                              </Badge>
-                            </div>
                             
                             <h4 className="font-semibold text-gray-900 mb-2 leading-tight">{item.title}</h4>
                             
@@ -822,8 +930,9 @@ export default function EnhancedWeeklyDashboard() {
                                 {item.status.replace('_', ' ')}
                               </Badge>
                             </div>
-                          </div>
-                        ))}
+                            </div>
+                          );
+                        })}
                       </div>
                     </CardContent>
                   </Card>
@@ -845,12 +954,14 @@ export default function EnhancedWeeklyDashboard() {
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        {weeklyData.discussions.map((discussion, idx) => (
-                          <div key={discussion.id} className="bg-gradient-to-r from-teal-50 to-cyan-50 p-4 rounded-xl border border-teal-200 hover:shadow-md transition-all">
-                            <div className="flex items-start justify-between mb-3">
-                              <div className="flex items-center space-x-2">
-                                <div className="bg-gradient-to-r from-teal-500 to-cyan-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
-                                  {idx + 1}
+                        {filterByProject(weeklyData.discussions).map((discussion, idx) => {
+                          const projectInfo = getProjectInfo(discussion.class || 'Other');
+                          return (
+                            <div key={discussion.id} className={`p-4 rounded-xl border-2 ${projectInfo.borderColor} ${projectInfo.bgLight} hover:shadow-md transition-all`}>
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex items-center space-x-2">
+                                  <div className="bg-gradient-to-r from-teal-500 to-cyan-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
+                                    {idx + 1}
                                 </div>
                                 {discussion.priority && (
                                   <Badge className={getPriorityColor(discussion.priority)} variant="secondary">
@@ -885,8 +996,9 @@ export default function EnhancedWeeklyDashboard() {
                                 </div>
                               )}
                             </div>
-                          </div>
-                        ))}
+                            </div>
+                          );
+                        })}
                       </div>
                     </CardContent>
                   </Card>
@@ -908,16 +1020,23 @@ export default function EnhancedWeeklyDashboard() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {weeklyData.decisions.map((decision, idx) => (
-                          <div key={decision.id} className="bg-gradient-to-r from-purple-50 to-pink-50 p-5 rounded-xl border border-purple-200">
-                            <div className="flex items-start justify-between mb-3">
-                              <div className="bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">
-                                {idx + 1}
+                        {filterByProject(weeklyData.decisions).map((decision, idx) => {
+                          const projectInfo = getProjectInfo(decision.class || 'Other');
+                          return (
+                            <div key={decision.id} className={`p-5 rounded-xl border-2 ${projectInfo.borderColor} ${projectInfo.bgLight}`}>
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex items-center space-x-2">
+                                  <div className="bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+                                    {idx + 1}
+                                  </div>
+                                  <Badge className={`${projectInfo.color} text-white text-xs px-2 py-1`}>
+                                    {projectInfo.name}
+                                  </Badge>
+                                </div>
+                                <Badge className={`${getPriorityColor(decision.impact_level)} ml-2`}>
+                                  {decision.impact_level} impact
+                                </Badge>
                               </div>
-                              <Badge className={`${getPriorityColor(decision.impact_level)} ml-2`}>
-                                {decision.impact_level} impact
-                              </Badge>
-                            </div>
                             
                             <h4 className="font-bold text-gray-900 mb-2 text-lg">{decision.title}</h4>
                             
@@ -933,9 +1052,10 @@ export default function EnhancedWeeklyDashboard() {
                                 <TrendingUp className="h-4 w-4 mr-1" />
                                 Strategic Impact
                               </div>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </CardContent>
                   </Card>

@@ -20,6 +20,7 @@ import { googleSheetsService } from '@/services/googleSheetsAPI';
 import { GoogleSheetsStatus } from './GoogleSheetsStatus';
 
 interface MeetingMinutesRow {
+  class: string;
   type: string;
   content: string;
   assignee: string;
@@ -147,15 +148,16 @@ export const SimpleGoogleSheetsImporter: React.FC<SimpleGoogleSheetsImporterProp
       // Better CSV parsing that handles quoted values
       const columns = parseCSVLine(line);
       
-      if (columns.length >= 2) { // At least type and content
+      if (columns.length >= 3) { // At least class, type and content
         rows.push({
-          type: columns[0] || '',
-          content: columns[1] || '',
-          assignee: columns[2] || '',
-          dueDate: columns[3] || '',
-          priority: columns[4] || '',
-          status: columns[5] || '',
-          notes: columns[6] || ''
+          class: columns[0] || 'Other',
+          type: columns[1] || '',
+          content: columns[2] || '',
+          assignee: columns[3] || '',
+          dueDate: columns[4] || '',
+          priority: columns[5] || '',
+          status: columns[6] || '',
+          notes: columns[7] || ''
         });
       }
     }

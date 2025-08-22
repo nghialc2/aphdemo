@@ -19,6 +19,7 @@ import ExplorationPage from "./pages/ExplorationPage";
 import BlogPage from "./pages/BlogPage";
 import BlogPostPage from "./pages/BlogPostPage";
 import EnhancedWeeklyDashboard from "./pages/EnhancedWeeklyDashboard";
+import TaskTrackingAuth from "./pages/TaskTrackingAuth";
 import InternationalRelationsDashboard from "./pages/InternationalRelationsDashboard";
 import ISODashboard from "./pages/ISODashboard";
 import SecretNoteDashboard from "./pages/SecretNoteDashboard";
@@ -71,7 +72,11 @@ const App = () => (
               />
             <Route 
               path="/task-tracking" 
-              element={<EnhancedWeeklyDashboard />} 
+              element={
+                <InsightsProtectedRoute fallback={<TaskTrackingAuth />}>
+                  <EnhancedWeeklyDashboard />
+                </InsightsProtectedRoute>
+              } 
             />
             <Route 
               path="/international-relations" 

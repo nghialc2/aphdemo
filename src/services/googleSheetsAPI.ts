@@ -13,6 +13,7 @@ interface SheetInfo {
 }
 
 interface MeetingMinutesRow {
+  class: string;
   type: string;
   content: string;
   assignee: string;
@@ -103,7 +104,7 @@ class GoogleSheetsService {
   async readSheetData(
     spreadsheetId: string, 
     sheetName?: string, 
-    range: string = 'A:G'
+    range: string = 'A:H'
   ): Promise<string[][]> {
     try {
       const fullRange = sheetName ? `${sheetName}!${range}` : range;
@@ -160,17 +161,19 @@ class GoogleSheetsService {
     }
 
     // Skip header row and convert to MeetingMinutesRow format
+    // New column structure: Class, Type, Content, Assignee, Due Date, Priority, Status, Notes
     const data: MeetingMinutesRow[] = rawData
       .slice(1) // Skip header
-      .filter(row => row.length > 1 && row[1]?.toString().trim()) // Must have content
+      .filter(row => row.length > 2 && row[2]?.toString().trim()) // Must have content (column C)
       .map(row => ({
-        type: row[0]?.toString() || '',
-        content: row[1]?.toString() || '',
-        assignee: row[2]?.toString() || '',
-        dueDate: row[3]?.toString() || '',
-        priority: row[4]?.toString() || '',
-        status: row[5]?.toString() || '',
-        notes: row[6]?.toString() || '',
+        class: row[0]?.toString() || 'Other',  // Column A: Class
+        type: row[1]?.toString() || '',        // Column B: Type
+        content: row[2]?.toString() || '',     // Column C: Content
+        assignee: row[3]?.toString() || '',    // Column D: Assignee
+        dueDate: row[4]?.toString() || '',     // Column E: Due Date
+        priority: row[5]?.toString() || '',    // Column F: Priority
+        status: row[6]?.toString() || '',      // Column G: Status
+        notes: row[7]?.toString() || '',       // Column H: Notes
       }));
 
     return {
@@ -198,7 +201,7 @@ class GoogleSheetsService {
       try {
         const data = await this.readSheetData(spreadsheetId, sheet.sheetName);
         const itemCount = data.slice(1).filter(row => 
-          row.length > 1 && row[1]?.toString().trim()
+          row.length > 2 && row[2]?.toString().trim()  // Content is now in column C
         ).length;
 
         // Extract date from sheet name
