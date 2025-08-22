@@ -136,7 +136,7 @@ export default function ExplorationPage() {
                     InsightsLM
                   </Link>
                   <Link 
-                    to="/login?redirect=task-tracking" 
+                    to="/task-tracking" 
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     onClick={() => setRndHubDropdownOpen(false)}
                   >

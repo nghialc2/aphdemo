@@ -19,6 +19,14 @@ const Login = () => {
         navigate('/aph-lab');
       } else if (redirectTo === 'documentation') {
         navigate('/documentation');
+      } else if (redirectTo === 'task-tracking') {
+        navigate('/task-tracking');
+      } else if (redirectTo === 'international-relations') {
+        navigate('/international-relations');
+      } else if (redirectTo === 'iso') {
+        navigate('/iso');
+      } else if (redirectTo === 'secret-note') {
+        navigate('/secret-note');
       } else {
         navigate('/');
       }
