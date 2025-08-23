@@ -127,7 +127,7 @@ export default function ExplorationPage() {
       <div className="absolute inset-0 bg-black/15" />
       
       {/* Navigation Header */}
-      <header className="relative z-10 w-full py-6 px-6">
+      <header className="relative z-[60] w-full py-6 px-6">
         <div className="w-full flex justify-end items-center pr-6">
           {/* Navigation Menu */}
           <nav className="flex items-center space-x-6">
@@ -143,7 +143,7 @@ export default function ExplorationPage() {
               </button>
               
               {rndHubDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-gray-200 py-2 z-50">
+                <div className="absolute right-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-gray-200 py-2 z-[60]">
                   <Link 
                     to="/task-tracking/login" 
                     className="block px-4 py-2 text-gray-800 hover:bg-blue-50 hover:text-blue-600 font-medium"
@@ -188,7 +188,7 @@ export default function ExplorationPage() {
               </button>
               
               {programDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-gray-200 py-2 z-50">
+                <div className="absolute right-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-gray-200 py-2 z-[60]">
                   <Link 
                     to="/login?redirect=aph-lab" 
                     className="block px-4 py-2 text-gray-800 hover:bg-blue-50 hover:text-blue-600 font-medium"
