@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -21,6 +21,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const lastSessionId = useRef<string | null>(null);
 
   useEffect(() => {
     // Set up auth state listener
@@ -32,7 +33,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setLoading(false);
 
         // Check domain restriction when user signs in
-        if (event === 'SIGNED_IN' && session?.user?.email) {
+        // Only show toast if this is a new session (not just tab refocus)
+        if (event === 'SIGNED_IN' && session?.user?.email && session.access_token !== lastSessionId.current) {
+          lastSessionId.current = session.access_token;
           const email = session.user.email;
           if (!email.endsWith('@fsb.edu.vn')) {
             console.log('Domain not allowed:', email);
@@ -76,6 +79,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      // Store the initial session ID to prevent duplicate toasts
+      if (session?.access_token) {
+        lastSessionId.current = session.access_token;
+      }
     });
 
     return () => subscription.unsubscribe();

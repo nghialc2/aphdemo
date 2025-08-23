@@ -5,6 +5,12 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { SimpleGoogleSheetsImporter } from '@/components/task-tracking/SimpleGoogleSheetsImporter';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { 
   Calendar, 
   FileText,
@@ -306,7 +312,21 @@ export default function SimpleWeeklyDashboard() {
               Back to Explore
             </Button>
             <div className="h-6 w-px bg-gray-300" />
-            <img src="/logo_FSB_new.png" alt="FSB Logo" className="h-8" />
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <img 
+                    src="/logo_FSB_new.png" 
+                    alt="FSB Logo" 
+                    className="h-8 cursor-pointer hover:opacity-80 transition-opacity" 
+                    onClick={() => navigate('/explore')}
+                  />
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="bg-gray-900 text-white px-2 py-1 text-sm">
+                  Trở về trang chủ
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           <h2 className="text-xl font-semibold text-gray-900">Weekly Dashboard</h2>
         </div>

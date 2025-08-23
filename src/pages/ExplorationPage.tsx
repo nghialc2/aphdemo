@@ -1,46 +1,59 @@
-
-import { CircularRevealHeading } from "@/components/ui/circular-reveal-heading";
 import { Link } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { supabase as insightsSupabase } from "@/integrations/supabase/insights/client";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-// Import the logo directly
-import logoFSB from "/logo_FSB_new.png";
-import CEO from "/CEO.jpg";
-import CIO from "/CIO.jpg";
-import CTO from "/CTO.jpg";
-
-// FPT brand colors
-const fptBlue = "#2D4B9A";
-const fptOrange = "#F37021";
-const fptGreen = "#7BC144";
-const burgundy = "#800020"; // Burgundy/maroon color
-
-const items = [
-    {
-        text: "AI-Informed Business Leaders (CEO track)",
-        description: "Những nhà lãnh đạo hiểu biết về AI, có khả năng ứng dụng AI cho các việc ra quyết định và các tác vụ hàng ngày\n\n- Ứng dụng AI chủ yếu:\n   • Các mô hình LLM\n   • AI Assistant\n\n- Các chương trình đào tạo tại FSB:\n   • SEMBA\n   • AIS\n   • GMM\n   • MicroMBA",
-        color: fptBlue,
-        image: CEO
-    },
-    {
-        text: "AI Practitioner/Integrator (CIO track)",
-        description: "Những chuyên gia có khả năng triển khai và tích hợp các công nghệ AI vào hoạt động kinh doanh và quản trị. Có năng lực lựa chọn, điều chỉnh và tối ưu hóa các giải pháp AI trong môi trường thực tiễn.\n\n- Ứng dụng AI chủ yếu:\n   • Các giải pháp AI tích hợp\n   • Tự động hóa quy trình (Automation)\n   • AI Agents\n   • Data-driven model\n\n- Các chương trình đào tạo tại FSB:\n   • MSE-BA\n   • AIA\n   • APH",
-        color: fptOrange,
-        image: CIO
-    },
-    {
-        text: "AI Specialist/Expert (CTO track)",
-        description: "Các chuyên gia hàng đầu về công nghệ AI, nắm vững kiến thức chuyên môn sâu về thuật toán, mô hình AI, và khả năng nghiên cứu phát triển các giải pháp AI mới trong tương lai\n\n- Ứng dụng AI chủ yếu:\n   • Nghiên cứu phát triển thuật toán mới\n   • Tối ưu hóa các mô hình AI tiên tiến:\n      * Machine Learning\n      * Deep Learning\n      * NLP\n      * Computer Vision\n\n- Các chương trình đào tạo tại FSB:\n   • MSE-AI",
-        color: fptGreen,
-        image: CTO
-    }
-];
 
 export default function ExplorationPage() {
   const [programDropdownOpen, setProgramDropdownOpen] = useState(false);
   const [rndHubDropdownOpen, setRndHubDropdownOpen] = useState(false);
   const rndHubRef = useRef<HTMLDivElement>(null);
   const programRef = useRef<HTMLDivElement>(null);
+  
+  // Automatically sign out from all auth contexts when accessing /explore
+  useEffect(() => {
+    const signOutFromAllContexts = async () => {
+      try {
+        // Clear any session data from localStorage to prevent conflicts
+        localStorage.removeItem('supabase.auth.token');
+        sessionStorage.clear();
+        
+        // Sign out from main auth context
+        const { error: mainError } = await supabase.auth.signOut();
+        if (mainError) {
+          console.error('Error signing out from main auth:', mainError);
+        } else {
+          console.log('Successfully signed out from main auth');
+        }
+        
+        // Sign out from insights auth context
+        const { error: insightsError } = await insightsSupabase.auth.signOut();
+        if (insightsError) {
+          console.error('Error signing out from insights auth:', insightsError);
+        } else {
+          console.log('Successfully signed out from insights auth');
+        }
+        
+        // Clear any remaining auth-related localStorage items
+        Object.keys(localStorage).forEach(key => {
+          if (key.includes('supabase') || key.includes('auth')) {
+            localStorage.removeItem(key);
+          }
+        });
+      } catch (error) {
+        console.error('Error during sign out:', error);
+      }
+    };
+    
+    // Execute sign out when component mounts
+    signOutFromAllContexts();
+  }, []); // Run only once on mount
   
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -91,111 +104,94 @@ export default function ExplorationPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 relative">
-      {/* Header with FSB Logo and Navigation */}
-      <header className="w-full bg-white shadow-sm py-2 px-6">
-        <div className="container mx-auto flex justify-between items-center">
-          <div>
-            <img src={logoFSB} alt="FSB Logo" className="h-16" />
-          </div>
-          
+    <div className="min-h-screen flex flex-col relative overflow-hidden">
+      {/* Background Image with Overlay */}
+      <div 
+        className="absolute bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('/rnd-team.jpg')`,
+          backgroundPosition: 'center center',
+          backgroundSize: 'cover',
+          transform: 'translateY(50px)',
+          top: '-50px',
+          left: '0',
+          right: '0',
+          height: 'calc(100vh + 50px)'
+        }}
+      />
+      
+      {/* Balanced Grey Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900/55 via-slate-800/50 to-slate-900/60" />
+      
+      {/* Additional subtle pattern overlay for texture */}
+      <div className="absolute inset-0 bg-black/15" />
+      
+      {/* Navigation Header */}
+      <header className="relative z-10 w-full py-6 px-6">
+        <div className="w-full flex justify-end items-center pr-6">
           {/* Navigation Menu */}
           <nav className="flex items-center space-x-6">
-            <Link to="/blog" className="text-gray-700 hover:text-fptBlue font-medium">Blog</Link>
+            <Link to="/blog" className="text-white font-bold text-lg drop-shadow-lg hover:text-blue-200 transition-colors px-6 py-3 rounded-xl hover:bg-black/30 backdrop-blur-sm border border-white/30 shadow-lg">Blog</Link>
             
-            {/* R&D Hub dropdown */}
+            {/* R&D Hub Dropdown */}
             <div className="relative" ref={rndHubRef}>
-              <button 
+              <button
                 onClick={toggleRndHubDropdown}
-                className="text-gray-700 hover:text-fptBlue font-medium flex items-center"
+                className="text-white font-bold text-lg drop-shadow-lg hover:text-blue-200 focus:outline-none focus:text-blue-200 transition-colors px-6 py-3 rounded-xl hover:bg-black/30 backdrop-blur-sm border border-white/30 shadow-lg"
               >
                 R&D Hub
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="16" 
-                  height="16" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  className="ml-1"
-                >
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
               </button>
               
               {rndHubDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg overflow-hidden z-20">
+                <div className="absolute right-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-gray-200 py-2 z-50">
                   <Link 
-                    to="/documentation" 
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setRndHubDropdownOpen(false)}
-                  >
-                    InsightsLM
-                  </Link>
-                  <Link 
-                    to="/task-tracking" 
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setRndHubDropdownOpen(false)}
+                    to="/task-tracking/login" 
+                    className="block px-4 py-2 text-gray-800 hover:bg-blue-50 hover:text-blue-600 font-medium"
                   >
                     Task & Tracking
                   </Link>
                   <Link 
+                    to="/documentation" 
+                    className="block px-4 py-2 text-gray-800 hover:bg-blue-50 hover:text-blue-600 font-medium"
+                  >
+                    InsightsLM
+                  </Link>
+                  <Link 
                     to="/login?redirect=international-relations" 
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setRndHubDropdownOpen(false)}
+                    className="block px-4 py-2 text-gray-800 hover:bg-blue-50 hover:text-blue-600 font-medium"
                   >
                     International Relations
                   </Link>
                   <Link 
                     to="/login?redirect=iso" 
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setRndHubDropdownOpen(false)}
+                    className="block px-4 py-2 text-gray-800 hover:bg-blue-50 hover:text-blue-600 font-medium"
                   >
-                    ISO
+                    ISO Management
                   </Link>
                   <Link 
                     to="/login?redirect=secret-note" 
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setRndHubDropdownOpen(false)}
+                    className="block px-4 py-2 text-gray-800 hover:bg-blue-50 hover:text-blue-600 font-medium"
                   >
-                    Secret note
+                    Secret Note
                   </Link>
                 </div>
               )}
             </div>
-            
-            {/* Program dropdown */}
+
+            {/* Program Lab Dropdown */}
             <div className="relative" ref={programRef}>
-              <button 
+              <button
                 onClick={toggleProgramDropdown}
-                className="text-gray-700 hover:text-fptBlue font-medium flex items-center"
+                className="text-white font-bold text-lg drop-shadow-lg hover:text-blue-200 focus:outline-none focus:text-blue-200 transition-colors px-6 py-3 rounded-xl hover:bg-black/30 backdrop-blur-sm border border-white/30 shadow-lg"
               >
                 Program Lab
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="16" 
-                  height="16" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  className="ml-1"
-                >
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
               </button>
               
               {programDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden z-20">
+                <div className="absolute right-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-gray-200 py-2 z-50">
                   <Link 
                     to="/login?redirect=aph-lab" 
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setProgramDropdownOpen(false)}
+                    className="block px-4 py-2 text-gray-800 hover:bg-blue-50 hover:text-blue-600 font-medium"
                   >
                     APH Lab
                   </Link>
@@ -207,28 +203,14 @@ export default function ExplorationPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 container mx-auto px-4 flex flex-col">
-        <div className="text-center mb-2 mt-4">
-          <h1 className="text-3xl font-bold text-gray-900">AI-Integrated Career Path for Leaders</h1>
-        </div>
-
-        <div className="flex justify-center mt-10 mb-16">
-          <CircularRevealHeading
-            items={items}
-            centerText={
-              <div className="text-2xl font-bold" style={{ color: burgundy }}>
-                AI Road Map
-              </div>
-            }
-            size="lg"
-          />
-        </div>
+      <main className="relative z-10 flex-1 flex items-center justify-center p-8">
+        {/* Content will be added later */}
       </main>
-      
-      {/* Copyright text - fixed at the bottom */}
-      <div className="w-full text-center py-4 text-gray-500 text-sm absolute bottom-0 left-0 right-0 bg-gray-50">
+
+      {/* Footer */}
+      <footer className="relative z-10 text-center py-4 bg-black/30 backdrop-blur-sm text-white/80 text-sm border-t border-white/10">
         © 2025 Designed by NghiaLC2. All rights reserved.
-      </div>
+      </footer>
     </div>
   );
-} 
+}

@@ -8,6 +8,12 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useNavigate } from 'react-router-dom';
 import { useTaskTracking } from '@/hooks/useTaskTracking';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { QuickActionsModal } from '@/components/task-tracking/QuickActionsModal';
 import { MeetingMinutesForm } from '@/components/task-tracking/MeetingMinutesForm';
 import { SimpleGoogleSheetsImporter } from '@/components/task-tracking/SimpleGoogleSheetsImporter';
@@ -242,7 +248,21 @@ export default function TaskTrackingDashboard() {
               Back to Explore
             </Button>
             <div className="h-6 w-px bg-gray-300" />
-            <img src="/logo_FSB_new.png" alt="FSB Logo" className="h-8" />
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <img 
+                    src="/logo_FSB_new.png" 
+                    alt="FSB Logo" 
+                    className="h-8 cursor-pointer hover:opacity-80 transition-opacity" 
+                    onClick={() => navigate('/explore')}
+                  />
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="bg-gray-900 text-white px-2 py-1 text-sm">
+                  Trở về trang chủ
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           <div className="flex items-center space-x-4">
             <h2 className="text-xl font-semibold text-gray-900">R&D Hub</h2>

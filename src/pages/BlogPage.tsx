@@ -1,9 +1,15 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Blog } from "@/components/ui/blog-section-with-rich-preview";
 import { ArrowLeft, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Import the logo directly
 import logoFSB from "/logo_FSB_new.png";
@@ -11,6 +17,7 @@ import logoFSB from "/logo_FSB_new.png";
 export default function BlogPage() {
   const { user, signInWithGoogle, signOut } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
+  const navigate = useNavigate();
 
   // Check if user is admin (nghialc2@fsb.edu.vn)
   const checkAdminStatus = () => {
@@ -30,7 +37,21 @@ export default function BlogPage() {
           </div>
           
           <div className="flex items-center">
-            <img src={logoFSB} alt="FSB Logo" className="h-16" />
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <img 
+                    src={logoFSB} 
+                    alt="FSB Logo" 
+                    className="h-16 cursor-pointer hover:opacity-80 transition-opacity" 
+                    onClick={() => navigate('/explore')}
+                  />
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="bg-gray-900 text-white px-2 py-1 text-sm">
+                  Trở về trang chủ
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
 
           <div className="flex items-center gap-4 w-32 justify-end">
@@ -146,7 +167,21 @@ export default function BlogPage() {
         <div className="container mx-auto px-6">
           <div className="grid md:grid-cols-4 gap-8">
             <div className="col-span-2">
-              <img src={logoFSB} alt="FSB Logo" className="h-16 mb-4 brightness-0 invert" />
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <img 
+                      src={logoFSB} 
+                      alt="FSB Logo" 
+                      className="h-16 mb-4 brightness-0 invert cursor-pointer hover:opacity-80 transition-opacity" 
+                      onClick={() => navigate('/explore')}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="bg-gray-900 text-white px-2 py-1 text-sm">
+                    Trở về trang chủ
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <p className="text-gray-400 mb-4 max-w-md">
                 Viện Quản trị và Công nghệ FSB - Dẫn đầu tương lai giáo dục kinh doanh với tích hợp AI và chuyển đổi số.
               </p>

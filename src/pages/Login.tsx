@@ -2,6 +2,12 @@ import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import LoginPage from '@/components/ui/gaming-login';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const Login = () => {
   console.log('🏠 Login (APH) RENDERING at:', new Date().toISOString());
@@ -52,12 +58,21 @@ const Login = () => {
     <div className="relative min-h-screen w-full flex items-center justify-center px-4 py-12">
       {/* FSB Logo - Top Left */}
       <div className="absolute top-6 left-6 z-30">
-        <img 
-          src="/lovable-uploads/d0043d77-a2db-44b0-b64d-aa59b3ada6a7.png" 
-          alt="FPT School of Business & Technology" 
-          className="h-16 w-auto cursor-pointer hover:opacity-80 transition-opacity"
-          onClick={() => navigate('/explore')}
-        />
+        <TooltipProvider delayDuration={0}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <img 
+                src="/lovable-uploads/d0043d77-a2db-44b0-b64d-aa59b3ada6a7.png" 
+                alt="FPT School of Business & Technology" 
+                className="h-16 w-auto cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => navigate('/explore')}
+              />
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="bg-gray-900 text-white px-2 py-1 text-sm">
+              Trở về trang chủ
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       <LoginPage.VideoBackground videoUrl="/FPT_Tower.mp4" />

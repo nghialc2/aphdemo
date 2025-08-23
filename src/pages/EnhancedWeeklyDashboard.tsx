@@ -30,6 +30,12 @@ import {
   Activity
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import TaskTrackingUserMenu from '@/components/TaskTrackingUserMenu';
 
 interface WeeklyData {
@@ -97,6 +103,7 @@ export default function EnhancedWeeklyDashboard() {
   const [currentWeek, setCurrentWeek] = useState('');
   const [availableWeeks, setAvailableWeeks] = useState<{date: string, hasData: boolean}[]>([]);
   const [selectedProject, setSelectedProject] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
   // Get current week's Monday
@@ -374,31 +381,77 @@ export default function EnhancedWeeklyDashboard() {
   // Filter items by selected project
   const filterByProject = (items: any[]) => {
     if (selectedProject === 'all') return items;
-    return items.filter(item => item.class === selectedProject || (!item.class && selectedProject === 'Other'));
+    
+    // Define known project IDs (excluding 'all' and 'Other')
+    const knownProjects = ['MBA', 'MSE', 'LBM', 'CUD', 'FPUB', 'IR'];
+    
+    if (selectedProject === 'Other') {
+      // For "Other", include items that:
+      // 1. Have no class field (null, undefined, empty string)
+      // 2. Have a class that's not in the known projects list
+      return items.filter(item => {
+        if (!item.class || item.class.trim() === '') return true;
+        return !knownProjects.includes(item.class);
+      });
+    } else {
+      // For known projects, match exactly
+      return items.filter(item => item.class === selectedProject);
+    }
   };
 
   // Get project info by class
   const getProjectInfo = (projectClass: string) => {
-    return PROJECT_CATEGORIES.find(p => p.id === (projectClass || 'Other')) || PROJECT_CATEGORIES[PROJECT_CATEGORIES.length - 1];
+    const knownProjects = ['MBA', 'MSE', 'LBM', 'CUD', 'FPUB', 'IR'];
+    
+    // If no class or empty string, return "Other"
+    if (!projectClass || projectClass.trim() === '') {
+      return PROJECT_CATEGORIES.find(p => p.id === 'Other')!;
+    }
+    
+    // If class is not in known projects, return "Other"
+    if (!knownProjects.includes(projectClass)) {
+      return PROJECT_CATEGORIES.find(p => p.id === 'Other')!;
+    }
+    
+    // Otherwise, find the matching project
+    return PROJECT_CATEGORIES.find(p => p.id === projectClass) || PROJECT_CATEGORIES.find(p => p.id === 'Other')!;
   };
 
   // Count items by project
   const getProjectCounts = () => {
     const counts: Record<string, number> = {};
+    const knownProjects = ['MBA', 'MSE', 'LBM', 'CUD', 'FPUB', 'IR'];
+    
     PROJECT_CATEGORIES.forEach(project => {
       if (project.id === 'all') {
         counts['all'] = (weeklyData?.action_items?.length || 0) + 
                        (weeklyData?.decisions?.length || 0) + 
                        (weeklyData?.discussions?.length || 0);
+      } else if (project.id === 'Other') {
+        // Count items that belong to "Other" category
+        const actionCount = weeklyData?.action_items?.filter(item => {
+          if (!item.class || item.class.trim() === '') return true;
+          return !knownProjects.includes(item.class);
+        }).length || 0;
+        const decisionCount = weeklyData?.decisions?.filter(item => {
+          if (!item.class || item.class.trim() === '') return true;
+          return !knownProjects.includes(item.class);
+        }).length || 0;
+        const discussionCount = weeklyData?.discussions?.filter(item => {
+          if (!item.class || item.class.trim() === '') return true;
+          return !knownProjects.includes(item.class);
+        }).length || 0;
+        counts['Other'] = actionCount + decisionCount + discussionCount;
       } else {
+        // Count items for specific known projects
         const actionCount = weeklyData?.action_items?.filter(item => 
-          (item.class === project.id) || (!item.class && project.id === 'Other')
+          item.class === project.id
         ).length || 0;
         const decisionCount = weeklyData?.decisions?.filter(item => 
-          (item.class === project.id) || (!item.class && project.id === 'Other')
+          item.class === project.id
         ).length || 0;
         const discussionCount = weeklyData?.discussions?.filter(item => 
-          (item.class === project.id) || (!item.class && project.id === 'Other')
+          item.class === project.id
         ).length || 0;
         counts[project.id] = actionCount + decisionCount + discussionCount;
       }
@@ -467,12 +520,21 @@ export default function EnhancedWeeklyDashboard() {
       <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 px-6 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/explore')} className="hover:bg-blue-100">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Explore
-            </Button>
-            <div className="h-6 w-px bg-gray-300" />
-            <img src="/logo_FSB_new.png" alt="FSB Logo" className="h-8" />
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <img 
+                    src="/logo_FSB_new.png" 
+                    alt="FSB Logo" 
+                    className="h-12 cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => navigate('/explore')}
+                  />
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="bg-gray-900 text-white px-2 py-1 text-sm">
+                  Trở về trang chủ
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           <div className="flex items-center space-x-4">
             <Badge variant="outline" className="text-blue-700 border-blue-300">

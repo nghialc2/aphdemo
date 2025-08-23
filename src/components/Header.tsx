@@ -3,6 +3,13 @@ import { Menu, X, Edit } from "lucide-react";
 import UserMenu from "./UserMenu";
 import { useAdmin } from "@/context/AdminContext";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -11,23 +18,40 @@ interface HeaderProps {
 
 const Header = ({ toggleSidebar, isSidebarOpen }: HeaderProps) => {
   const { isInEditMode } = useAdmin();
+  const navigate = useNavigate();
+  
+  const handleLogoClick = () => {
+    navigate('/explore');
+  };
   
   return (
     <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between fixed top-0 left-0 right-0 z-50 h-[60px]">
       <div className="flex items-center space-x-4">
-        {/* FSB Logo */}
-        <div className="flex-shrink-0">
-          <img 
-            src="/logo_FSB_new.png" 
-            alt="FPT School of Business & Technology" 
-            className="h-10 w-auto"
-            onError={(e) => {
-              console.error('Logo failed to load:', e);
-              // Fallback: hide the image if it fails to load
-              e.currentTarget.style.display = 'none';
-            }}
-          />
-        </div>
+        {/* FSB Logo - Clickable to go back to /explore */}
+        <TooltipProvider delayDuration={0}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div 
+                className="flex-shrink-0 cursor-pointer transition-opacity hover:opacity-80"
+                onClick={handleLogoClick}
+              >
+                <img 
+                  src="/logo_FSB_new.png" 
+                  alt="FPT School of Business & Technology" 
+                  className="h-10 w-auto"
+                  onError={(e) => {
+                    console.error('Logo failed to load:', e);
+                    // Fallback: hide the image if it fails to load
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="bg-gray-900 text-white px-2 py-1 text-sm">
+              Trở về trang chủ
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <div className="flex items-center gap-3">
           <h1 className="text-xl font-bold text-fpt-orange">AI-Powered HRM Training Lab</h1>
           {isInEditMode && (
