@@ -6,7 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Shield, Award, Calendar, AlertTriangle, CheckCircle, Clock, Plus, FileText } from "lucide-react";
-import Layout from "@/components/Layout";
 
 interface ISOStandard {
   id: string;
@@ -151,7 +150,7 @@ export default function ISODashboard() {
   const criticalRequirements = requirements.filter(r => r.priority === "high" && r.status !== "compliant").length;
 
   return (
-    <Layout>
+    <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-6 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -333,6 +332,6 @@ export default function ISODashboard() {
           </Card>
         </div>
       </div>
-    </Layout>
+    </div>
   );
 }

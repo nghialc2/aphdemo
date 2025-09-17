@@ -6,7 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Lock, Eye, EyeOff, Plus, Shield, Key, Trash2, Edit, Clock, AlertTriangle } from "lucide-react";
-import Layout from "@/components/Layout";
 
 interface SecretNote {
   id: string;
@@ -173,7 +172,7 @@ export default function SecretNoteDashboard() {
   };
 
   return (
-    <Layout>
+    <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-6 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -397,6 +396,6 @@ export default function SecretNoteDashboard() {
           </DialogContent>
         </Dialog>
       </div>
-    </Layout>
+    </div>
   );
 }

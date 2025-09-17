@@ -11,17 +11,23 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
   const location = useLocation();
  
-  // Determine redirect parameter based on current path
-  const getRedirectParam = () => {
+  // Determine redirect parameter and login route based on current path
+  const getRedirectInfo = () => {
     if (location.pathname.startsWith('/documentation')) {
-      return 'documentation';
+      return { param: 'documentation', loginRoute: '/documentation' };
     } else if (location.pathname.startsWith('/task-tracking')) {
-      return 'task-tracking';
+      return { param: 'task-tracking', loginRoute: '/task-tracking/login' };
+    } else if (location.pathname.startsWith('/international-relations')) {
+      return { param: 'international-relations', loginRoute: '/international-relations/login' };
+    } else if (location.pathname.startsWith('/iso')) {
+      return { param: 'iso', loginRoute: '/iso/login' };
+    } else if (location.pathname.startsWith('/secret-note')) {
+      return { param: 'secret-note', loginRoute: '/secret-note/login' };
     } else if (location.pathname === '/aph-lab') {
-      return 'aph-lab';
+      return { param: 'aph-lab', loginRoute: '/login?redirect=aph-lab' };
     }
     // Default to aph-lab for other protected routes
-    return 'aph-lab';
+    return { param: 'aph-lab', loginRoute: '/login?redirect=aph-lab' };
   };
 
   if (loading) {
@@ -36,22 +42,14 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   if (!user) {
-    const redirectParam = getRedirectParam();
-    // Special handling for task-tracking routes
-    if (location.pathname.startsWith('/task-tracking')) {
-      return <Navigate to="/task-tracking/login" replace />;
-    }
-    return <Navigate to={`/login?redirect=${redirectParam}`} replace />;
+    const { loginRoute } = getRedirectInfo();
+    return <Navigate to={loginRoute} replace />;
   }
 
   // Additional check for domain (redundant but safe)
   if (!user.email?.endsWith('@fsb.edu.vn')) {
-    const redirectParam = getRedirectParam();
-    // Special handling for task-tracking routes
-    if (location.pathname.startsWith('/task-tracking')) {
-      return <Navigate to="/task-tracking/login" replace />;
-    }
-    return <Navigate to={`/login?redirect=${redirectParam}`} replace />;
+    const { loginRoute } = getRedirectInfo();
+    return <Navigate to={loginRoute} replace />;
   }
 
   return <>{children}</>;

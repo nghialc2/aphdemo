@@ -145,7 +145,7 @@ export default function ExplorationPage() {
               {rndHubDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-gray-200 py-2 z-[60]">
                   <Link 
-                    to="/task-tracking/login" 
+                    to="/task-tracking" 
                     className="block px-4 py-2 text-gray-800 hover:bg-blue-50 hover:text-blue-600 font-medium"
                   >
                     Task & Tracking
@@ -157,19 +157,19 @@ export default function ExplorationPage() {
                     InsightsLM
                   </Link>
                   <Link 
-                    to="/login?redirect=international-relations" 
+                    to="/international-relations" 
                     className="block px-4 py-2 text-gray-800 hover:bg-blue-50 hover:text-blue-600 font-medium"
                   >
                     International Relations
                   </Link>
                   <Link 
-                    to="/login?redirect=iso" 
+                    to="/iso" 
                     className="block px-4 py-2 text-gray-800 hover:bg-blue-50 hover:text-blue-600 font-medium"
                   >
                     ISO Management
                   </Link>
                   <Link 
-                    to="/login?redirect=secret-note" 
+                    to="/secret-note" 
                     className="block px-4 py-2 text-gray-800 hover:bg-blue-50 hover:text-blue-600 font-medium"
                   >
                     Secret Note

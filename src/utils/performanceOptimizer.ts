@@ -136,11 +136,12 @@ export class PerformanceOptimizer {
 
   // Service Worker caching strategy
   enableServiceWorkerCaching(): void {
-    if ('serviceWorker' in navigator) {
-      this.runWhenIdle(() => {
-        navigator.serviceWorker.register('/sw.js').catch(console.error);
-      });
-    }
+    // Temporarily disabled until sw.js is properly configured
+    // if ('serviceWorker' in navigator) {
+    //   this.runWhenIdle(() => {
+    //     navigator.serviceWorker.register('/sw.js').catch(console.error);
+    //   });
+    // }
   }
 
   // Critical CSS optimization

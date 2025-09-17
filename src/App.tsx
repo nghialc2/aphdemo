@@ -6,9 +6,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { InsightsAuthProvider } from "@/hooks/useInsightsAuth";
 import { AuthProvider as InsightsAuthContextProvider } from "@/contexts/AuthContext";
+import { InternationalRelationsAuthProvider } from "@/hooks/useInternationalRelationsAuth";
 import { AdminProvider } from "@/context/AdminContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import InsightsProtectedRoute from "@/components/auth/ProtectedRoute";
+import InternationalRelationsProtectedRoute from "@/components/auth/InternationalRelationsProtectedRoute";
 import DarkModeManager from "@/components/DarkModeManager";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -20,9 +22,12 @@ import BlogPage from "./pages/BlogPage";
 import BlogPostPage from "./pages/BlogPostPage";
 import EnhancedWeeklyDashboard from "./pages/EnhancedWeeklyDashboard";
 import TaskTrackingAuth from "./pages/TaskTrackingAuth";
+import InternationalRelationsAuth from "./pages/InternationalRelationsAuth";
 import InternationalRelationsDashboard from "./pages/InternationalRelationsDashboard";
 import ISODashboard from "./pages/ISODashboard";
+import ISOAuth from "./pages/ISOAuth";
 import SecretNoteDashboard from "./pages/SecretNoteDashboard";
+import SecretNoteAuth from "./pages/SecretNoteAuth";
 import Dashboard from "./pages/Dashboard";
 import Notebook from "./pages/Notebook";
 
@@ -47,8 +52,9 @@ const App = () => (
         <AuthProvider>
           <InsightsAuthProvider>
             <InsightsAuthContextProvider>
-              <AdminProvider>
-              <DarkModeManager />
+              <InternationalRelationsAuthProvider>
+                <AdminProvider>
+                <DarkModeManager />
               <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/explore" element={<ExplorationPage />} />
@@ -85,10 +91,14 @@ const App = () => (
             <Route 
               path="/international-relations" 
               element={
-                <ProtectedRoute>
+                <InternationalRelationsProtectedRoute>
                   <InternationalRelationsDashboard />
-                </ProtectedRoute>
+                </InternationalRelationsProtectedRoute>
               } 
+            />
+            <Route 
+              path="/international-relations/login" 
+              element={<InternationalRelationsAuth />} 
             />
             <Route 
               path="/iso" 
@@ -99,12 +109,20 @@ const App = () => (
               } 
             />
             <Route 
+              path="/iso/login" 
+              element={<ISOAuth />} 
+            />
+            <Route 
               path="/secret-note" 
               element={
                 <ProtectedRoute>
                   <SecretNoteDashboard />
                 </ProtectedRoute>
               } 
+            />
+            <Route 
+              path="/secret-note/login" 
+              element={<SecretNoteAuth />} 
             />
             <Route path="/login" element={<Login />} />
             <Route 
@@ -118,7 +136,8 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
             </Routes>
-              </AdminProvider>
+                </AdminProvider>
+              </InternationalRelationsAuthProvider>
             </InsightsAuthContextProvider>
           </InsightsAuthProvider>
         </AuthProvider>

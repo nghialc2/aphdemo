@@ -8,6 +8,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   signInWithGoogle: () => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
   loading: boolean;
   isAuthenticated: boolean;
@@ -134,6 +135,49 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const signInWithEmail = async (email: string, password: string) => {
+    try {
+      // Validate email domain
+      if (!email.endsWith('@fsb.edu.vn')) {
+        return {
+          success: false,
+          error: 'Only @fsb.edu.vn email addresses are allowed'
+        };
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+
+      if (error) {
+        console.error('Email sign in error:', error);
+        return {
+          success: false,
+          error: error.message
+        };
+      }
+
+      if (data.user) {
+        console.log('Email sign in successful:', data.user.email);
+        return {
+          success: true
+        };
+      }
+
+      return {
+        success: false,
+        error: 'Authentication failed'
+      };
+    } catch (error) {
+      console.error('Email sign in error:', error);
+      return {
+        success: false,
+        error: 'An unexpected error occurred'
+      };
+    }
+  };
+
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
@@ -160,6 +204,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       user,
       session,
       signInWithGoogle,
+      signInWithEmail,
       signOut,
       loading,
       isAuthenticated: !!user && !!user.email?.endsWith('@fsb.edu.vn')
