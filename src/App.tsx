@@ -22,6 +22,7 @@ import BlogPage from "./pages/BlogPage";
 import BlogPostPage from "./pages/BlogPostPage";
 import EnhancedWeeklyDashboard from "./pages/EnhancedWeeklyDashboard";
 import TaskTrackingAuth from "./pages/TaskTrackingAuth";
+import DocumentationAuth from "./pages/DocumentationAuth";
 import InternationalRelationsAuth from "./pages/InternationalRelationsAuth";
 import InternationalRelationsDashboard from "./pages/InternationalRelationsDashboard";
 import ISODashboard from "./pages/ISODashboard";
@@ -63,18 +64,22 @@ const App = () => (
               <Route 
                 path="/documentation" 
                 element={
-                  <InsightsProtectedRoute fallback={<Auth />}>
+                  <ProtectedRoute>
                     <Dashboard />
-                  </InsightsProtectedRoute>
+                  </ProtectedRoute>
                 } 
               />
               <Route 
                 path="/documentation/notebook/:id" 
                 element={
-                  <InsightsProtectedRoute fallback={<Auth />}>
+                  <ProtectedRoute>
                     <Notebook />
-                  </InsightsProtectedRoute>
+                  </ProtectedRoute>
                 } 
+              />
+              <Route 
+                path="/documentation/login" 
+                element={<DocumentationAuth />} 
               />
             <Route 
               path="/task-tracking" 

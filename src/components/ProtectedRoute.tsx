@@ -14,7 +14,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   // Determine redirect parameter and login route based on current path
   const getRedirectInfo = () => {
     if (location.pathname.startsWith('/documentation')) {
-      return { param: 'documentation', loginRoute: '/documentation' };
+      return { param: 'documentation', loginRoute: '/documentation/login' };
     } else if (location.pathname.startsWith('/task-tracking')) {
       return { param: 'task-tracking', loginRoute: '/task-tracking/login' };
     } else if (location.pathname.startsWith('/international-relations')) {
