@@ -8,6 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import Chatbot from "@/components/Chatbot";
 
 
 export default function ExplorationPage() {
@@ -211,6 +212,9 @@ export default function ExplorationPage() {
       <footer className="relative z-10 text-center py-4 bg-black/30 backdrop-blur-sm text-white/80 text-sm border-t border-white/10">
         © 2025 Designed by NghiaLC2. All rights reserved.
       </footer>
+
+      {/* Chatbot */}
+      <Chatbot />
     </div>
   );
 }
