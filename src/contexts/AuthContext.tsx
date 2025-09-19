@@ -9,6 +9,7 @@ interface AuthContextType {
   error: string | null;
   isAuthenticated: boolean;
   signOut: () => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -49,36 +50,72 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setError(null);
   };
 
+  const signInWithEmail = async (email: string, password: string) => {
+    try {
+      console.log('InsightsLM AuthContext: Attempting sign in with email:', email);
+
+      // Check domain restriction first
+      if (!email.endsWith('@fsb.edu.vn')) {
+        return {
+          success: false,
+          error: 'Only @fsb.edu.vn email addresses are allowed.'
+        };
+      }
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        console.error('InsightsLM AuthContext: Sign in error:', error);
+        return {
+          success: false,
+          error: error.message
+        };
+      }
+
+      console.log('InsightsLM AuthContext: Sign in successful');
+      return { success: true };
+    } catch (err) {
+      console.error('InsightsLM AuthContext: Unexpected sign in error:', err);
+      return {
+        success: false,
+        error: 'An unexpected error occurred'
+      };
+    }
+  };
+
   const signOut = async () => {
     try {
       console.log('InsightsLM AuthContext: Starting logout process...');
-      
+
       // Clear local state immediately to provide instant feedback
       clearAuthState();
-      
+
       // Attempt to sign out from server
       const { error } = await supabase.auth.signOut();
-      
+
       if (error) {
         console.log('InsightsLM AuthContext: Logout error:', error);
-        
+
         // If session is invalid on server, we've already cleared local state
-        if (error.message.includes('session_not_found') || 
+        if (error.message.includes('session_not_found') ||
             error.message.includes('Session not found') ||
             error.status === 403) {
           console.log('InsightsLM AuthContext: Session already invalid on server');
           return;
         }
-        
+
         // For other errors, still ensure local session is cleared
         await supabase.auth.signOut({ scope: 'local' });
         return;
       }
-      
+
       console.log('InsightsLM AuthContext: Logout successful');
     } catch (err) {
       console.error('InsightsLM AuthContext: Unexpected logout error:', err);
-      
+
       // Even if there's an error, try to clear local session
       try {
         await supabase.auth.signOut({ scope: 'local' });
@@ -179,6 +216,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     error,
     isAuthenticated: !!user && !!session,
     signOut,
+    signInWithEmail,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

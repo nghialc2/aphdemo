@@ -61,21 +61,21 @@ const App = () => (
               <Route path="/explore" element={<ExplorationPage />} />
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/blog/:id" element={<BlogPostPage />} />
-              <Route 
-                path="/documentation" 
+              <Route
+                path="/documentation"
                 element={
-                  <ProtectedRoute>
+                  <InsightsProtectedRoute fallback={<DocumentationAuth />}>
                     <Dashboard />
-                  </ProtectedRoute>
-                } 
+                  </InsightsProtectedRoute>
+                }
               />
-              <Route 
-                path="/documentation/notebook/:id" 
+              <Route
+                path="/documentation/notebook/:id"
                 element={
-                  <ProtectedRoute>
+                  <InsightsProtectedRoute fallback={<DocumentationAuth />}>
                     <Notebook />
-                  </ProtectedRoute>
-                } 
+                  </InsightsProtectedRoute>
+                }
               />
               <Route 
                 path="/documentation/login" 

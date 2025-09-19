@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import DocumentationLoginPage from '@/components/ui/animated-sign-in-documentation';
 
 const DocumentationAuthForm = () => {
