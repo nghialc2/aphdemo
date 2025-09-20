@@ -209,7 +209,7 @@ export const useChatMessages = (notebookId?: string) => {
     console.log('Setting up Realtime subscription for notebook:', notebookId);
 
     const channel = supabase
-      .channel('chat-messages')
+      .channel(`chat-messages-${notebookId}`)
       .on(
         'postgres_changes',
         {
@@ -244,6 +244,9 @@ export const useChatMessages = (notebookId?: string) => {
             console.log('Adding new message to cache:', newMessage);
             return [...oldMessages, newMessage];
           });
+
+          // Also invalidate to ensure UI updates
+          queryClient.invalidateQueries({ queryKey: ['chat-messages', notebookId] });
         }
       )
       .subscribe((status) => {

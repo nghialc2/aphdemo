@@ -38,7 +38,7 @@ export const useSources = (notebookId?: string) => {
     console.log('Setting up Realtime subscription for sources table, notebook:', notebookId);
 
     const channel = supabase
-      .channel('sources-changes')
+      .channel(`sources-changes-${notebookId}`)
       .on(
         'postgres_changes',
         {
@@ -83,6 +83,9 @@ export const useSources = (notebookId?: string) => {
                 return oldSources;
             }
           });
+
+          // Also invalidate to ensure UI updates
+          queryClient.invalidateQueries({ queryKey: ['sources', notebookId] });
         }
       )
       .subscribe((status) => {
@@ -109,6 +112,29 @@ export const useSources = (notebookId?: string) => {
     }) => {
       if (!user) throw new Error('User not authenticated');
 
+      console.log('InsightsLM: Creating source with user:', user.id);
+      console.log('InsightsLM: Source data:', sourceData);
+
+      // First check if the notebook exists and belongs to the user
+      const { data: notebookCheck, error: notebookError } = await supabase
+        .from('notebooks')
+        .select('id, user_id')
+        .eq('id', sourceData.notebookId)
+        .single();
+
+      console.log('InsightsLM: Notebook check result:', { notebookCheck, notebookError });
+
+      if (notebookError) {
+        console.error('InsightsLM: Cannot access notebook:', notebookError);
+        throw new Error(`Cannot access notebook: ${notebookError.message}`);
+      }
+
+      if (!notebookCheck) {
+        throw new Error('Notebook not found');
+      }
+
+      console.log('InsightsLM: Notebook belongs to user:', notebookCheck.user_id, 'Current user:', user.id);
+
       const { data, error } = await supabase
         .from('sources')
         .insert({
@@ -125,7 +151,16 @@ export const useSources = (notebookId?: string) => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('InsightsLM: Error creating source:', error);
+        console.error('InsightsLM: Error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
+        throw error;
+      }
       return data;
     },
     onSuccess: async (newSource) => {
@@ -172,6 +207,10 @@ export const useSources = (notebookId?: string) => {
           }
         }
       }
+    },
+    onError: (error) => {
+      console.error('InsightsLM: Mutation error in addSource:', error);
+      console.error('InsightsLM: Full error object:', JSON.stringify(error, null, 2));
     },
   });
 

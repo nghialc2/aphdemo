@@ -21,14 +21,7 @@ interface ChatbotProps {
 const Chatbot: React.FC<ChatbotProps> = ({ className = '' }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      content: '👋 Hello! I\'m your AI assistant. How can I help you today?',
-      isUser: false,
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -36,12 +29,33 @@ const Chatbot: React.FC<ChatbotProps> = ({ className = '' }) => {
 
   useEffect(() => {
     const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    if (apiKey) {
+    console.log('OpenAI API Key check:', {
+      exists: !!apiKey,
+      length: apiKey?.length || 0,
+      prefix: apiKey?.substring(0, 10) || 'none'
+    });
+
+    // Initialize welcome message based on API key status
+    const welcomeMessage: Message = {
+      id: 'welcome',
+      content: '',
+      isUser: false,
+      timestamp: new Date(),
+    };
+
+    if (apiKey && apiKey.length > 20 && apiKey.startsWith('sk-')) {
       openai.current = new OpenAI({
         apiKey,
         dangerouslyAllowBrowser: true,
       });
+      console.log('OpenAI client initialized successfully');
+      welcomeMessage.content = '👋 Hello! I\'m your AI assistant. How can I help you today?';
+    } else {
+      console.error('OpenAI API key is missing or invalid');
+      welcomeMessage.content = '⚠️ OpenAI API key is not properly configured. Please check your .env file and ensure VITE_OPENAI_API_KEY is set to a valid OpenAI API key starting with "sk-".';
     }
+
+    setMessages([welcomeMessage]);
   }, []);
 
   useEffect(() => {
@@ -51,7 +65,18 @@ const Chatbot: React.FC<ChatbotProps> = ({ className = '' }) => {
   }, [messages]);
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim() || isLoading || !openai.current) return;
+    if (!inputValue.trim() || isLoading) return;
+
+    if (!openai.current) {
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        content: '🔑 OpenAI API key is not configured. Please check your environment variables and restart the application.',
+        isUser: false,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+      return;
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -78,7 +103,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ className = '' }) => {
           })),
           {
             role: 'user',
-            content: inputValue,
+            content: userMessage.content,
           },
         ],
         max_tokens: 300,
@@ -93,11 +118,24 @@ const Chatbot: React.FC<ChatbotProps> = ({ className = '' }) => {
       };
 
       setMessages(prev => [...prev, aiMessage]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error calling OpenAI:', error);
+
+      let errorContent = 'Sorry, I\'m having trouble connecting to the AI service. Please try again later.';
+
+      if (error?.status === 401) {
+        errorContent = '🔑 Invalid OpenAI API key. Please check your API key configuration.';
+      } else if (error?.status === 429) {
+        errorContent = '⏱️ Rate limit exceeded. Please wait a moment before trying again.';
+      } else if (error?.status === 403) {
+        errorContent = '🚫 Access forbidden. Please check your OpenAI API key permissions.';
+      } else if (error?.message?.includes('network') || error?.message?.includes('fetch')) {
+        errorContent = '🌐 Network error. Please check your internet connection and try again.';
+      }
+
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: 'Sorry, I\'m having trouble connecting to the AI service. Please try again later.',
+        content: errorContent,
         isUser: false,
         timestamp: new Date(),
       };
