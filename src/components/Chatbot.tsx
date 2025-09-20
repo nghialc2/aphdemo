@@ -28,11 +28,14 @@ const Chatbot: React.FC<ChatbotProps> = ({ className = '' }) => {
   const openai = useRef<OpenAI | null>(null);
 
   useEffect(() => {
+    console.log('🤖 Chatbot useEffect triggered');
+
     const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
     console.log('OpenAI API Key check:', {
       exists: !!apiKey,
       length: apiKey?.length || 0,
-      prefix: apiKey?.substring(0, 10) || 'none'
+      prefix: apiKey?.substring(0, 10) || 'none',
+      isValidFormat: !!(apiKey && apiKey.startsWith('sk-'))
     });
 
     // Initialize welcome message based on API key status
@@ -43,19 +46,30 @@ const Chatbot: React.FC<ChatbotProps> = ({ className = '' }) => {
       timestamp: new Date(),
     };
 
-    if (apiKey && apiKey.length > 20 && apiKey.startsWith('sk-')) {
-      openai.current = new OpenAI({
-        apiKey,
-        dangerouslyAllowBrowser: true,
-      });
-      console.log('OpenAI client initialized successfully');
-      welcomeMessage.content = '👋 Hello! I\'m your AI assistant. How can I help you today?';
-    } else {
-      console.error('OpenAI API key is missing or invalid');
-      welcomeMessage.content = '⚠️ OpenAI API key is not properly configured. Please check your .env file and ensure VITE_OPENAI_API_KEY is set to a valid OpenAI API key starting with "sk-".';
-    }
+    try {
+      if (apiKey && apiKey.length > 20 && apiKey.startsWith('sk-')) {
+        console.log('🔑 Initializing OpenAI client...');
+        openai.current = new OpenAI({
+          apiKey,
+          dangerouslyAllowBrowser: true,
+        });
+        console.log('✅ OpenAI client initialized successfully');
 
-    setMessages([welcomeMessage]);
+        // Set welcome message
+        welcomeMessage.content = '👋 Hello! I\'m your AI assistant. How can I help you today?';
+      } else {
+        console.error('❌ OpenAI API key is missing or invalid');
+        welcomeMessage.content = '⚠️ OpenAI API key is not properly configured. Please check your .env file and ensure VITE_OPENAI_API_KEY is set to a valid OpenAI API key starting with "sk-".';
+      }
+
+      console.log('💬 Setting welcome message:', welcomeMessage.content);
+      setMessages([welcomeMessage]);
+      console.log('✅ Welcome message set successfully');
+    } catch (error) {
+      console.error('❌ Error during chatbot initialization:', error);
+      welcomeMessage.content = '🚨 Error initializing chatbot. Check console for details.';
+      setMessages([welcomeMessage]);
+    }
   }, []);
 
   useEffect(() => {
@@ -90,6 +104,8 @@ const Chatbot: React.FC<ChatbotProps> = ({ className = '' }) => {
     setIsLoading(true);
 
     try {
+      console.log('🔑 Making OpenAI API call with key:', import.meta.env.VITE_OPENAI_API_KEY?.substring(0, 15) + '...');
+
       const response = await openai.current.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [
@@ -110,6 +126,8 @@ const Chatbot: React.FC<ChatbotProps> = ({ className = '' }) => {
         temperature: 0.7,
       });
 
+      console.log('✅ OpenAI API call successful');
+
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: response.choices[0]?.message?.content || 'Sorry, I couldn\'t generate a response.',
@@ -124,7 +142,12 @@ const Chatbot: React.FC<ChatbotProps> = ({ className = '' }) => {
       let errorContent = 'Sorry, I\'m having trouble connecting to the AI service. Please try again later.';
 
       if (error?.status === 401) {
-        errorContent = '🔑 Invalid OpenAI API key. Please check your API key configuration.';
+        const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+        if (apiKey?.startsWith('sk-proj-')) {
+          errorContent = '🔑 Project API key rejected. Try creating a new USER-LEVEL API key (not project-specific) at https://platform.openai.com/api-keys. Project keys may have restricted permissions or require special setup.';
+        } else {
+          errorContent = '🔑 Invalid OpenAI API key. Please check your API key configuration.';
+        }
       } else if (error?.status === 429) {
         errorContent = '⏱️ Rate limit exceeded. Please wait a moment before trying again.';
       } else if (error?.status === 403) {

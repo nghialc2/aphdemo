@@ -105,7 +105,8 @@ export default function ExplorationPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden">
+    <TooltipProvider>
+      <div className="min-h-screen flex flex-col relative overflow-hidden">
       {/* Background Image with Overlay */}
       <div 
         className="absolute bg-cover bg-center bg-no-repeat"
@@ -215,6 +216,7 @@ export default function ExplorationPage() {
 
       {/* Chatbot */}
       <Chatbot />
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }
